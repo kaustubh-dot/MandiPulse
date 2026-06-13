@@ -61,7 +61,7 @@ Readable crop, state, district, and mandi names must be resolved through CEDA lo
 
 ### Known Data Quality Issues
 
-These are commonly reported issues with AGMARKNET data. Confirm and extend during EDA.
+These are commonly reported issues with AGMARKNET data. The current Onion/Maharashtra profile and clean-panel reports are the source of truth for the MVP.
 
 - Inconsistent mandi name spellings across records and dates.
 - Missing arrival quantity for many records.
@@ -267,12 +267,12 @@ Table or artifact: `forecast_outputs`
 | `state` | string | Yes | State |
 | `mandi` | string | Yes | Mandi |
 | `mandi_id` | string | Yes | Mandi ID |
-| `horizon_days` | integer | Yes | 7, 14, or 30 |
+| `horizon_days` | integer | Yes | 7 for MVP; 14 and 30 are post-MVP |
 | `forecast_price_inr_qtl` | float | Yes | Predicted modal price |
 | `lower_bound_inr_qtl` | float | Yes | Lower uncertainty bound |
 | `upper_bound_inr_qtl` | float | Yes | Upper uncertainty bound |
 | `confidence_level` | float | Yes | Example: 0.90 |
-| `market_regime` | string | Yes | `normal`, `volatile`, `crisis_anomaly` |
+| `market_regime` | string | No | Post-MVP only |
 | `model_name` | string | Yes | Model family |
 | `model_version` | string | Yes | MLflow run/model version |
 | `top_drivers` | array/string | No | Human-readable forecast drivers |
@@ -286,7 +286,7 @@ Table or artifact: `recommendation_outputs`
 | `recommendation_id` | string | Yes | Unique recommendation ID |
 | `generated_at` | datetime | Yes | Recommendation timestamp |
 | `crop` | string | Yes | Crop |
-| `horizon_days` | integer | Yes | 7, 14, or 30 |
+| `horizon_days` | integer | Yes | 7 for MVP; 14 and 30 are post-MVP |
 | `quantity_quintal` | float | Yes | User quantity |
 | `farmer_latitude` | float | Yes | Input latitude |
 | `farmer_longitude` | float | Yes | Input longitude |
@@ -303,10 +303,12 @@ Table or artifact: `recommendation_outputs`
 | `uncertainty_penalty_inr_qtl` | float | Yes | Risk penalty |
 | `risk_adjusted_score` | float | Yes | Ranking score |
 | `risk_level` | string | Yes | `low`, `medium`, `high` |
-| `market_regime` | string | Yes | Current regime |
+| `market_regime` | string | No | Post-MVP only |
 | `reason` | string | No | Recommendation explanation |
 
-## Monitoring / Logging Schema
+## Post-MVP Monitoring / Logging Schema
+
+The following schemas are retained as future reference only. They are not required for the offline Streamlit MVP.
 
 Table: `monitoring_metrics`
 
@@ -377,9 +379,11 @@ Table: `api_request_logs`
 
 ## MVP Data Scope Checklist
 
-- [ ] Exactly 2 selected crops unless docs are updated.
-- [ ] Exactly 3 selected states unless EDA requires documented replacement.
-- [ ] 10-15 active Maharashtra onion mandis with sufficient history.
-- [ ] Forecast horizon limited to 7 days for MVP.
-- [ ] All model features reproducible from cleaned tables.
-- [ ] Missingness and exclusions documented.
+- [x] Exactly 1 selected crop: Onion.
+- [x] Exactly 1 selected state: Maharashtra.
+- [x] 10-15 active Maharashtra onion mandis selected.
+- [x] Forecast horizon limited to 7 days for MVP.
+- [x] All model features reproducible from cleaned tables.
+- [x] Missingness and exclusions documented in data-quality reports.
+- [ ] Mandi latitude/longitude completed before recommendation work.
+- [ ] Temporal split dates documented before modeling.

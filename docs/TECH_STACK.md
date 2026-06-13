@@ -4,7 +4,7 @@
 
 | Layer | Tooling | Role | Why Chosen |
 |---|---|---|---|
-| Language | Python 3.11 or 3.12 | Core implementation | Strong data science ecosystem and FastAPI/Streamlit support |
+| Language | Python 3.11 or 3.12 | Core implementation | Strong data science ecosystem and Streamlit support |
 | Dependency management | `pyproject.toml` with pip or uv | Reproducible local setup | Lightweight and common for portfolio projects |
 | Data processing | Pandas, NumPy | Cleaning, feature creation, panel construction | Familiar, fast enough for 10-15 mandis |
 | Local analytics store | DuckDB | Processed tables, feature tables, local SQL | Simple local OLAP without a server |
@@ -49,7 +49,7 @@
 | Temporal Fusion Transformer | Reject | Heavy deep learning stack, not needed for 10-15 mandis |
 | Large neural forecasting frameworks | Reject | Increases complexity and data requirements |
 | More crops/states before Onion/Maharashtra works | Reject | Risks messy, unfinished data work |
-| Microservices | Reject | FastAPI monolith is enough |
+| Microservices | Reject | A single Streamlit app is enough for MVP; FastAPI can stay monolithic later |
 | Random forest as main story | Avoid | The MVP story should be LightGBM plus honest baselines |
 | Full causal inference | Future only | Risky claims; optional research module after MVP |
 | Full arbitrage system | Future only | Can be a lightweight analysis later, not core MVP |
@@ -64,7 +64,7 @@
 - MLflow runs are local during development and should not be committed.
 - FastAPI is deferred from the narrowed MVP.
 - Streamlit calls shared service modules and saved local artifacts first.
-- Docker Compose runs the API, dashboard, and optional MLflow UI for demo.
+- Docker Compose is post-MVP and should run only the services that exist at that point.
 
 ## Production / Deployment Assumptions
 
@@ -75,7 +75,7 @@ This is a portfolio MVP, not a national-scale production system.
 | Deployment target | Local Docker Compose or lightweight cloud VM |
 | Data scale | 1 crop, 1 state, 10-15 mandis |
 | Batch cadence | Daily or manual refresh is acceptable |
-| Inference | On-demand API inference from saved model artifacts |
+| Inference | Local Streamlit inference from saved model artifacts |
 | Model registry | MLflow local tracking, with model URI/version documented |
 | Storage | DuckDB for MVP; PostgreSQL optional if deployment needs server DB |
 | Secrets | Environment variables via `.env.example`; never commit real `.env` |
@@ -114,10 +114,10 @@ This is a portfolio MVP, not a national-scale production system.
 
 ### API
 
-- `fastapi`
-- `pydantic`
-- `uvicorn`
-- `httpx` for API tests/client calls
+- `fastapi` post-MVP only
+- `pydantic` post-MVP only unless used for internal schemas
+- `uvicorn` post-MVP only
+- `httpx` for API tests/client calls post-MVP only
 
 ### Dashboard
 

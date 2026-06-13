@@ -11,7 +11,7 @@ The primary mandi data path is AGMARKNET data through the CEDA API.
 - Auth env var: `CEDA_API_TOKEN`
 - Fallback: Data.gov.in / AGMARKNET only if registration becomes available later
 
-CEDA uses numeric IDs. Day 0 validation has confirmed Onion (`commodity_id=23`) and Maharashtra (`state_id=27`). Because the current CEDA key is temporary, the next priority is saving a static historical dump locally before modeling.
+CEDA uses numeric IDs. Day 0 validation has confirmed Onion (`commodity_id=23`) and Maharashtra (`state_id=27`). The static historical dump has been saved locally, so modeling work no longer depends on a live API key.
 
 ## Local Setup
 
@@ -53,21 +53,22 @@ Day 0 is complete when `docs/DATA_SOURCES.md` contains:
 - Date-range and rate-limit notes
 - Sample response paths
 
-## MVP Data Grab
+## MVP Data Pipeline
 
-Fetch the narrowed MVP raw data before the temporary CEDA key expires:
+The raw CEDA dump has already been captured locally. Re-run only if you need to refresh it:
 
 ```powershell
 python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13
 ```
 
-For a safe smoke test:
+Build the cleaned panel and 7-day feature table:
 
 ```powershell
-python scripts\fetch_ceda_onion_maharashtra.py --from-date 2025-03-01 --to-date 2025-03-31 --max-districts 2
+python scripts\build_clean_onion_panel.py
+python scripts\build_feature_table.py
 ```
 
-The script writes ignored raw responses and a flattened CSV under `data/raw/ceda/onion_maharashtra/`.
+Raw and processed CSVs are ignored by Git. Reproducible scripts and small reports are committed.
 
 ## Project Docs
 

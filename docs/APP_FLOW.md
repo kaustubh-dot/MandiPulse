@@ -1,273 +1,130 @@
 # MandiPulse India App Flow
 
+## MVP Flow
+
+The narrowed MVP is an offline Streamlit dashboard for Onion mandis in Maharashtra. It reads saved local artifacts; it does not require a live CEDA key, FastAPI service, regime/anomaly module, or monitoring stack.
+
 ## End-User Journey
 
-1. User opens the dashboard.
-2. User checks overall market health and data freshness.
-3. User selects crop, state, mandi, and forecast horizon.
-4. User reviews forecast price, uncertainty interval, market regime, and top drivers.
-5. User enters farmer location, crop, quantity, candidate states, and horizon.
-6. System ranks candidate mandis by risk-adjusted expected net price after transport cost.
-7. User reviews recommended mandi, alternatives, map/table context, and risk.
-8. User checks regime/anomaly page if market looks volatile.
-9. User checks monitoring page to understand data/model reliability.
+1. User opens the Streamlit dashboard.
+2. User checks the static data coverage summary.
+3. User selects one of the 15 Maharashtra onion mandis.
+4. User reviews historical price, 7-day forecast, uncertainty interval, and baseline comparison.
+5. User enters farmer latitude, longitude, and quantity.
+6. System ranks candidate mandis by forecast net price after transport cost.
+7. User reviews the top 3 alternatives and the assumptions behind the ranking.
 
-## Dashboard Page-by-Page Flow
+## Dashboard Pages
 
-### Page 1: Overview
+### Page 1: Data Coverage
 
-Purpose: show whether the system is up to date and what the current market looks like.
+Purpose: prove the dataset is usable before showing predictions.
 
 Sections:
 
-- KPI strip:
-  - Total mandis tracked.
-  - Crops tracked.
-  - Latest data date.
-  - Active volatile markets.
-  - Current model version.
-- Market health summary:
-  - Normal, volatile, crisis/anomaly counts.
-- Latest price snapshot:
-  - Crop/state filters.
-  - Top recent price moves.
-- Volatile market table:
-  - Crop, mandi, state, regime, reason.
+- Loaded data range.
+- Selected 15 mandis.
+- Observed, imputed, and long-gap missing rows.
+- Duplicate handling summary.
+- Trainable rows by mandi.
 
 Primary action:
 
-- Select a mandi and continue to Forecast View.
+- Continue only if the chosen mandi has enough trainable rows.
 
 ### Page 2: Forecast
 
-Purpose: show future price expectations with uncertainty.
+Purpose: show 7-day price expectations honestly.
 
 Sections:
 
-- Filter panel:
-  - Crop.
-  - State.
-  - Mandi.
-  - Forecast horizon: 7, 14, 30 days.
-- Forecast chart:
-  - Historical actual price.
-  - Forecast line.
-  - Confidence interval band.
-- Backtest chart:
-  - Actual vs predicted for recent test period.
-- Forecast details:
-  - Forecast price.
-  - Lower bound.
-  - Upper bound.
-  - Confidence level.
-  - Market regime.
-  - Top drivers.
+- Mandi selector.
+- Historical modal price chart.
+- 7-day forecast and uncertainty interval.
+- Baseline vs model metrics.
+- Notes on missingness and imputation.
 
 Primary action:
 
-- Continue to recommendation using selected crop and horizon.
+- Continue to recommendation with the selected forecast date.
 
-### Page 3: Mandi Recommendation
+### Page 3: Recommendation
 
-Purpose: answer where to sell after transport cost and forecast uncertainty.
+Purpose: answer where to sell after transport cost.
 
 Sections:
 
-- Input panel:
-  - Farmer latitude and longitude.
-  - Crop.
-  - Quantity in quintals.
-  - Candidate states.
-  - Horizon.
-- Recommended mandi summary:
-  - Recommended mandi.
-  - Expected net price per quintal.
-  - Estimated transport cost.
-  - Risk level.
-  - Reason.
-- Ranked alternatives table:
-  - Rank.
-  - Mandi.
-  - State.
-  - Forecast price.
-  - Transport cost.
-  - Net expected price.
-  - Uncertainty interval.
-  - Risk-adjusted score.
-  - Regime.
-- Map:
-  - Farmer location.
-  - Candidate mandis.
-  - Recommended mandi highlighted.
+- Farmer latitude and longitude.
+- Quantity in quintals.
+- Transport assumptions.
+- Ranked top 3 mandis.
+- Forecast price, estimated transport cost, net expected price, and risk flag.
+- Map of farmer and candidate mandis once coordinates are available.
 
 Primary action:
 
-- Compare top mandis and inspect forecast/regime details.
-
-### Page 4: Regime / Anomaly
-
-Purpose: explain whether the market is normal, volatile, or abnormal.
-
-Sections:
-
-- Regime indicator:
-  - Normal, volatile, crisis/anomaly.
-- Volatility chart:
-  - Rolling 7-day and 30-day volatility.
-- Anomaly timeline:
-  - Dates with abnormal returns or price jumps.
-- Reason panel:
-  - Example: "7-day volatility is 2.4x above normal."
-- Recent abnormal movements table:
-  - Date.
-  - Price.
-  - Return.
-  - Z-score or anomaly score.
-
-Primary action:
-
-- Use risk context before trusting recommendation.
-
-### Page 5: Monitoring
-
-Purpose: show reliability of data, model, and API.
-
-Sections:
-
-- Data freshness:
-  - Latest available date.
-  - Days since last update.
-- Data quality:
-  - Missing percentage by crop/state/mandi.
-  - Duplicate count.
-  - Invalid value count.
-- Forecast performance:
-  - Recent MAE/RMSE/sMAPE.
-  - Error trend by horizon.
-- Drift:
-  - Feature drift summary.
-  - Price distribution shift.
-- System metrics:
-  - API status.
-  - Model version.
-  - Inference success rate.
-  - Recent latency.
-
-Primary action:
-
-- Confirm demo/system reliability before presenting decisions.
+- Compare whether a higher gross price survives transport cost.
 
 ## Forecast Flow
 
-1. User selects crop, state, mandi, and horizon.
-2. Dashboard sends request to `POST /forecast`.
-3. API validates request.
-4. API loads latest feature row and model artifact.
-5. API generates forecast for selected horizon.
-6. API attaches uncertainty interval.
-7. API fetches or computes regime label.
-8. API returns forecast response with top drivers.
-9. Dashboard renders chart, interval band, and explanation.
+1. Load `data/processed/onion_maharashtra/feature_table_7d.csv`.
+2. Filter to `feature_row_valid == True`.
+3. Apply temporal split.
+4. Compare naive/seasonal/moving-average baselines.
+5. Train or load the 7-day model.
+6. Produce forecast, interval, and backtest metrics.
+7. Render results in Streamlit.
 
 Expected output:
 
 - Forecast price.
 - Lower and upper bound.
-- Confidence level.
-- Market regime.
-- Top drivers.
-- Backtest context if available.
+- Confidence level or residual interval method.
+- Baseline comparison.
+- Data-quality context.
 
-## Mandi Recommendation Flow
+## Recommendation Flow
 
-1. User enters farmer location, crop, quantity, candidate states, and horizon.
-2. Dashboard sends request to `POST /recommend`.
-3. API identifies candidate mandis within selected states.
-4. API forecasts price for each candidate mandi.
-5. API estimates transport cost per quintal.
-6. API calculates expected net price.
-7. API applies uncertainty penalty.
-8. API ranks mandis by risk-adjusted score.
-9. API returns recommended mandi and alternatives.
-10. Dashboard renders recommendation summary, ranked table, and map.
+1. Load latest forecast per selected mandi.
+2. Load selected mandi metadata and coordinates.
+3. Estimate road distance from farmer to mandi using haversine distance times road factor.
+4. Estimate transport cost per quintal.
+5. Calculate expected net price.
+6. Apply uncertainty penalty.
+7. Rank mandis and show top 3.
 
 Expected output:
 
 - Recommended mandi.
+- Forecast gross price.
+- Estimated transport cost.
 - Expected net price per quintal.
-- Transport cost estimate.
 - Risk level.
 - Ranked alternatives.
-- Reason.
 
-## Regime / Anomaly Flow
-
-1. User selects crop and mandi or arrives from forecast page.
-2. Dashboard calls `GET /regime`.
-3. API retrieves recent price history and precomputed regime state.
-4. API returns current regime, reason, volatility values, and anomaly dates.
-5. Dashboard renders regime badge, volatility chart, and anomaly timeline.
-
-Regime labels:
-
-- Normal.
-- Volatile.
-- Crisis/anomaly.
-
-## Monitoring / Admin Flow
-
-1. User opens Monitoring page.
-2. Dashboard calls `GET /metrics`.
-3. API returns current data, model, and system metrics.
-4. Dashboard highlights freshness, missingness, drift, and forecast error.
-5. User can identify whether the app is demo-ready.
-
-## Error States and Empty States
+## Error States
 
 | Scenario | User-Facing Behavior |
 |---|---|
-| Crop has no data | Show "No data available for this crop in the selected scope." |
-| Mandi has insufficient history | Disable forecast and suggest another mandi |
-| Horizon not supported | Show valid options: 7, 14, 30 |
-| Missing farmer location | Prompt for latitude and longitude |
-| No candidate mandis found | Ask user to widen candidate states |
-| Model artifact missing | Show service unavailable message and log error |
-| Data stale | Show warning with latest data date |
-| API request fails | Show retry message and preserve current filters |
+| Mandi has insufficient trainable rows | Disable forecast and suggest another selected mandi |
+| Missing model artifact | Show baseline-only results until model is trained |
+| Missing mandi coordinates | Disable recommendation but keep forecast available |
 | Forecast interval very wide | Show high-risk warning, not a confident recommendation |
-| Regime unavailable | Show "Regime not available for selected market" and continue forecast display |
+| Long missing gaps | Show data-quality warning and exclude affected rows from training |
 
-## Loading States
+## Demo Flow
 
-- Forecast chart skeleton while forecast loads.
-- Recommendation table skeleton while candidate mandis are ranked.
-- Map placeholder while coordinates load.
-- Monitoring metric placeholders while API responds.
+1. Start with the framing: "This is not generic crop price prediction; it is a mandi decision product."
+2. Show the data coverage report and selected 15 mandis.
+3. Show a 7-day forecast for Lasalgaon or Pimpalgaon.
+4. Compare model performance against naive baselines.
+5. Enter a farmer location and show transport-adjusted ranking.
+6. Close with the engineering story: CEDA data grab, clean panel, leakage-safe features, temporal validation, and Streamlit product.
 
-## Demo Flow for Placement / Interview Presentation
+## Guardrails
 
-1. Start with the project framing:
-   - "This is not generic crop price prediction. It is a mandi decision intelligence system."
-2. Show Overview:
-   - Crops, mandis, latest data date, volatile markets.
-3. Show Forecast:
-   - Select Onion, Maharashtra, Lasalgaon, 14 days.
-   - Explain temporal validation and uncertainty band.
-4. Show Recommendation:
-   - Enter farmer location and quantity.
-   - Show how a high gross price can lose after transport cost.
-5. Show Regime / Anomaly:
-   - Highlight volatile market period and reason.
-6. Show Monitoring:
-   - Data freshness, missingness, forecast error, model version.
-7. Close with engineering:
-   - FastAPI, Streamlit, MLflow, Docker, tests, monitoring.
-
-## Flow Guardrails
-
-- The app should always lead with decision context, not only charts.
-- The recommendation page must include transport cost and uncertainty.
-- Forecasts should never be presented without intervals.
-- Regime labels should be cautious and explainable.
-- Optional advanced modules should not appear in the main nav until implemented.
-
+- Do not add FastAPI to the MVP.
+- Do not add regime/anomaly pages to the MVP.
+- Do not add Tomato, Karnataka, Uttar Pradesh, or 14/30-day horizons until the Onion/Maharashtra 7-day loop works.
+- Do not present forecasts without baseline comparison.
+- Do not hide missingness or imputation.

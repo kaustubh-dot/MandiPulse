@@ -16,7 +16,7 @@ mlflow:
 artifacts:
   model_artifact_path: artifacts/models
   predictions_path: artifacts/predictions
-  monitoring_path: artifacts/monitoring
+  quality_reports_path: reports/data_quality
 
 logging:
   level: INFO

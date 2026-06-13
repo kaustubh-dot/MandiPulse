@@ -157,7 +157,7 @@ A single crop price prediction is not enough. The useful decision is:
 | Forecasts underperform baselines | Weak story | Keep baselines honest, analyze by regime, emphasize decision metrics |
 | Recommendation depends on rough transport cost | Overclaiming | Use transparent cost assumptions and sensitivity in dashboard |
 | Uncertainty intervals are too wide | Poor usability | Report empirical coverage and interval width together |
-| API key expires before full raw pull | Blocks refreshes | Fetch static historical data immediately and build offline |
+| API key expires before refresh | Blocks future refreshes | Build from the cached static dataset and refresh only with a valid key |
 | Scope creep into causal inference or arbitrage | Project becomes unfinished | Keep advanced modules as P2/future until MVP is complete |
 
 ## Final Resume Positioning
