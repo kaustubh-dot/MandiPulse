@@ -38,13 +38,15 @@ Stop after validation. Do not build full ingestion yet.
 - [x] Start EDA for Onion/Maharashtra mandi coverage.
 - [x] Select top 10-15 Maharashtra onion mandis based on non-empty price coverage and arrival volume.
 - [ ] Add latitude/longitude for selected MVP mandis.
-- [ ] Build cleaned Onion/Maharashtra panel for selected mandis.
+- [x] Build cleaned Onion/Maharashtra panel for selected mandis.
+- [x] Build leakage-safe 7-day feature table.
+- [ ] Implement temporal split and baseline metrics.
 - [ ] Update `docs/TRACKER.md` after completed tasks.
 
 ## Scope Guardrails
 
 - [x] Narrow MVP to Onion, Maharashtra, and 10-15 mandis.
-- [ ] Use temporal validation only.
+- [x] Use temporal validation only.
 - [ ] Use LightGBM as the first primary model.
 - [ ] Keep CatBoost as P1 comparison only.
 - [ ] Keep weather and SHAP as P1, not blockers.

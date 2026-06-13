@@ -168,8 +168,32 @@ Full narrowed-MVP fetch result:
 | Raw districts discovered | 35 |
 | Profile report | `reports/data_quality/onion_maharashtra_profile.md` |
 | Candidate mandi list | `data/external/mvp_mandis.csv` |
+| Clean panel report | `reports/data_quality/onion_maharashtra_clean_panel.md` |
+| Feature table report | `reports/data_quality/onion_maharashtra_feature_table.md` |
 
 The mismatch between requested end date and returned latest date must be treated as a data freshness limitation, not hidden or patched with imputation.
+
+Clean panel result:
+
+| Item | Result |
+|---|---|
+| Selected raw rows | 24,192 |
+| Invalid rows dropped | 0 |
+| Duplicate source market-date rows | 3,127 |
+| Daily panel rows | 31,950 |
+| Observed rows | 22,627 |
+| Short-gap imputed rows | 6,031 |
+| Long-gap missing rows retained | 3,292 |
+
+Feature table result:
+
+| Item | Result |
+|---|---|
+| Horizon | 7 days |
+| Panel rows | 31,950 |
+| Trainable rows | 20,004 |
+| Markets | 15 |
+| Leakage guard | Lag and rolling features are shifted; current-day modal price is diagnostics-only |
 
 ## Fallback Source
 
