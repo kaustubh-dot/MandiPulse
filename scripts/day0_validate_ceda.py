@@ -7,6 +7,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+
+    def load_dotenv(*_: Any, **__: Any) -> bool:
+        return False
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -22,6 +29,23 @@ def normalize_name(value: str) -> str:
 def save_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def payload_records(payload: dict[str, Any], keys: list[str] | None = None) -> list[dict[str, Any]]:
+    keys = keys or []
+    for key in [*keys, "data"]:
+        records = payload.get(key)
+        if isinstance(records, list):
+            return [record for record in records if isinstance(record, dict)]
+
+    output = payload.get("output")
+    if isinstance(output, dict):
+        for key in [*keys, "data"]:
+            records = output.get(key)
+            if isinstance(records, list):
+                return [record for record in records if isinstance(record, dict)]
+
+    return []
 
 
 def find_by_normalized_name(
@@ -46,6 +70,22 @@ def first_int(row: dict[str, Any], keys: list[str]) -> int | None:
         if isinstance(value, str) and value.isdigit():
             return int(value)
     return None
+
+
+def rows_matching_name(
+    rows: list[dict[str, Any]],
+    name_keys: list[str],
+    target: str,
+) -> list[dict[str, Any]]:
+    wanted = normalize_name(target)
+    matches: list[dict[str, Any]] = []
+    for row in rows:
+        for key in name_keys:
+            value = row.get(key)
+            if isinstance(value, str) and normalize_name(value) == wanted:
+                matches.append(row)
+                break
+    return matches
 
 
 def validate_price_samples(
@@ -77,9 +117,15 @@ def validate_price_samples(
         }
 
         for state_name in mvp_states:
-            state = find_by_normalized_name(geographies, ["state_name", "name"], state_name)
+            state_rows = rows_matching_name(
+                geographies,
+                ["state_name", "census_state_name", "name"],
+                state_name,
+            )
+            state = state_rows[0] if state_rows else None
             state_id = first_int(state or {}, ["state_id", "census_state_id", "id"])
-            districts = (state or {}).get("districts") or []
+            nested_districts = (state or {}).get("districts") if state else None
+            districts = nested_districts if isinstance(nested_districts, list) else state_rows
             if state is None or state_id is None or not isinstance(districts, list):
                 crop_result["samples"].append(
                     {"state": state_name, "status": "state_or_district_not_found"}
@@ -88,7 +134,11 @@ def validate_price_samples(
 
             for district in districts[:max_districts_per_state]:
                 district_id = first_int(district, ["district_id", "census_district_id", "id"])
-                district_name = district.get("district_name") or district.get("name")
+                district_name = (
+                    district.get("district_name")
+                    or district.get("census_district_name")
+                    or district.get("name")
+                )
                 if district_id is None:
                     continue
 
@@ -110,7 +160,7 @@ def validate_price_samples(
                     )
                     continue
 
-                markets = markets_payload.get("data") or []
+                markets = payload_records(markets_payload)
                 if not markets:
                     continue
 
@@ -119,7 +169,10 @@ def validate_price_samples(
                     for market in markets[:max_markets_per_sample]
                     if (market_id := first_int(market, ["market_id", "id"])) is not None
                 ]
-                markets_file = output_dir / f"day0_ceda_{crop_name}_{state_name}_markets.json"
+                markets_file = (
+                    output_dir
+                    / f"day0_ceda_{crop_name}_{state_name}_{district_id}_markets.json"
+                )
                 save_json(markets_file, markets_payload)
 
                 price_result: dict[str, Any] = {
@@ -142,20 +195,25 @@ def validate_price_samples(
                             from_date=from_date,
                             to_date=to_date,
                         )
-                        prices_file = output_dir / f"day0_ceda_{crop_name}_{state_name}_prices.json"
+                        record_count = len(payload_records(prices_payload))
+                        prices_file = (
+                            output_dir
+                            / f"day0_ceda_{crop_name}_{state_name}_{district_id}_prices.json"
+                        )
                         save_json(prices_file, prices_payload)
                         price_result.update(
                             {
-                                "status": "prices_fetched",
+                                "status": "prices_fetched" if record_count else "prices_empty",
                                 "prices_sample_path": str(prices_file),
-                                "record_count": len(prices_payload.get("data") or []),
+                                "record_count": record_count,
                             }
                         )
                     except CedaApiError as exc:
                         price_result.update({"status": "prices_failed", "error": str(exc)})
 
                 crop_result["samples"].append(price_result)
-                break
+                if price_result.get("status") == "prices_fetched":
+                    break
 
             if any(sample.get("status") == "prices_fetched" for sample in crop_result["samples"]):
                 break
@@ -170,13 +228,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", default="configs/data.yaml", help="Path to data config.")
     parser.add_argument("--from-date", default="2025-03-01", help="Sample start date, YYYY-MM-DD.")
     parser.add_argument("--to-date", default="2025-03-31", help="Sample end date, YYYY-MM-DD.")
-    parser.add_argument("--max-districts-per-state", type=int, default=8)
+    parser.add_argument("--max-districts-per-state", type=int, default=60)
     parser.add_argument("--max-markets-per-sample", type=int, default=2)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    load_dotenv(PROJECT_ROOT / ".env")
     config = load_yaml_config(args.config)
     output_dir = resolve_project_path(config["paths"]["raw_data"]) / "samples"
     source = config["data_source"]
@@ -197,8 +256,8 @@ def main() -> int:
     sample_results = validate_price_samples(
         client=client,
         output_dir=output_dir,
-        commodities=commodities_payload.get("commodities") or [],
-        geographies=geographies_payload.get("geographies") or [],
+        commodities=payload_records(commodities_payload, ["commodities"]),
+        geographies=payload_records(geographies_payload, ["geographies"]),
         mvp_crops=config["mvp_crops"],
         mvp_states=config["mvp_states"],
         from_date=args.from_date,
