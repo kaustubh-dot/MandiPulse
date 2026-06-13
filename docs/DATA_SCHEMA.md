@@ -149,7 +149,7 @@ Example: `"  Lasalgaon "` in `"Maharashtra"` becomes `maharashtra__lasalgaon`.
 
 Format: `{lowercase_stripped_crop_name}`
 
-Example: `"Onion"` becomes `onion`. `"Tomato"` becomes `tomato`.
+Example: `"Onion"` becomes `onion`.
 
 ### Alias Maps
 
@@ -172,7 +172,7 @@ Table: `mandi_metadata`
 | `district` | string | No | District |
 | `latitude` | float | Yes | Mandi latitude |
 | `longitude` | float | Yes | Mandi longitude |
-| `is_active_mvp` | boolean | Yes | Whether included in 50-100 mandi MVP |
+| `is_active_mvp` | boolean | Yes | Whether included in the top 10-15 mandi MVP |
 | `primary_crops` | array/string | No | Crops commonly traded |
 | `data_start_date` | date | No | First usable record date |
 | `data_end_date` | date | No | Latest usable record date |
@@ -240,8 +240,8 @@ Training targets for horizons should be generated explicitly:
 | Column | Type | Required | Description |
 |---|---|---:|---|
 | `target_price_t_plus_7` | float | Yes | Price 7 days ahead |
-| `target_price_t_plus_14` | float | Yes | Price 14 days ahead |
-| `target_price_t_plus_30` | float | Yes | Price 30 days ahead |
+| `target_price_t_plus_14` | float | No | Deferred post-MVP target |
+| `target_price_t_plus_30` | float | No | Deferred post-MVP target |
 
 ### Target Leakage Prevention
 
@@ -351,7 +351,7 @@ Table: `api_request_logs`
 - `min_price_inr_qtl <= modal_price_inr_qtl <= max_price_inr_qtl` when all are available.
 - `arrival_quantity_qtl` must be non-negative when available.
 - `date + crop_id + mandi_id` should be unique after cleaning.
-- Only MVP crops and states should enter MVP model training.
+- Only Onion/Maharashtra rows should enter MVP model training.
 - Mandis with insufficient history should be flagged before modeling.
 
 ### Feature Table
@@ -379,7 +379,7 @@ Table: `api_request_logs`
 
 - [ ] Exactly 2 selected crops unless docs are updated.
 - [ ] Exactly 3 selected states unless EDA requires documented replacement.
-- [ ] 50-100 active mandis with sufficient history.
-- [ ] Forecast horizons limited to 7, 14, and 30 days.
+- [ ] 10-15 active Maharashtra onion mandis with sufficient history.
+- [ ] Forecast horizon limited to 7 days for MVP.
 - [ ] All model features reproducible from cleaned tables.
 - [ ] Missingness and exclusions documented.

@@ -32,18 +32,23 @@ Stop after validation. Do not build full ingestion yet.
 
 - [x] Create project folder structure.
 - [x] Add dependency/config skeleton.
-- [ ] Confirm raw and processed data storage conventions.
-- [ ] Build only the first reproducible raw data sample flow after Day 0 is complete.
-- [ ] Start EDA for crop/state/mandi coverage.
-- [ ] Finalize MVP crops, states, and 50-100 mandis based on data quality.
+- [x] Confirm raw and processed data storage conventions.
+- [x] Build only the first reproducible raw data sample flow after Day 0 is complete.
+- [x] Fetch full Onion/Maharashtra CEDA history from 2020-01-01 to 2026-06-13 before the key expires.
+- [x] Start EDA for Onion/Maharashtra mandi coverage.
+- [x] Select top 10-15 Maharashtra onion mandis based on non-empty price coverage and arrival volume.
+- [ ] Add latitude/longitude for selected MVP mandis.
+- [ ] Build cleaned Onion/Maharashtra panel for selected mandis.
 - [ ] Update `docs/TRACKER.md` after completed tasks.
 
 ## Scope Guardrails
 
-- [ ] Keep MVP to 2 crops, 3 states, and 50-100 mandis.
+- [x] Narrow MVP to Onion, Maharashtra, and 10-15 mandis.
 - [ ] Use temporal validation only.
 - [ ] Use LightGBM as the first primary model.
 - [ ] Keep CatBoost as P1 comparison only.
 - [ ] Keep weather and SHAP as P1, not blockers.
+- [ ] Keep 14-day and 30-day horizons out of the MVP until the 7-day system works.
+- [ ] Keep FastAPI, regime/anomaly detection, and advanced monitoring out of the MVP.
 - [ ] Do not add P2 endpoints or advanced modules during MVP.
 - [ ] Do not add React, Kubernetes, mobile app, WhatsApp bot, deep learning, or TFT.

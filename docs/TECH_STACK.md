@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Language | Python 3.11 or 3.12 | Core implementation | Strong data science ecosystem and FastAPI/Streamlit support |
 | Dependency management | `pyproject.toml` with pip or uv | Reproducible local setup | Lightweight and common for portfolio projects |
-| Data processing | Pandas, NumPy | Cleaning, feature creation, panel construction | Familiar, fast enough for 50-100 mandis |
+| Data processing | Pandas, NumPy | Cleaning, feature creation, panel construction | Familiar, fast enough for 10-15 mandis |
 | Local analytics store | DuckDB | Processed tables, feature tables, local SQL | Simple local OLAP without a server |
 | Optional relational DB | PostgreSQL | Production-like deployment option | Useful later, not required for MVP |
 | Data validation | Pandera or Great Expectations | Schema and quality checks | Prevents silent data issues |
@@ -14,10 +14,10 @@
 | Statistical baselines | Statsmodels where useful | Seasonal naive, optional ARIMA/SARIMA | Good for selected crop-mandi diagnostics |
 | Uncertainty | MAPIE, quantile models, residual intervals | Prediction intervals | Supports calibrated uncertainty without deep learning |
 | Explainability | SHAP | Feature importance and local drivers | Interview-friendly, model-aware explanations |
-| API | FastAPI, Pydantic, Uvicorn | Prediction and recommendation service | Modern Python API with schema validation |
-| Dashboard | Streamlit, Plotly, Folium or PyDeck | Product interface | Fast MVP dashboard with maps and charts |
+| API | FastAPI, Pydantic, Uvicorn | Post-MVP prediction and recommendation service | Useful later, not part of the narrowed MVP |
+| Dashboard | Streamlit, Plotly, Folium or PyDeck | MVP product interface | Fast offline dashboard with maps and charts |
 | Experiment tracking | MLflow | Metrics, parameters, model artifacts | Standard MLOps signal for portfolio |
-| Monitoring | Evidently AI or custom reports | Drift, data quality, recent error | Lightweight monitoring for MVP |
+| Monitoring | Custom reports | Data coverage, missingness, backtest metrics | Static reports are enough for MVP |
 | Testing | Pytest, pytest-cov | Unit and integration tests | Simple and reliable |
 | Code quality | Ruff, Black optional | Linting and formatting | Keeps repository clean without heavy tooling |
 | Packaging | Docker, Docker Compose | Local deployment | Demonstrates deployable system without Kubernetes |
@@ -46,9 +46,9 @@
 | React frontend | Reject | Slows project without improving ML engineering signal |
 | Mobile app | Reject | Scope creep |
 | WhatsApp bot | Reject | Scope creep and integration complexity |
-| Temporal Fusion Transformer | Reject | Heavy deep learning stack, not needed for 50-100 mandis |
+| Temporal Fusion Transformer | Reject | Heavy deep learning stack, not needed for 10-15 mandis |
 | Large neural forecasting frameworks | Reject | Increases complexity and data requirements |
-| 500+ mandi network | Reject | Risks messy, unfinished data work |
+| More crops/states before Onion/Maharashtra works | Reject | Risks messy, unfinished data work |
 | Microservices | Reject | FastAPI monolith is enough |
 | Random forest as main story | Avoid | The MVP story should be LightGBM plus honest baselines |
 | Full causal inference | Future only | Risky claims; optional research module after MVP |
@@ -62,8 +62,8 @@
 - Raw data is stored locally under `data/raw/`, but raw data should not be committed if large or license-restricted.
 - Processed data is stored in DuckDB, Parquet, or CSV under ignored data folders.
 - MLflow runs are local during development and should not be committed.
-- FastAPI runs with Uvicorn.
-- Streamlit calls FastAPI endpoints or shared service modules depending on the implementation phase.
+- FastAPI is deferred from the narrowed MVP.
+- Streamlit calls shared service modules and saved local artifacts first.
 - Docker Compose runs the API, dashboard, and optional MLflow UI for demo.
 
 ## Production / Deployment Assumptions
@@ -73,7 +73,7 @@ This is a portfolio MVP, not a national-scale production system.
 | Area | Assumption |
 |---|---|
 | Deployment target | Local Docker Compose or lightweight cloud VM |
-| Data scale | 2 crops, 3 states, 50-100 mandis |
+| Data scale | 1 crop, 1 state, 10-15 mandis |
 | Batch cadence | Daily or manual refresh is acceptable |
 | Inference | On-demand API inference from saved model artifacts |
 | Model registry | MLflow local tracking, with model URI/version documented |
@@ -152,6 +152,6 @@ This is a portfolio MVP, not a national-scale production system.
 
 - Prefer one simple tool per layer.
 - Add PostgreSQL only if DuckDB becomes limiting.
-- Use custom monitoring reports as the default for MVP. Add Evidently only if dependency installation is stable and it provides clear value over custom summaries.
+- Use custom data quality and backtest reports as the default for MVP. Add Evidently only after the Streamlit MVP is useful and stable.
 - Use one main model family for MVP.
 - Do not add deep learning or orchestration frameworks until the documented MVP works.

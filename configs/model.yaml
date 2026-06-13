@@ -3,6 +3,8 @@
 
 horizons:
   - 7
+
+deferred_horizons:
   - 14
   - 30
 
@@ -43,4 +45,3 @@ lightgbm_params:
 
 catboost_params:
   random_seed: 42
-

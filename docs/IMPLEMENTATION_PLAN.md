@@ -5,10 +5,10 @@
 Build the system in narrow, working slices. The core path is:
 
 ```text
-data foundation -> features -> baselines -> main model -> uncertainty -> recommendation -> API/dashboard -> Docker/tests/docs
+static CEDA data grab -> EDA -> clean panel -> baselines -> 7-day model -> recommendation -> Streamlit demo
 ```
 
-Do not build optional advanced modules until the full MVP path works end to end.
+The narrowed MVP is Onion in Maharashtra, top 10-15 mandis, 7-day horizon, and a single Streamlit app. Do not build FastAPI, regime/anomaly detection, advanced monitoring, 14/30-day horizons, or additional crops/states until this path works end to end.
 
 ## 8-Week Roadmap
 
@@ -35,7 +35,7 @@ Definition of done:
 
 - [ ] Raw records are reproducible from documented source.
 - [ ] Clean table exists for at least the candidate MVP scope.
-- [ ] EDA identifies 50-100 usable mandis or flags data quality risk.
+- [ ] EDA identifies 10-15 usable Maharashtra onion mandis or flags data quality risk.
 - [ ] Missingness and duplicate patterns are documented.
 
 ### Week 2: Data Cleaning + Feature Engineering
@@ -65,7 +65,7 @@ Definition of done:
 - [ ] No future data leakage in features.
 - [ ] Rows with insufficient history are flagged or excluded.
 - [ ] Validation checks pass or generate documented failures.
-- [ ] Feature table supports 7/14/30-day targets.
+- [ ] Feature table supports the 7-day target.
 
 ### Week 3: Baseline Forecasting
 
@@ -238,7 +238,7 @@ Definition of done:
 - Run `python scripts\day0_validate_ceda.py --from-date 2025-03-01 --to-date 2025-03-31`.
 - Use curl or Postman only for debugging failed CEDA endpoint calls.
 - Document response format, ID lookup behavior, date-range behavior, and any quirks.
-- Confirm onion and tomato data availability for Maharashtra, Karnataka, Uttar Pradesh.
+- Confirm Onion/Maharashtra data availability and record Tomato/other states only as deferred scope.
 - Estimate historical date range coverage.
 - Save one small sample response under `data/raw/samples/`.
 - Update `docs/DATA_SOURCES.md` with confirmed fields, lookup IDs, date-range behavior, sample path, and quirks.
@@ -247,51 +247,46 @@ Definition of done:
 
 ### Day 1
 
-- Convert the Day 0 validation script into a reusable raw ingestion module.
-- Preserve CEDA lookup joins for commodity, state, district, and market names.
-- Keep raw API responses reproducible under ignored local data paths.
+- Run the narrowed data grab:
+  `python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13`
+- Save raw responses and flattened CSV under `data/raw/ceda/onion_maharashtra/`.
+- Verify row count, market count, and date range in `fetch_summary.json`.
 
 ### Day 2
 
-- Build ingestion script for raw mandi price data.
-- Save raw data reproducibly.
-- Create initial data dictionary.
+- Load the flattened raw CSV.
+- Compute active days, missing days, and invalid price rows by market.
+- Select candidate top 10-15 mandis by non-empty price coverage and arrival/record volume.
 
 ### Day 3
 
-- Normalize dates, crop names, mandi names, states, and units.
-- Create cleaned data table.
+- Normalize dates, names, prices, and market IDs.
+- Create the clean Onion/Maharashtra crop-mandi-date panel.
+- Apply minimal quality rules: modal price positive, min <= modal <= max, duplicate handling.
 
 ### Day 4
 
-- Run EDA for coverage:
-  - Crop availability.
-  - State availability.
-  - Mandi activity.
-  - Missing values.
-  - Outliers.
+- Build strict temporal splits.
+- Implement 7-day naive/seasonal naive and moving-average baselines.
+- Report MAE, RMSE, sMAPE, and MASE by mandi and overall.
 
 ### Day 5
 
-- Finalize MVP crop/state/mandi list based on data quality.
-- Create stable crop and mandi IDs.
-- Build mandi metadata draft.
+- Build lag and rolling features using only data available up to date `t`.
+- Train a basic global LightGBM model for the 7-day horizon.
+- Compare honestly against baselines. If LightGBM loses, document why instead of hiding it.
 
 ### Day 6
 
-- Create first crop-mandi-date panel.
-- Document missing data handling rules.
-- Add validation checks.
+- Implement the transport-cost ranking function using haversine distance.
+- Add crude mandi latitude/longitude metadata for the selected 10-15 mandis.
+- Test that the recommendation does not choose distant markets for tiny gains.
 
 ### Day 7
 
-- Finish EDA notebook.
-- Produce Week 1 summary:
-  - Selected crops.
-  - Selected states.
-  - Number of mandis.
-  - Data range.
-  - Data quality risks.
+- Build the first barebones Streamlit app.
+- Show data coverage, selected mandi forecast, baseline comparison, and top-3 net-price recommendation.
+- Produce a blunt viability note: what worked, what failed, and what was cut.
 
 ## Task Dependencies
 
@@ -301,11 +296,10 @@ Definition of done:
 | Baseline models | Feature table with horizon targets |
 | Main model | Baseline evaluation utilities |
 | Uncertainty intervals | Backtest predictions from model |
-| Regime detection | Clean price history and volatility features |
 | Recommendation engine | Forecasts, intervals, mandi coordinates |
-| API | Saved model artifacts and service functions |
-| Dashboard | API contract and endpoints |
-| Docker Compose | API/dashboard implementations |
+| Dashboard | Saved model artifacts and local feature outputs |
+| API | Post-MVP only |
+| Docker Compose | Post-MVP only |
 | Final README | Working demo and results |
 
 ## What to Postpone
@@ -317,6 +311,11 @@ Definition of done:
 | Price propagation graph | P2; must avoid causal wording |
 | Similar historical days | Useful later, not required for MVP |
 | PostgreSQL | Optional unless deployment requires server DB |
+| FastAPI | Deferred until Streamlit MVP proves useful |
+| Regime/anomaly detection | Distraction until the core decision engine works |
+| 14-day and 30-day forecasts | Deferred until 7-day performance is understood |
+| Tomato/Karnataka/Uttar Pradesh | Deferred until Onion/Maharashtra is complete |
+| Live monitoring/Evidently | Deferred; use static data quality reports first |
 | HMM regime model | Optional after simple volatility/z-score approach |
 | ARIMA/SARIMA for all mandis | Too time-consuming; optional for selected diagnostics |
 | Deep learning forecasting | Too heavy and outside blueprint |

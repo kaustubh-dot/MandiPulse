@@ -3,15 +3,24 @@
 
 mvp_crops:
   - onion
-  - tomato
 
 mvp_states:
   - maharashtra
-  - karnataka
-  - uttar_pradesh
 
 mvp_mandi_list: data/external/mvp_mandis.csv
+mvp_mandi_target_count: 15
 min_history_days: 180
+
+mvp_scope:
+  mode: offline_static_showcase
+  commodity_id: 23
+  commodity_name: Onion
+  state_id: 27
+  state_name: Maharashtra
+  start_date: "2020-01-01"
+  end_date: "2026-06-13"
+  selection_rule: top_10_to_15_mandis_by_nonzero_price_coverage_and_arrival_volume
+  key_expiry_risk: Fetch raw CEDA data before the temporary API key expires.
 
 paths:
   raw_data: data/raw
@@ -20,6 +29,7 @@ paths:
   external_data: data/external
   duckdb: data/processed/mandipulse.duckdb
   day0_sample_response: data/raw/samples/day0_agmarknet_sample.json
+  narrowed_mvp_raw_dir: data/raw/ceda/onion_maharashtra
 
 data_source:
   name: ceda_agmarknet
@@ -58,7 +68,4 @@ aliases:
     onion:
       - Onion
       - ONION
-    tomato:
-      - Tomato
-      - TOMATO
   mandis: {}

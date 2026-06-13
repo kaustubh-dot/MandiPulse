@@ -1,11 +1,13 @@
 # MandiPulse India local app configuration.
 
 api:
+  enabled_for_mvp: false
   host: 0.0.0.0
   port: 8000
   version: 0.1.0
 
 dashboard:
+  mvp_entrypoint: streamlit_only
   port: 8501
 
 mlflow:
@@ -18,4 +20,3 @@ artifacts:
 
 logging:
   level: INFO
-

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -16,6 +17,8 @@ class CedaAgmarknetClient:
     base_url: str = "https://api.ceda.ashoka.edu.in/v1"
     token: str | None = None
     timeout_seconds: int = 30
+    max_retries: int = 3
+    retry_backoff_seconds: float = 2.0
     session: requests.Session = field(default_factory=requests.Session)
 
     def __post_init__(self) -> None:
@@ -98,13 +101,30 @@ class CedaAgmarknetClient:
             headers.update(extra_headers)
 
         url = f"{self.base_url}{path}"
-        response = self.session.request(
-            method,
-            url,
-            headers=headers,
-            timeout=self.timeout_seconds,
-            **kwargs,
-        )
+        response: requests.Response | None = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = self.session.request(
+                    method,
+                    url,
+                    headers=headers,
+                    timeout=self.timeout_seconds,
+                    **kwargs,
+                )
+            except requests.RequestException as exc:
+                if attempt == self.max_retries:
+                    raise CedaApiError(f"CEDA API request failed after retries: {exc}") from exc
+                time.sleep(self.retry_backoff_seconds * attempt)
+                continue
+
+            if response.status_code not in {429, 500, 502, 503, 504}:
+                break
+            if attempt == self.max_retries:
+                break
+            time.sleep(self.retry_backoff_seconds * attempt)
+
+        if response is None:
+            raise CedaApiError("CEDA API request failed before receiving a response.")
 
         if response.status_code == 401:
             raise CedaApiError("CEDA API rejected the token with 401 Unauthorized.")

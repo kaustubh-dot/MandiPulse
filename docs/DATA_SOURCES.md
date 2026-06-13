@@ -17,8 +17,8 @@ Use the CEDA API as the primary AGMARKNET source because Data.gov.in account reg
 | Auth | Bearer token in the `Authorization` header |
 | API token env var | `CEDA_API_TOKEN` |
 | Expected format | JSON response with a `data` array for market, price, and quantity endpoints |
-| MVP crops to test first | Onion, Tomato |
-| MVP states to test first | Maharashtra, Karnataka, Uttar Pradesh |
+| MVP crop | Onion |
+| MVP state | Maharashtra |
 
 ## Confirmed CEDA Endpoints
 
@@ -43,7 +43,7 @@ Day 0 is a verification task only. Stop before building full ingestion.
 - [x] Fetch and save a small geography lookup sample.
 - [x] Fetch and save market IDs for one MVP commodity/state/district.
 - [x] Test a small Onion price request.
-- [x] Test a small Tomato price request.
+- [x] Test a small Tomato price request before narrowing scope; Tomato is deferred from MVP.
 - [x] Test at least one MVP state and district filter.
 - [x] Verify response fields and casing.
 - [x] Verify date format.
@@ -131,11 +131,45 @@ Fill this section after validation.
 | Confirmed endpoint URL | `https://api.ceda.ashoka.edu.in/v1` |
 | Auth behavior | Bearer token accepted; key is time-limited and should be refreshed before future data pulls |
 | Onion request status | Success: `commodity_id=23`; non-empty Maharashtra/Dhule sample saved with 20 records for 2025-03-01 to 2025-03-31 |
-| Tomato request status | Success: `commodity_id=78`; non-empty Maharashtra/Nandurbar sample saved with 1 record for 2025-03-01 to 2025-03-31 |
+| Tomato request status | Success: `commodity_id=78`; deferred from MVP after brutal scope review |
 | Date-range behavior | One-month market-level sample requests succeeded |
 | Sample response path | `data/raw/samples/day0_ceda_summary.json` after running the validation script |
 | Historical coverage | CEDA portal states agri-market data spans from 2000/present; project-specific coverage still needs full MVP pull |
 | Rate limits or API quirks | Commodity/geography responses use nested `output.data`; geographies are flat district rows, not nested state objects |
+
+## Narrowed MVP Data Grab
+
+The project is now an offline Onion/Maharashtra MVP. Fetch raw historical data before the temporary key expires:
+
+```powershell
+python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13
+```
+
+Smoke-tested command:
+
+```powershell
+python scripts\fetch_ceda_onion_maharashtra.py --from-date 2025-03-01 --to-date 2025-03-31 --max-districts 2
+```
+
+Smoke-test result: 2 districts, 7 markets, 26 flattened price rows, written under `data/raw/ceda/onion_maharashtra/`.
+
+Full narrowed-MVP fetch result:
+
+| Item | Result |
+|---|---|
+| Command | `python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13 --chunk-days 366 --market-batch-size 50 --request-sleep-seconds 2` |
+| Raw flat CSV | `data/raw/ceda/onion_maharashtra/onion_maharashtra_prices_raw.csv` |
+| Requested date range | 2020-01-01 to 2026-06-13 |
+| Returned row date range | 2020-01-01 to 2025-10-30 |
+| Price rows | 86,052 |
+| Markets with rows | 125 |
+| Districts with rows | 25 |
+| Raw markets discovered | 169 |
+| Raw districts discovered | 35 |
+| Profile report | `reports/data_quality/onion_maharashtra_profile.md` |
+| Candidate mandi list | `data/external/mvp_mandis.csv` |
+
+The mismatch between requested end date and returned latest date must be treated as a data freshness limitation, not hidden or patched with imputation.
 
 ## Fallback Source
 
