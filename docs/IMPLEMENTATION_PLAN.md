@@ -1,332 +1,173 @@
-# MandiPulse India Implementation Plan
+# MandiPulse Implementation Plan
 
 ## Build Strategy
 
-Build the system in narrow, working slices. The core path is:
+Build one narrow product slice before adding breadth:
 
 ```text
-static CEDA data grab -> EDA -> clean panel -> baselines -> 7-day model -> recommendation -> Streamlit demo
+cached CEDA data -> clean panel -> temporal baselines -> LightGBM -> uncertainty -> mandi ranking -> Streamlit demo
 ```
 
-The narrowed MVP is Onion in Maharashtra, top 10-15 mandis, 7-day horizon, and a single Streamlit app. Do not build FastAPI, regime/anomaly detection, advanced monitoring, 14/30-day horizons, or additional crops/states until this path works end to end.
+Current MVP scope:
 
-## 8-Week Roadmap
+- Onion only.
+- Maharashtra only.
+- 15 selected mandis.
+- 7-day forecast horizon only.
+- Offline/local artifacts.
+- Streamlit-only app.
 
-### Week 1: Project Setup + Data Foundation
+Do not build FastAPI, regime/anomaly detection, live monitoring, 14/30-day forecasts, additional crops, or additional states until this loop is useful and measured.
 
-Goal: create the project skeleton and establish a clean initial dataset.
+## Current State
 
-Deliverables:
+Done:
 
-- Repository folder structure.
-- Python environment and dependency file.
-- Initial data source decision.
-- Raw data ingestion for selected crops/states.
-- Initial cleaned data layer.
-- Data dictionary draft.
-- EDA notebook for coverage, missingness, outliers, and candidate mandis.
+- CEDA selected as the primary data source.
+- CEDA token validated.
+- Onion/Maharashtra raw data fetched and cached locally.
+- Coverage profile produced.
+- Top-15 mandis selected.
+- Clean daily panel built.
+- Leakage-safe 7-day feature table built.
 
-Dependencies:
+Next:
 
-- Access to mandi price data.
-- Decision on final MVP crops/states after initial data quality check.
+1. Create temporal train/validation/test splits.
+2. Implement baselines.
+3. Save baseline metrics report.
+4. Train first LightGBM model only after baselines are in place.
 
-Definition of done:
+## Active Milestones
 
-- [ ] Raw records are reproducible from documented source.
-- [ ] Clean table exists for at least the candidate MVP scope.
-- [ ] EDA identifies 10-15 usable Maharashtra onion mandis or flags data quality risk.
-- [ ] Missingness and duplicate patterns are documented.
+### Milestone 1: Data Foundation
 
-### Week 2: Data Cleaning + Feature Engineering
+Status: Done.
 
-Goal: produce a model-ready feature table.
+Outputs:
 
-Deliverables:
+- `scripts/fetch_ceda_onion_maharashtra.py`
+- `scripts/profile_onion_maharashtra.py`
+- `scripts/build_clean_onion_panel.py`
+- `scripts/build_feature_table.py`
+- `data/external/mvp_mandis.csv`
+- `reports/data_quality/onion_maharashtra_profile.md`
+- `reports/data_quality/onion_maharashtra_clean_panel.md`
+- `reports/data_quality/onion_maharashtra_feature_table.md`
 
-- Name normalization for crops, states, districts, mandis.
-- Unit normalization to INR/quintal.
-- Duplicate handling.
-- Missing data flags and handling strategy.
-- Crop-mandi-date panel.
-- Lag features for 1, 3, 7, 14, 30 days.
-- Rolling mean, median, standard deviation, returns, volatility.
-- Calendar features.
-- Data validation checks.
+Generated local data under `data/raw/` and `data/processed/` is ignored and should not be committed.
 
-Dependencies:
+### Milestone 2: Temporal Baselines
 
-- Week 1 clean raw/processed data.
-- Mandi metadata with IDs.
-
-Definition of done:
-
-- [ ] Feature table is reproducible.
-- [ ] No future data leakage in features.
-- [ ] Rows with insufficient history are flagged or excluded.
-- [ ] Validation checks pass or generate documented failures.
-- [ ] Feature table supports the 7-day target.
-
-### Week 3: Baseline Forecasting
-
-Goal: establish honest baselines using temporal validation.
+Status: Next.
 
 Deliverables:
 
+- Temporal split utility.
 - Seasonal naive baseline.
-- Moving average baseline.
-- Linear/Ridge baseline.
-- Temporal split or rolling backtest utility.
-- Metrics report: MAE, RMSE, sMAPE, MASE.
-- Baseline performance summary by crop, horizon, and state/mandi group.
-
-Dependencies:
-
-- Week 2 feature table.
+- Moving-average baseline.
+- Ridge or linear baseline.
+- Overall and per-mandi metrics.
+- Baseline report under `reports/modeling/`.
 
 Definition of done:
 
-- [ ] No random train-test split is used.
-- [ ] Baseline metrics are logged and saved.
-- [ ] Baseline code is tested on small sample data.
-- [ ] Weak/strong horizon performance is documented.
+- No random train/test split.
+- Split dates are written to the report.
+- Metrics include MAE, RMSE, sMAPE, and MASE.
+- Baseline code can be rerun from the feature table.
 
-### Week 4: Main Model + MLflow
+### Milestone 3: Main 7-Day Model
 
-Goal: train the primary model and track experiments.
+Status: Pending.
 
 Deliverables:
 
-- LightGBM training pipeline as the primary MVP model.
-- CatBoost comparison only if time allows after LightGBM works.
-- Hyperparameter configuration.
-- Baseline vs main model comparison.
-- MLflow experiment logging.
-- Best model artifact saved.
-- Feature schema saved.
-- Model evaluation report.
-
-Dependencies:
-
-- Week 3 temporal validation and baseline metrics.
+- LightGBM training script.
+- Model comparison against baselines.
+- Saved model artifact.
+- Saved feature schema.
+- Evaluation report.
 
 Definition of done:
 
-- [ ] Main model is compared to all baselines.
-- [ ] MLflow logs params, metrics, artifacts, and run metadata.
-- [ ] Saved model can be reloaded and used for inference.
-- [ ] Model artifact includes feature order/schema.
-- [ ] Results are credible even if not perfect.
+- LightGBM is compared to every baseline.
+- Results are reported even if LightGBM underperforms.
+- Feature list excludes current-day price as a model feature.
+- Saved model can be loaded for inference.
 
-### Week 5: Uncertainty + Regime Detection
+### Milestone 4: Uncertainty
 
-Goal: make forecasts uncertainty-aware and market-regime-aware.
+Status: Pending.
 
 Deliverables:
 
-- Conformal, quantile, or residual interval implementation.
-- Empirical coverage evaluation.
-- Interval width report.
-- Regime/anomaly detection logic.
-- Regime labels: normal, volatile, crisis/anomaly.
-- Volatility/regime report.
-
-Dependencies:
-
-- Week 4 model artifacts.
-- Backtest predictions.
+- Residual, quantile, or conformal interval method.
+- Empirical coverage report.
+- Interval-width report.
+- Forecast artifact with lower and upper bounds.
 
 Definition of done:
 
-- [ ] Every forecast can return lower and upper bounds.
-- [ ] Coverage is measured on validation/test period.
-- [ ] Regime label has a human-readable reason.
-- [ ] Anomaly logic is documented and tested.
+- Every forecast has a lower and upper bound.
+- Coverage is measured on held-out data.
+- Interval assumptions are documented.
 
-### Week 6: Recommendation Engine
+### Milestone 5: Recommendation Engine
 
-Goal: convert forecasts into transport-cost-aware mandi recommendations.
+Status: Pending.
 
 Deliverables:
 
-- Transport cost estimator.
-- Candidate mandi filtering.
-- Net expected price calculation.
-- Uncertainty penalty.
-- Risk level assignment.
-- Ranked mandi output.
-- Recommendation regret metrics.
-- Recommendation logic ready for API.
-
-Dependencies:
-
-- Week 5 forecast intervals.
-- Mandi metadata with coordinates.
+- Filled latitude/longitude values in `data/external/mvp_mandis.csv`.
+- Haversine distance utility.
+- Transport-cost estimator.
+- Risk-adjusted ranking function.
+- Recommendation report with sensitivity to transport cost.
 
 Definition of done:
 
-- [ ] Recommendation output ranks mandis deterministically.
-- [ ] Formula includes forecast price, transport cost, and uncertainty penalty.
-- [ ] Regret@K or missed profit is evaluated.
-- [ ] Tests cover edge cases such as missing coordinates and no candidates.
+- Rankings include forecast price, transport cost, uncertainty penalty, and final score.
+- Missing coordinates are handled explicitly.
+- The output is framed as decision support, not guaranteed profit.
 
-### Week 7: FastAPI + Dashboard
+### Milestone 6: Streamlit MVP
 
-Goal: create the usable decision product.
+Status: Pending.
 
 Deliverables:
 
-- FastAPI app.
-- Endpoints: `/health`, `/forecast`, `/recommend`, `/regime`, `/metrics`.
-- Pydantic request and response models.
-- Streamlit pages:
-  - Overview.
-  - Forecast.
-  - Recommendation.
-  - Regime / Anomaly.
-  - Monitoring.
-- Forecast charts with confidence bands.
-- Recommendation table and map.
-- Basic monitoring page.
-
-Dependencies:
-
-- Week 6 recommendation engine.
-- Model and data artifacts.
+- Data coverage page.
+- Forecast page.
+- Recommendation page.
+- Local artifact loading.
+- Demo-ready README instructions.
 
 Definition of done:
 
-- [ ] Dashboard can complete the demo flow.
-- [ ] API responses match `docs/API_SPEC.md`.
-- [ ] Forecast and recommendation are served from model artifacts.
-- [ ] Errors are user-friendly.
-- [ ] API integration tests cover core endpoints.
+- App runs without a live CEDA key.
+- User can inspect coverage, forecast, and recommendation in one flow.
+- Deferred modules do not appear in navigation.
 
-### Week 8: Docker + Tests + Documentation
+## Deferred Work
 
-Goal: make the project resume-ready and reproducible.
-
-Deliverables:
-
-- Dockerfile.
-- Docker Compose setup.
-- Unit tests for data, features, model, uncertainty, recommendation, regime.
-- Integration tests for API.
-- README.
-- Model card.
-- Final architecture diagram.
-- Demo screenshots/GIF or video script.
-- Final cleanup of docs and tracker.
-
-Dependencies:
-
-- Week 7 working app.
-
-Definition of done:
-
-- [ ] Docker Compose starts the API and dashboard.
-- [ ] Test suite passes locally.
-- [ ] README explains the decision intelligence framing.
-- [ ] Demo flow is recorded or documented.
-- [ ] Raw data, secrets, large models, and MLflow runs are not committed.
-
-## What to Build First in the First 7 Days
-
-### Day 0
-
-- Get a CEDA API bearer token and store it locally as `CEDA_API_TOKEN`.
-- Run `python scripts\day0_validate_ceda.py --from-date 2025-03-01 --to-date 2025-03-31`.
-- Use curl or Postman only for debugging failed CEDA endpoint calls.
-- Document response format, ID lookup behavior, date-range behavior, and any quirks.
-- Confirm Onion/Maharashtra data availability and record Tomato/other states only as deferred scope.
-- Estimate historical date range coverage.
-- Save one small sample response under `data/raw/samples/`.
-- Update `docs/DATA_SOURCES.md` with confirmed fields, lookup IDs, date-range behavior, sample path, and quirks.
-- If CEDA is inaccessible or severely rate-limited, try the Data.gov.in fallback if registration works; otherwise activate the Kaggle/bootstrap fallback plan and document.
-- Stop before building full ingestion.
-
-### Day 1
-
-- Run the narrowed data grab:
-  `python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13`
-- Save raw responses and flattened CSV under `data/raw/ceda/onion_maharashtra/`.
-- Verify row count, market count, and date range in `fetch_summary.json`.
-
-### Day 2
-
-- Load the flattened raw CSV.
-- Compute active days, missing days, and invalid price rows by market.
-- Select candidate top 10-15 mandis by non-empty price coverage and arrival/record volume.
-
-### Day 3
-
-- Normalize dates, names, prices, and market IDs.
-- Create the clean Onion/Maharashtra crop-mandi-date panel.
-- Apply minimal quality rules: modal price positive, min <= modal <= max, duplicate handling.
-
-### Day 4
-
-- Build strict temporal splits.
-- Implement 7-day naive/seasonal naive and moving-average baselines.
-- Report MAE, RMSE, sMAPE, and MASE by mandi and overall.
-
-### Day 5
-
-- Build lag and rolling features using only data available up to date `t`.
-- Train a basic global LightGBM model for the 7-day horizon.
-- Compare honestly against baselines. If LightGBM loses, document why instead of hiding it.
-
-### Day 6
-
-- Implement the transport-cost ranking function using haversine distance.
-- Add crude mandi latitude/longitude metadata for the selected 10-15 mandis.
-- Test that the recommendation does not choose distant markets for tiny gains.
-
-### Day 7
-
-- Build the first barebones Streamlit app.
-- Show data coverage, selected mandi forecast, baseline comparison, and top-3 net-price recommendation.
-- Produce a blunt viability note: what worked, what failed, and what was cut.
-
-## Task Dependencies
-
-| Task | Depends On |
+| Item | Earliest point to revisit |
 |---|---|
-| Feature table | Cleaned crop-mandi-date panel |
-| Baseline models | Feature table with horizon targets |
-| Main model | Baseline evaluation utilities |
-| Uncertainty intervals | Backtest predictions from model |
-| Recommendation engine | Forecasts, intervals, mandi coordinates |
-| Dashboard | Saved model artifacts and local feature outputs |
-| API | Post-MVP only |
-| Docker Compose | Post-MVP only |
-| Final README | Working demo and results |
+| FastAPI | After Streamlit MVP proves useful |
+| Regime/anomaly detection | After 7-day forecast and recommendation work |
+| Live monitoring/Evidently | After saved model and dashboard exist |
+| 14-day and 30-day horizons | After 7-day performance is understood |
+| Tomato or other crops | After Onion/Maharashtra is complete |
+| Karnataka or Uttar Pradesh | After Onion/Maharashtra is complete |
+| SHAP explanations | After model artifact is stable |
+| Docker Compose | After dashboard exists |
+| React, mobile, Kubernetes, microservices | Outside MVP |
 
-## What to Postpone
+## Rules While Implementing
 
-| Item | Reason |
-|---|---|
-| Causal inference | Optional research module; high risk of overclaiming |
-| Arbitrage detection | P2 after recommendation engine works |
-| Price propagation graph | P2; must avoid causal wording |
-| Similar historical days | Useful later, not required for MVP |
-| PostgreSQL | Optional unless deployment requires server DB |
-| FastAPI | Deferred until Streamlit MVP proves useful |
-| Regime/anomaly detection | Distraction until the core decision engine works |
-| 14-day and 30-day forecasts | Deferred until 7-day performance is understood |
-| Tomato/Karnataka/Uttar Pradesh | Deferred until Onion/Maharashtra is complete |
-| Live monitoring/Evidently | Deferred; use static data quality reports first |
-| HMM regime model | Optional after simple volatility/z-score approach |
-| ARIMA/SARIMA for all mandis | Too time-consuming; optional for selected diagnostics |
-| Deep learning forecasting | Too heavy and outside blueprint |
-| React frontend | Outside MVP |
-| Kubernetes | Outside MVP |
-
-## Cross-Phase Rules
-
-- Update `docs/TRACKER.md` after completing meaningful tasks.
-- Keep README and docs aligned with actual implementation.
-- Log assumptions in config or docs, not only code comments.
-- Every model result must identify validation split and horizon.
-- Every recommendation must include transport cost and uncertainty.
-- Every demo screenshot should reinforce "mandi decision intelligence."
+- Keep implementation aligned with `TODO.md` and `docs/TRACKER.md`.
+- Update reports whenever generated data changes.
+- Never commit `.env`, raw data dumps, processed data dumps, MLflow runs, or large artifacts.
+- Prefer scripts that can be rerun from scratch.
+- Use temporal validation only.
+- Keep post-MVP ideas out of active P0 tasks.

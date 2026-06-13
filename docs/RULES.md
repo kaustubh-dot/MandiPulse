@@ -17,7 +17,7 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 - Use CEDA / AGMARKNET as the primary data source unless the data-source contract is intentionally changed.
 - Treat Data.gov.in as a fallback path, not the primary MVP blocker.
 - Resolve CEDA commodity, state, district, and market IDs through lookup endpoints before fetching prices.
-- Fetch and cache the static Onion/Maharashtra raw data before relying on any modeling work.
+- Use the cached Onion/Maharashtra raw data for modeling work. Refresh only when a valid CEDA key is available and the refresh is intentional.
 - Preserve raw data separately from cleaned data.
 - Do not commit raw data if it is large, restricted, or easily reproducible from source.
 - Normalize crop, mandi, state, district, unit, and date fields.
@@ -39,13 +39,13 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
   - Moving average.
   - Linear/Ridge.
 - Report MAE, RMSE, sMAPE, and MASE.
-- Evaluate each horizon separately.
+- Evaluate the 7-day MVP horizon only. Evaluate other horizons only after they are promoted from post-MVP scope.
 - Never create lag or rolling features using future data.
 - Save split dates and validation method with every report.
 
 ## Uncertainty Rules
 
-- Forecast endpoints must return uncertainty intervals.
+- Forecast outputs must return uncertainty intervals once the uncertainty milestone is implemented.
 - Report empirical coverage and interval width.
 - Do not present interval bounds as guarantees.
 - If conformal prediction is not used, document the alternative method and tradeoff.
@@ -65,7 +65,7 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 
 - Regime/anomaly detection is deferred from the narrowed MVP.
 - If implemented later, regime labels must be explainable.
-- Valid MVP labels are:
+- Future valid labels are:
   - `normal`
   - `volatile`
   - `crisis_anomaly`
@@ -98,7 +98,7 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 ## Testing Rules
 
 - Add tests for critical pipeline components.
-- Required test areas:
+- Required MVP test areas:
   - Data validation.
   - Feature leakage prevention.
   - Temporal split.
@@ -106,12 +106,13 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
   - Forecast response shape.
   - Uncertainty interval shape.
   - Recommendation ranking formula.
-  - Regime/anomaly labels.
-  - API endpoints.
+  - Streamlit/local artifact loading once the dashboard exists.
 - Use small synthetic fixtures where possible.
 - Do not require large raw datasets for unit tests.
 
-## API Rules
+## Post-MVP API Rules
+
+These rules apply only if FastAPI is promoted after the Streamlit MVP is useful.
 
 - Keep API responses aligned with `docs/API_SPEC.md`.
 - Validate all inputs with Pydantic.
@@ -142,7 +143,7 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 - The first screen must communicate mandi decision intelligence.
 - Every forecast visualization should show uncertainty.
 - Every recommendation view should show transport cost and risk.
-- Monitoring page must show model/data reliability.
+- The MVP must show data/model reliability on Data Coverage and Forecast pages. A separate Monitoring page is post-MVP.
 
 ## Artifact and Git Rules
 

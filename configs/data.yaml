@@ -20,7 +20,7 @@ mvp_scope:
   start_date: "2020-01-01"
   end_date: "2026-06-13"
   selection_rule: top_10_to_15_mandis_by_nonzero_price_coverage_and_arrival_volume
-  key_expiry_risk: Fetch raw CEDA data before the temporary API key expires.
+  key_expiry_risk: Raw CEDA data has been cached locally; refreshes require a valid key.
 
 paths:
   raw_data: data/raw
