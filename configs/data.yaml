@@ -1,0 +1,64 @@
+# MandiPulse India data configuration.
+# These values define MVP scope and source conventions; they do not trigger ingestion.
+
+mvp_crops:
+  - onion
+  - tomato
+
+mvp_states:
+  - maharashtra
+  - karnataka
+  - uttar_pradesh
+
+mvp_mandi_list: data/external/mvp_mandis.csv
+min_history_days: 180
+
+paths:
+  raw_data: data/raw
+  interim_data: data/interim
+  processed_data: data/processed
+  external_data: data/external
+  duckdb: data/processed/mandipulse.duckdb
+  day0_sample_response: data/raw/samples/day0_agmarknet_sample.json
+
+data_source:
+  name: ceda_agmarknet
+  portal: https://api.ceda.ashoka.edu.in/documentation/
+  api_base: https://api.ceda.ashoka.edu.in/v1
+  api_key_env: CEDA_API_TOKEN
+  auth_header: Authorization
+  auth_scheme: Bearer
+  format: json
+  endpoints:
+    commodities: /agmarknet/commodities
+    geographies: /agmarknet/geographies
+    markets: /agmarknet/markets
+    prices: /agmarknet/prices
+    quantities: /agmarknet/quantities
+  request_conventions:
+    commodity_filter: commodity_id
+    state_filter: state_id
+    district_filter: district_id
+    market_filter: market_id
+    date_start_filter: from_date
+    date_end_filter: to_date
+  fallback:
+    name: data_gov_in_agmarknet
+    portal: https://data.gov.in
+    api_base: https://api.data.gov.in/resource/{RESOURCE_ID}
+    resource_id: TBD_IF_USED
+    api_key_env: DATA_GOV_IN_API_KEY
+
+id_generation:
+  mandi_id_format: "{slugified_state}__{slugified_mandi_name}"
+  crop_id_format: "{lowercase_stripped_crop_name}"
+
+aliases:
+  crops:
+    onion:
+      - Onion
+      - ONION
+    tomato:
+      - Tomato
+      - TOMATO
+  mandis: {}

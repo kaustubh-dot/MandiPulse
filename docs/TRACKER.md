@@ -35,9 +35,6 @@
 
 | ID | Priority | Status | Task |
 |---|---|---|---|
-| TD-01 | P0 mandatory | Not started | Create repository structure |
-| TD-02 | P0 mandatory | Not started | Set up Python environment and dependency file |
-| TD-03 | P0 mandatory | Not started | Confirm data source and ingestion method |
 | TD-04 | P0 mandatory | Not started | Build raw data ingestion |
 | TD-05 | P0 mandatory | Not started | Build cleaned mandi price table |
 | TD-06 | P0 mandatory | Not started | Create initial EDA notebook |
@@ -55,6 +52,9 @@
 |---|---|---|---|
 | DN-01 | P0 mandatory | Done | Final project blueprint created |
 | DN-02 | P0 mandatory | Done | Planning documentation foundation created |
+| DN-03 | P0 mandatory | Done | Pre-implementation gate fixes applied for Day 0 readiness |
+| DN-04 | P0 mandatory | Done | CEDA selected as primary AGMARKNET data path |
+| DN-05 | P0 mandatory | Done | Project structure, config skeleton, and Day 0 validation runner added |
 
 ### Blocked
 
@@ -66,16 +66,18 @@
 
 | ID | Priority | Status | Task | Depends On |
 |---|---|---|---|---|
-| W1-01 | P0 mandatory | Not started | Create project folder structure | None |
-| W1-02 | P0 mandatory | Not started | Add dependency/config skeleton | W1-01 |
-| W1-03 | P0 mandatory | Not started | Add `.gitignore` rules for data, secrets, artifacts, MLflow runs | W1-01 |
-| W1-04 | P0 mandatory | Not started | Confirm mandi data source | None |
+| W1-01 | P0 mandatory | Done | Create project folder structure | None |
+| W1-02 | P0 mandatory | Done | Add dependency/config skeleton | W1-01 |
+| W1-03 | P0 mandatory | Done | Add `.gitignore` rules for data, secrets, artifacts, MLflow runs | W1-01 |
+| W1-04 | P0 mandatory | Done | Confirm mandi data source | None |
 | W1-05 | P0 mandatory | Not started | Ingest raw mandi data sample | W1-04 |
 | W1-06 | P0 mandatory | Not started | Normalize initial dates and basic fields | W1-05 |
 | W1-07 | P0 mandatory | Not started | Create raw and cleaned data storage convention | W1-05 |
 | W1-08 | P0 mandatory | Not started | Start EDA notebook for coverage and quality | W1-06 |
 | W1-09 | P0 mandatory | Not started | Select 2 crops, 3 states, 50-100 mandis based on EDA | W1-08 |
 | W1-10 | P1 important | Not started | Draft data dictionary | W1-06 |
+
+**Week 1 Definition of Done:** Raw records are reproducible from documented source. Clean table exists for candidate MVP scope. EDA identifies 50-100 usable mandis or flags data quality risk. Missingness and duplicate patterns are documented.
 
 ## Week 2 Tasks: Data Cleaning + Feature Engineering
 
@@ -90,7 +92,9 @@
 | W2-07 | P0 mandatory | Not started | Add rolling mean, median, std, returns, volatility | W2-06 |
 | W2-08 | P0 mandatory | Not started | Add calendar features | W2-05 |
 | W2-09 | P0 mandatory | Not started | Add validation checks | W2-05 |
-| W2-10 | P1 important | Not started | Add optional weather features if feasible | W2-05 |
+| W2-10 | P1 important | Not started | Add weather features only after price, arrival, and calendar features work | W2-08 |
+
+**Week 2 Definition of Done:** Feature table is reproducible with no future data leakage. Rows with insufficient history are flagged or excluded. Validation checks pass or generate documented failures. Feature table supports 7/14/30-day targets.
 
 ## Week 3 Tasks: Baseline Forecasting
 
@@ -104,17 +108,22 @@
 | W3-06 | P0 mandatory | Not started | Save baseline report | W3-05 |
 | W3-07 | P1 important | Not started | Add tests for temporal split and baseline metrics | W3-05 |
 
+**Week 3 Definition of Done:** No random train-test split used. Baseline metrics logged and saved. Baseline code tested on small sample data. Weak and strong horizon performance documented.
+
 ## Week 4 Tasks: Main Model + MLflow
 
 | ID | Priority | Status | Task | Depends On |
 |---|---|---|---|---|
-| W4-01 | P0 mandatory | Not started | Choose LightGBM or CatBoost as primary model | W3-06 |
+| W4-01 | P0 mandatory | Not started | Train LightGBM as primary MVP model | W3-06 |
 | W4-02 | P0 mandatory | Not started | Implement training pipeline | W4-01 |
 | W4-03 | P0 mandatory | Not started | Compare main model against baselines | W4-02 |
 | W4-04 | P0 mandatory | Not started | Add MLflow experiment tracking | W4-02 |
 | W4-05 | P0 mandatory | Not started | Save best model artifact and feature schema | W4-03 |
 | W4-06 | P0 mandatory | Not started | Create model evaluation report | W4-03 |
 | W4-07 | P1 important | Not started | Add model reload/inference smoke test | W4-05 |
+| W4-08 | P1 important | Not started | Train CatBoost as comparison model if time allows | W4-03 |
+
+**Week 4 Definition of Done:** Main model compared to all baselines. MLflow logs params, metrics, artifacts, and run metadata. Saved model can be reloaded for inference. Model artifact includes feature order and schema.
 
 ## Week 5 Tasks: Uncertainty + Regime Detection
 
@@ -126,7 +135,8 @@
 | W5-04 | P0 mandatory | Not started | Implement rolling volatility regime rules | W2-07 |
 | W5-05 | P0 mandatory | Not started | Implement z-score anomaly detection | W2-07 |
 | W5-06 | P0 mandatory | Not started | Create regime/anomaly report | W5-04, W5-05 |
-| W5-07 | P1 important | Not started | Add SHAP global/local explanations | W4-05 |
+
+**Week 5 Definition of Done:** Every forecast returns lower and upper bounds. Coverage measured on validation/test period. Regime label has human-readable reason. Anomaly logic documented and tested.
 
 ## Week 6 Tasks: Recommendation Engine
 
@@ -140,6 +150,8 @@
 | W6-06 | P0 mandatory | Not started | Rank mandis and return alternatives | W6-04, W6-05 |
 | W6-07 | P0 mandatory | Not started | Evaluate regret@K and missed profit | W6-06 |
 | W6-08 | P1 important | Not started | Add tests for recommendation edge cases | W6-06 |
+
+**Week 6 Definition of Done:** Recommendation ranks mandis deterministically. Formula includes forecast price, transport cost, and uncertainty penalty. Regret@K evaluated on test period. Edge cases tested.
 
 ## Week 7 Tasks: FastAPI + Dashboard
 
@@ -157,6 +169,9 @@
 | W7-10 | P0 mandatory | Not started | Build Streamlit Regime/Anomaly page | W7-05 |
 | W7-11 | P0 mandatory | Not started | Build Streamlit Monitoring page | W7-06 |
 | W7-12 | P1 important | Not started | Add API integration tests | W7-02, W7-03, W7-04 |
+| W7-13 | P1 important | Not started | Add SHAP global and local explanations | W4-05 |
+
+**Week 7 Definition of Done:** Dashboard completes full demo flow. API responses match API_SPEC.md. Forecast and recommendation served from model artifacts. Errors are user-friendly. API integration tests cover core endpoints.
 
 ## Week 8 Tasks: Docker + Tests + Documentation
 
@@ -172,6 +187,8 @@
 | W8-08 | P1 important | Not started | Record demo video/script | W7-11 |
 | W8-09 | P0 mandatory | Not started | Final docs and tracker alignment | W8-05 |
 
+**Week 8 Definition of Done:** Docker Compose starts API and dashboard. Test suite passes locally. README explains decision intelligence framing. Demo flow recorded or documented.
+
 ## Scope Watchlist
 
 | Item | Status | Rule |
@@ -182,4 +199,3 @@
 | Causal inference | P2 optional | Future research only |
 | Arbitrage detection | P2 optional | Future after recommendation engine |
 | Price propagation graph | P2 optional | Future and non-causal wording |
-

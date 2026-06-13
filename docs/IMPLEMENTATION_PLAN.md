@@ -97,7 +97,8 @@ Goal: train the primary model and track experiments.
 
 Deliverables:
 
-- LightGBM or CatBoost training pipeline.
+- LightGBM training pipeline as the primary MVP model.
+- CatBoost comparison only if time allows after LightGBM works.
 - Hyperparameter configuration.
 - Baseline vs main model comparison.
 - MLflow experiment logging.
@@ -231,11 +232,24 @@ Definition of done:
 
 ## What to Build First in the First 7 Days
 
+### Day 0
+
+- Get a CEDA API bearer token and store it locally as `CEDA_API_TOKEN`.
+- Run `python scripts\day0_validate_ceda.py --from-date 2025-03-01 --to-date 2025-03-31`.
+- Use curl or Postman only for debugging failed CEDA endpoint calls.
+- Document response format, ID lookup behavior, date-range behavior, and any quirks.
+- Confirm onion and tomato data availability for Maharashtra, Karnataka, Uttar Pradesh.
+- Estimate historical date range coverage.
+- Save one small sample response under `data/raw/samples/`.
+- Update `docs/DATA_SOURCES.md` with confirmed fields, lookup IDs, date-range behavior, sample path, and quirks.
+- If CEDA is inaccessible or severely rate-limited, try the Data.gov.in fallback if registration works; otherwise activate the Kaggle/bootstrap fallback plan and document.
+- Stop before building full ingestion.
+
 ### Day 1
 
-- Create repository structure.
-- Add `pyproject.toml`, `.gitignore`, `.env.example`, and basic configs.
-- Confirm data source and download/scrape a small sample.
+- Convert the Day 0 validation script into a reusable raw ingestion module.
+- Preserve CEDA lookup joins for commodity, state, district, and market names.
+- Keep raw API responses reproducible under ignored local data paths.
 
 ### Day 2
 
@@ -317,4 +331,3 @@ Definition of done:
 - Every model result must identify validation split and horizon.
 - Every recommendation must include transport cost and uncertainty.
 - Every demo screenshot should reinforce "mandi decision intelligence."
-

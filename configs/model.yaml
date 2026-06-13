@@ -1,0 +1,46 @@
+# MandiPulse India model configuration.
+# LightGBM is the first primary model. CatBoost is P1 comparison only.
+
+horizons:
+  - 7
+  - 14
+  - 30
+
+primary_model: lightgbm
+comparison_models:
+  catboost:
+    enabled: false
+    priority: P1
+
+baseline_models:
+  - seasonal_naive
+  - moving_average
+  - ridge
+
+validation_split:
+  method: fixed_cutoff
+  validation_days: 90
+  test_days: 90
+  allow_random_split: false
+
+minimum_history_days: 180
+confidence_level: 0.90
+
+metrics:
+  - mae
+  - rmse
+  - smape
+  - mase
+
+leakage_prevention:
+  require_past_only_lags: true
+  require_past_only_rolling_features: true
+  record_split_dates: true
+
+lightgbm_params:
+  objective: regression
+  random_state: 42
+
+catboost_params:
+  random_seed: 42
+

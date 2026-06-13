@@ -247,7 +247,9 @@ Recommended table behavior:
 | Unsupported horizon | Restrict selector to valid options |
 | Insufficient history | Suggest another mandi or crop |
 
-## Mobile Responsiveness Notes
+## Mobile Responsiveness Notes (Non-MVP)
+
+Mobile responsiveness is not an MVP requirement. Streamlit has limited mobile support and this is not a mobile-targeted project. The following guidelines are for future reference only.
 
 Streamlit is not a perfect mobile framework, but the layout should remain usable:
 

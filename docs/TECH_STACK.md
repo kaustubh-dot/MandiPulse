@@ -10,7 +10,7 @@
 | Local analytics store | DuckDB | Processed tables, feature tables, local SQL | Simple local OLAP without a server |
 | Optional relational DB | PostgreSQL | Production-like deployment option | Useful later, not required for MVP |
 | Data validation | Pandera or Great Expectations | Schema and quality checks | Prevents silent data issues |
-| Modeling | scikit-learn, LightGBM or CatBoost | Baselines and main model | Strong tabular forecasting baseline for engineered time features |
+| Modeling | scikit-learn, LightGBM, CatBoost later | Baselines, primary model, optional comparison | LightGBM is the first primary MVP model; CatBoost is P1 comparison only |
 | Statistical baselines | Statsmodels where useful | Seasonal naive, optional ARIMA/SARIMA | Good for selected crop-mandi diagnostics |
 | Uncertainty | MAPIE, quantile models, residual intervals | Prediction intervals | Supports calibrated uncertainty without deep learning |
 | Explainability | SHAP | Feature importance and local drivers | Interview-friendly, model-aware explanations |
@@ -30,7 +30,7 @@
 | Fast local exploration | Pandas + DuckDB | DuckDB can query CSV/Parquet and persisted processed tables |
 | Clean feature pipeline | Pandas + modular Python functions | Avoids overengineered orchestration |
 | Time-based validation | scikit-learn utilities plus custom temporal splitter | Random split is forbidden |
-| Main tabular model | LightGBM first, CatBoost as fallback | Use one as the primary MVP model, not both unless time allows |
+| Main tabular model | LightGBM first, CatBoost P1 comparison | Use LightGBM as the primary MVP model; do not block MVP on CatBoost |
 | Confidence intervals | MAPIE conformal prediction | Prefer calibrated intervals over uncalibrated model confidence |
 | Human-readable reasons | SHAP + narrative templates | Keep explanations cautious and non-causal |
 | Decision layer | Custom recommendation module | Core differentiator of the project |
@@ -50,7 +50,7 @@
 | Large neural forecasting frameworks | Reject | Increases complexity and data requirements |
 | 500+ mandi network | Reject | Risks messy, unfinished data work |
 | Microservices | Reject | FastAPI monolith is enough |
-| Random forest as main story | Avoid | Can be used experimentally, but LightGBM/CatBoost plus baselines is clearer |
+| Random forest as main story | Avoid | The MVP story should be LightGBM plus honest baselines |
 | Full causal inference | Future only | Risky claims; optional research module after MVP |
 | Full arbitrage system | Future only | Can be a lightweight analysis later, not core MVP |
 | Production route optimization | Reject | Transport cost estimate is enough for MVP |
@@ -102,7 +102,8 @@ This is a portfolio MVP, not a national-scale production system.
 ### Uncertainty
 
 - `mapie`
-- LightGBM/CatBoost quantile objective if chosen
+- LightGBM quantile objective if chosen
+- CatBoost quantile objective only for later P1 comparison if CatBoost is enabled
 - Custom residual interval utilities as fallback
 
 ### Explainability
@@ -127,7 +128,7 @@ This is a portfolio MVP, not a national-scale production system.
 
 ### Monitoring
 
-- `evidently` if dependency load remains manageable
+- `evidently` as optional fallback only; custom data quality summaries are the default for MVP
 - Custom data quality summaries as fallback
 - MLflow metrics for model performance snapshots
 
@@ -151,7 +152,6 @@ This is a portfolio MVP, not a national-scale production system.
 
 - Prefer one simple tool per layer.
 - Add PostgreSQL only if DuckDB becomes limiting.
-- Add Evidently only if dependency installation is stable.
+- Use custom monitoring reports as the default for MVP. Add Evidently only if dependency installation is stable and it provides clear value over custom summaries.
 - Use one main model family for MVP.
 - Do not add deep learning or orchestration frameworks until the documented MVP works.
-

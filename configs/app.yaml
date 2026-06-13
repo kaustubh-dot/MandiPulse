@@ -1,0 +1,21 @@
+# MandiPulse India local app configuration.
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  version: 0.1.0
+
+dashboard:
+  port: 8501
+
+mlflow:
+  tracking_uri: ./mlruns
+
+artifacts:
+  model_artifact_path: artifacts/models
+  predictions_path: artifacts/predictions
+  monitoring_path: artifacts/monitoring
+
+logging:
+  level: INFO
+
