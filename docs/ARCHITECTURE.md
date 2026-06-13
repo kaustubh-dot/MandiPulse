@@ -2,9 +2,9 @@
 
 ## High-Level System Architecture
 
-MandiPulse is a batch-trained, API-served decision intelligence system. Historical mandi data is ingested, cleaned, validated, transformed into crop-mandi-date features, used for temporal forecasting, wrapped with uncertainty intervals, and converted into transport-cost-aware recommendations.
+MandiPulse is a batch-trained decision intelligence system. For the narrowed MVP, historical CEDA/AGMARKNET data is fetched once, cleaned, validated, transformed into Onion/Maharashtra crop-mandi-date features, used for 7-day temporal forecasting, wrapped with uncertainty intervals, and converted into transport-cost-aware recommendations in a single Streamlit app.
 
-The main product output is not only a forecast. It is a recommendation with forecast, uncertainty, transport cost, risk, and regime context.
+The main product output is not only a forecast. It is a recommendation with forecast, uncertainty, transport cost, and risk context. FastAPI, regime/anomaly detection, live monitoring, and 14/30-day horizons are post-MVP.
 
 ## Architecture Diagram
 
@@ -21,27 +21,23 @@ flowchart TD
     H --> J["Model evaluation"]
     I --> J
     I --> K["Uncertainty calibration"]
-    F --> L["Regime and anomaly detection"]
     K --> M["Forecast artifacts"]
-    L --> M
     M --> N["Mandi recommendation engine"]
     O["Mandi metadata and distances"] --> N
-    N --> P["FastAPI service"]
-    M --> P
-    P --> Q["Streamlit dashboard"]
+    N --> Q["Streamlit dashboard"]
+    M --> Q
     J --> R["MLflow tracking"]
     I --> R
     K --> R
-    P --> S["Monitoring metrics"]
+    Q --> S["Static quality and metrics reports"]
     C --> S
-    S --> Q
 ```
 
 ## Data Layer
 
 ### Responsibilities
 
-- Ingest raw mandi price records for the selected MVP scope from CEDA / AGMARKNET.
+- Ingest raw Onion/Maharashtra mandi price records from CEDA / AGMARKNET.
 - Resolve CEDA commodity, state, district, and market IDs before price ingestion.
 - Preserve a raw layer for reproducibility.
 - Create a cleaned crop-mandi-date panel.
@@ -190,6 +186,8 @@ Sensitivity: The dashboard should show how the recommendation changes at plus or
 
 ## Regime and Anomaly Layer
 
+Deferred from the narrowed MVP. Keep this layer out until the 7-day Onion/Maharashtra recommendation loop works and has honest baseline results.
+
 ### Responsibilities
 
 - Classify current market condition as normal, volatile, or crisis/anomaly.
@@ -206,6 +204,8 @@ Sensitivity: The dashboard should show how the recommendation changes at plus or
 Hidden Markov Models are optional future work.
 
 ## API Layer
+
+Deferred from the narrowed MVP. A single Streamlit app should call local service functions and saved artifacts first. Build FastAPI only after the offline decision product is useful.
 
 ### Responsibilities
 
@@ -318,8 +318,8 @@ All runtime parameters must be managed through YAML config files under `configs/
 
 ### `configs/data.yaml`
 
-- `mvp_crops`: list of MVP crop names (default: `["onion", "tomato"]`)
-- `mvp_states`: list of MVP state names (default: `["maharashtra", "karnataka", "uttar_pradesh"]`)
+- `mvp_crops`: list of MVP crop names (default: `["onion"]`)
+- `mvp_states`: list of MVP state names (default: `["maharashtra"]`)
 - `mvp_mandi_list`: path to curated mandi list CSV or inline list (populated after EDA)
 - `raw_data_path`: path to raw data directory (default: `data/raw/`)
 - `processed_data_path`: path to processed data (default: `data/processed/`)

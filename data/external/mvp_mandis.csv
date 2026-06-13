@@ -1,0 +1,16 @@
+market_id,market_name,district_id,district_name,active_days,rows,first_date,last_date,median_modal_price,min_modal_price,max_modal_price,latitude,longitude,notes
+2494,Pune(Pimpri),521,Pune,1656,1656,2020-01-01,2025-10-30,1500,350,6400,,,candidate_top_coverage
+2495,Pune(Khadiki),521,Pune,1620,1620,2020-01-01,2025-10-30,1300,500,4600,,,candidate_top_coverage
+172,Pune,521,Pune,1587,1587,2020-01-01,2025-10-30,1300,500,11000,,,candidate_top_coverage
+581,Chattrapati Sambhajinagar,515,Aurangabad,1554,1554,2020-01-02,2025-10-30,1000,143,6000,,,candidate_top_coverage
+4752,Pune(Moshi),521,Pune,1529,1529,2020-05-18,2025-10-30,1000,350,6200,,,candidate_top_coverage
+160,Kolhapur,530,Kolhapur,1527,1527,2020-01-01,2025-10-30,1400,600,13000,,,candidate_top_coverage
+4751,Pune(Manjri),521,Pune,1527,1527,2020-05-15,2025-10-30,1300,500,5700,,,candidate_top_coverage
+170,Pimpalgaon,516,Nashik,1521,1880,2020-01-01,2025-10-30,1600,450,6180,,,candidate_top_coverage
+3108,Vashi New Mumbai,519,Mumbai,1516,1516,2020-01-01,2025-10-30,1650,750,6000,,,candidate_top_coverage
+169,Lasalgaon,516,Nashik,1454,1854,2020-01-01,2025-10-30,1620,300,5851,,,candidate_top_coverage
+575,Manmad,516,Nashik,1444,1783,2020-01-01,2025-10-30,1500,100,5300,,,candidate_top_coverage
+1462,Satara,527,Satara,1440,1440,2020-01-02,2025-10-29,1500,600,5000,,,candidate_top_coverage
+176,Solapur,526,Solapur,1420,1499,2020-01-01,2025-10-30,1200,300,4200,,,candidate_top_coverage
+2484,Lasalgaon(Niphad),516,Nashik,1416,1654,2020-01-01,2025-10-30,1580,441,5800,,,candidate_top_coverage
+168,Nasik,516,Nashik,1416,1566,2020-01-01,2025-10-30,1500,300,6000,,,candidate_top_coverage

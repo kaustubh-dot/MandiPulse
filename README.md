@@ -1,6 +1,6 @@
 # MandiPulse India
 
-MandiPulse India is a transport-cost-aware mandi decision intelligence system. It forecasts prices across selected mandis, adds uncertainty and regime context, and recommends where to sell after estimated transport cost.
+MandiPulse India is a transport-cost-aware mandi decision intelligence system. The MVP is deliberately narrow: an offline Onion/Maharashtra showcase that forecasts a 7-day price, subtracts transparent distance-based transport cost, and ranks nearby mandis.
 
 ## Current Implementation Path
 
@@ -11,7 +11,7 @@ The primary mandi data path is AGMARKNET data through the CEDA API.
 - Auth env var: `CEDA_API_TOKEN`
 - Fallback: Data.gov.in / AGMARKNET only if registration becomes available later
 
-CEDA uses numeric IDs. The first implementation step is Day 0 validation: fetch commodity, geography, market, and price samples before building the full ingestion pipeline.
+CEDA uses numeric IDs. Day 0 validation has confirmed Onion (`commodity_id=23`) and Maharashtra (`state_id=27`). Because the current CEDA key is temporary, the next priority is saving a static historical dump locally before modeling.
 
 ## Local Setup
 
@@ -49,9 +49,25 @@ Day 0 is complete when `docs/DATA_SOURCES.md` contains:
 
 - Confirmed auth behavior
 - Commodity, state, district, and market ID findings
-- Onion and Tomato sample status
+- Onion/Maharashtra sample status
 - Date-range and rate-limit notes
 - Sample response paths
+
+## MVP Data Grab
+
+Fetch the narrowed MVP raw data before the temporary CEDA key expires:
+
+```powershell
+python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13
+```
+
+For a safe smoke test:
+
+```powershell
+python scripts\fetch_ceda_onion_maharashtra.py --from-date 2025-03-01 --to-date 2025-03-31 --max-districts 2
+```
+
+The script writes ignored raw responses and a flattened CSV under `data/raw/ceda/onion_maharashtra/`.
 
 ## Project Docs
 

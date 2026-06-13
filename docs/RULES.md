@@ -5,18 +5,19 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 ## Scope Rules
 
 - Do not change project scope without updating the relevant docs.
-- Keep MVP limited to 2 crops, 3 states, and 50-100 mandis.
-- Keep forecast horizons limited to 7, 14, and 30 days.
+- Keep MVP limited to 1 crop, 1 state, and 10-15 mandis: Onion in Maharashtra.
+- Keep the MVP forecast horizon limited to 7 days.
 - Keep the project framed as a mandi decision intelligence system.
 - Do not turn the project into generic crop price prediction.
 - Do not add Kubernetes, React frontend, mobile app, WhatsApp bot, deep learning forecasting, Temporal Fusion Transformers, large-scale 500+ mandi networks, or unnecessary microservices.
-- Treat causal inference, arbitrage detection, and price propagation graph as optional/future modules unless explicitly scoped and documented.
+- Treat FastAPI, regime/anomaly detection, live monitoring, causal inference, arbitrage detection, and price propagation graph as optional/future modules unless explicitly scoped and documented.
 
 ## Data Rules
 
 - Use CEDA / AGMARKNET as the primary data source unless the data-source contract is intentionally changed.
 - Treat Data.gov.in as a fallback path, not the primary MVP blocker.
 - Resolve CEDA commodity, state, district, and market IDs through lookup endpoints before fetching prices.
+- Fetch and cache the static Onion/Maharashtra raw data before relying on any modeling work.
 - Preserve raw data separately from cleaned data.
 - Do not commit raw data if it is large, restricted, or easily reproducible from source.
 - Normalize crop, mandi, state, district, unit, and date fields.
@@ -62,7 +63,8 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 
 ## Regime and Anomaly Rules
 
-- Regime labels must be explainable.
+- Regime/anomaly detection is deferred from the narrowed MVP.
+- If implemented later, regime labels must be explainable.
 - Valid MVP labels are:
   - `normal`
   - `volatile`
@@ -85,7 +87,8 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 ## Architecture Rules
 
 - Keep functions modular and tested.
-- Keep the FastAPI service simple and monolithic for MVP.
+- In the narrowed MVP, use a single Streamlit app over a separate FastAPI service.
+- If FastAPI is added after MVP, keep it simple and monolithic.
 - Do not add heavy frameworks without justification.
 - Use DuckDB as the default local data store. Do not substitute with raw CSV-only or Parquet-only workflows without documented justification. PostgreSQL is allowed only for deployment if documented and approved.
 - Use MLflow for experiment tracking and model artifact metadata.
@@ -190,4 +193,4 @@ Stop and redesign if the project starts to look like:
 
 The project must remain:
 
-> "I built a mandi decision intelligence system that forecasts prices, estimates uncertainty, detects volatile market regimes, and recommends the best selling market after transport cost."
+> "I built an offline mandi decision intelligence system for Maharashtra onion markets that forecasts 7-day prices, estimates uncertainty, and recommends the best selling mandi after transparent transport cost."

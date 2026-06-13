@@ -1,8 +1,10 @@
 # MandiPulse India API Spec
 
+FastAPI is deferred from the narrowed MVP. The current MVP should ship as an offline Streamlit app using saved local CEDA data and model artifacts. This API spec is retained as a post-MVP contract only.
+
 ## API Overview
 
-The FastAPI service exposes forecasts, mandi recommendations, regime status, and monitoring metrics. The API is the contract between the ML system and the Streamlit dashboard.
+If promoted after the Streamlit MVP, the FastAPI service can expose forecasts, mandi recommendations, optional regime status, and metrics. It is not the contract for the narrowed MVP.
 
 All prices are expressed as INR per quintal unless otherwise noted.
 
@@ -10,13 +12,13 @@ All prices are expressed as INR per quintal unless otherwise noted.
 
 | Method | Endpoint | Responsibility | Priority |
 |---|---|---|---:|
-| GET | `/health` | Check API, model artifact, and data availability | P0 |
-| POST | `/forecast` | Return forecast, interval, regime, and drivers | P0 |
-| POST | `/recommend` | Rank mandis by risk-adjusted net expected price | P0 |
-| GET | `/regime` | Return current regime/anomaly state for crop/mandi | P0 |
-| GET | `/metrics` | Return monitoring and model metrics | P0 |
+| GET | `/health` | Check API, model artifact, and data availability | Post-MVP |
+| POST | `/forecast` | Return forecast, interval, and drivers | Post-MVP |
+| POST | `/recommend` | Rank mandis by risk-adjusted net expected price | Post-MVP |
+| GET | `/regime` | Return current regime/anomaly state for crop/mandi | Future |
+| GET | `/metrics` | Return monitoring and model metrics | Post-MVP |
 
-Only the P0 endpoints above are in MVP API scope.
+No FastAPI endpoints are in the narrowed MVP scope.
 
 ## Deferred Non-MVP Capabilities
 
@@ -49,7 +51,7 @@ Deferred capabilities must not appear in the FastAPI router or Streamlit navigat
 ## Common Rules
 
 - Supported horizons: `7`, `14`, `30`.
-- Supported MVP crops: `onion`, `tomato`.
+- Supported MVP crop before API promotion: `onion`.
 - Supported MVP states: `maharashtra`, `karnataka`, `uttar_pradesh`.
 - Requests must be validated with Pydantic.
 - Responses must include enough metadata for dashboard display.
@@ -65,7 +67,7 @@ Deferred capabilities must not appear in the FastAPI router or Streamlit navigat
 {
   "error": {
     "code": "UNSUPPORTED_HORIZON",
-    "message": "Supported horizons are 7, 14, and 30 days.",
+    "message": "Supported MVP horizon is 7 days.",
     "details": {
       "received_horizon_days": 21
     }
@@ -103,7 +105,7 @@ Return system readiness for demo/API use.
   "model_version": "mlflow-run-123",
   "data_status": "available",
   "latest_data_date": "2026-06-10",
-  "supported_crops": ["onion", "tomato"],
+  "supported_crops": ["onion"],
   "supported_horizons": [7, 14, 30]
 }
 ```

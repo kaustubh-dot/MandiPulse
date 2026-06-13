@@ -35,10 +35,10 @@
 
 | ID | Priority | Status | Task |
 |---|---|---|---|
-| TD-04 | P0 mandatory | Not started | Build raw data ingestion |
+| TD-04 | P0 mandatory | Done | Build raw data ingestion |
 | TD-05 | P0 mandatory | Not started | Build cleaned mandi price table |
-| TD-06 | P0 mandatory | Not started | Create initial EDA notebook |
-| TD-07 | P0 mandatory | Not started | Finalize MVP crop/state/mandi list |
+| TD-06 | P0 mandatory | Done | Create initial EDA/profile report |
+| TD-07 | P0 mandatory | Done | Select top 10-15 Maharashtra onion mandis |
 
 ### In Progress
 
@@ -55,6 +55,10 @@
 | DN-03 | P0 mandatory | Done | Pre-implementation gate fixes applied for Day 0 readiness |
 | DN-04 | P0 mandatory | Done | CEDA selected as primary AGMARKNET data path |
 | DN-05 | P0 mandatory | Done | Project structure, config skeleton, and Day 0 validation runner added |
+| DN-06 | P0 mandatory | Done | MVP narrowed to offline Onion/Maharashtra decision showcase |
+| DN-07 | P0 mandatory | Done | Onion/Maharashtra CEDA fetch script smoke-tested |
+| DN-08 | P0 mandatory | Done | Full Onion/Maharashtra raw dump saved locally with 86,052 rows |
+| DN-09 | P0 mandatory | Done | Candidate top-15 mandi list created from coverage profile |
 
 ### Blocked
 
@@ -70,14 +74,14 @@
 | W1-02 | P0 mandatory | Done | Add dependency/config skeleton | W1-01 |
 | W1-03 | P0 mandatory | Done | Add `.gitignore` rules for data, secrets, artifacts, MLflow runs | W1-01 |
 | W1-04 | P0 mandatory | Done | Confirm mandi data source | None |
-| W1-05 | P0 mandatory | Not started | Ingest raw mandi data sample | W1-04 |
+| W1-05 | P0 mandatory | Done | Fetch full Onion/Maharashtra CEDA history before key expiry | W1-04 |
 | W1-06 | P0 mandatory | Not started | Normalize initial dates and basic fields | W1-05 |
-| W1-07 | P0 mandatory | Not started | Create raw and cleaned data storage convention | W1-05 |
-| W1-08 | P0 mandatory | Not started | Start EDA notebook for coverage and quality | W1-06 |
-| W1-09 | P0 mandatory | Not started | Select 2 crops, 3 states, 50-100 mandis based on EDA | W1-08 |
+| W1-07 | P0 mandatory | Done | Create raw and cleaned data storage convention | W1-05 |
+| W1-08 | P0 mandatory | Done | Start EDA notebook for Onion/Maharashtra coverage and quality | W1-06 |
+| W1-09 | P0 mandatory | Done | Select top 10-15 Maharashtra onion mandis based on EDA | W1-08 |
 | W1-10 | P1 important | Not started | Draft data dictionary | W1-06 |
 
-**Week 1 Definition of Done:** Raw records are reproducible from documented source. Clean table exists for candidate MVP scope. EDA identifies 50-100 usable mandis or flags data quality risk. Missingness and duplicate patterns are documented.
+**Week 1 Definition of Done:** Raw Onion/Maharashtra CEDA records from 2020-01-01 to 2026-06-13 are saved locally. Clean table exists for candidate MVP scope. EDA identifies 10-15 usable mandis or flags data quality risk. Missingness and duplicate patterns are documented.
 
 ## Week 2 Tasks: Data Cleaning + Feature Engineering
 
@@ -88,13 +92,13 @@
 | W2-03 | P0 mandatory | Not started | Handle duplicate crop-mandi-date records | W2-01 |
 | W2-04 | P0 mandatory | Not started | Implement missing data flags | W2-01 |
 | W2-05 | P0 mandatory | Not started | Build crop-mandi-date panel | W2-02 |
-| W2-06 | P0 mandatory | Not started | Add lag features: 1, 3, 7, 14, 30 days | W2-05 |
+| W2-06 | P0 mandatory | Not started | Add lag features: 1, 3, 7, 14, 30 days for 7-day target features | W2-05 |
 | W2-07 | P0 mandatory | Not started | Add rolling mean, median, std, returns, volatility | W2-06 |
 | W2-08 | P0 mandatory | Not started | Add calendar features | W2-05 |
 | W2-09 | P0 mandatory | Not started | Add validation checks | W2-05 |
 | W2-10 | P1 important | Not started | Add weather features only after price, arrival, and calendar features work | W2-08 |
 
-**Week 2 Definition of Done:** Feature table is reproducible with no future data leakage. Rows with insufficient history are flagged or excluded. Validation checks pass or generate documented failures. Feature table supports 7/14/30-day targets.
+**Week 2 Definition of Done:** Feature table is reproducible with no future data leakage. Rows with insufficient history are flagged or excluded. Validation checks pass or generate documented failures. Feature table supports the 7-day target.
 
 ## Week 3 Tasks: Baseline Forecasting
 
