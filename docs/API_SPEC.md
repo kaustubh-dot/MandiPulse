@@ -15,9 +15,20 @@ All prices are expressed as INR per quintal unless otherwise noted.
 | POST | `/recommend` | Rank mandis by risk-adjusted net expected price | P0 |
 | GET | `/regime` | Return current regime/anomaly state for crop/mandi | P0 |
 | GET | `/metrics` | Return monitoring and model metrics | P0 |
-| GET | `/data-quality` | Detailed data quality report | P2 future |
-| GET | `/arbitrage` | Lightweight opportunity detection | P2 future |
-| GET | `/similar-days` | Similar historical market days | P2 future |
+
+Only the P0 endpoints above are in MVP API scope.
+
+## Deferred Non-MVP Capabilities
+
+These are ideas only, not API routes for Phase 1 or the MVP:
+
+| Capability | Status | Rule |
+|---|---|---|
+| Detailed data-quality endpoint | P2 future | Do not add `/data-quality` until all P0 endpoints are working and tested |
+| Arbitrage opportunity detection | P2 future | Do not add `/arbitrage` during MVP |
+| Similar historical market days | P2 future | Do not add `/similar-days` during MVP |
+
+Deferred capabilities must not appear in the FastAPI router or Streamlit navigation until explicitly promoted in the docs.
 
 ## Pydantic Model Names
 
@@ -45,6 +56,8 @@ All prices are expressed as INR per quintal unless otherwise noted.
 - Forecasts must include uncertainty bounds.
 - Recommendations must include transport cost and risk level.
 - Causal claims must not be returned by the API.
+- Request bodies may use mandi display names, but the API must resolve them to internal `mandi_id` values through `mandi_metadata` and alias maps.
+- If a mandi display name cannot be resolved unambiguously, return `MANDI_NOT_FOUND` instead of silently choosing a mandi.
 
 ## Standard Error Format
 
@@ -309,4 +322,3 @@ Return data quality, drift, model, and API monitoring metrics for the dashboard.
 - [ ] Integration tests cover health, forecast, recommend, regime, and metrics.
 - [ ] Unsupported horizons are rejected.
 - [ ] Missing model/data states return service errors, not silent fallback.
-

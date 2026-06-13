@@ -14,6 +14,9 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 
 ## Data Rules
 
+- Use CEDA / AGMARKNET as the primary data source unless the data-source contract is intentionally changed.
+- Treat Data.gov.in as a fallback path, not the primary MVP blocker.
+- Resolve CEDA commodity, state, district, and market IDs through lookup endpoints before fetching prices.
 - Preserve raw data separately from cleaned data.
 - Do not commit raw data if it is large, restricted, or easily reproducible from source.
 - Normalize crop, mandi, state, district, unit, and date fields.
@@ -84,7 +87,7 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 - Keep functions modular and tested.
 - Keep the FastAPI service simple and monolithic for MVP.
 - Do not add heavy frameworks without justification.
-- Prefer DuckDB for local MVP storage unless there is a documented reason to use PostgreSQL.
+- Use DuckDB as the default local data store. Do not substitute with raw CSV-only or Parquet-only workflows without documented justification. PostgreSQL is allowed only for deployment if documented and approved.
 - Use MLflow for experiment tracking and model artifact metadata.
 - Do not create hidden coupling between notebooks and production modules.
 - Shared logic should live in `src/mandipulse/`, not only notebooks.
@@ -124,6 +127,9 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
   - Reason.
 - Use standard error response format.
 - Do not silently fallback to dummy predictions in production-like paths.
+- API must resolve mandi display names to internal `mandi_id` via metadata lookup.
+- If a mandi name cannot be resolved, return `MANDI_NOT_FOUND` error, not a silent fallback.
+- Never hardcode mandi name to ID mappings in API route handlers; use the mandi metadata table.
 
 ## Dashboard Rules
 
@@ -146,6 +152,27 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 - Keep README and docs aligned with implementation.
 - Update tracker after completing tasks.
 
+### Required `.gitignore` Entries
+
+The following must be present in `.gitignore`:
+
+```text
+data/raw/
+data/interim/
+data/processed/
+*.duckdb
+*.duckdb.wal
+mlruns/
+artifacts/models/
+artifacts/predictions/
+.env
+__pycache__/
+*.pyc
+.venv/
+.vscode/
+.idea/
+```
+
 ## Documentation Rules
 
 - Update `docs/TRACKER.md` when tasks move status.
@@ -164,4 +191,3 @@ Stop and redesign if the project starts to look like:
 The project must remain:
 
 > "I built a mandi decision intelligence system that forecasts prices, estimates uncertainty, detects volatile market regimes, and recommends the best selling market after transport cost."
-

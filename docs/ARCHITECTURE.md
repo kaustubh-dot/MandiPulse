@@ -17,7 +17,7 @@ flowchart TD
     E --> F["Feature table"]
     F --> G["Temporal validation"]
     G --> H["Baseline models"]
-    G --> I["LightGBM or CatBoost model"]
+    G --> I["LightGBM model"]
     H --> J["Model evaluation"]
     I --> J
     I --> K["Uncertainty calibration"]
@@ -41,7 +41,8 @@ flowchart TD
 
 ### Responsibilities
 
-- Ingest raw mandi price records for the selected MVP scope.
+- Ingest raw mandi price records for the selected MVP scope from CEDA / AGMARKNET.
+- Resolve CEDA commodity, state, district, and market IDs before price ingestion.
 - Preserve a raw layer for reproducibility.
 - Create a cleaned crop-mandi-date panel.
 - Store processed tables in DuckDB or Parquet.
@@ -78,7 +79,7 @@ Feature functions should be deterministic, modular, and tested. They must never 
 ### Responsibilities
 
 - Train baseline models.
-- Train the main LightGBM or CatBoost model.
+- Train the primary LightGBM model. CatBoost is a P1 comparison if time allows.
 - Use temporal validation only.
 - Compare all models using MAE, RMSE, sMAPE, and MASE.
 - Save best model artifacts and metadata.
@@ -91,8 +92,32 @@ Feature functions should be deterministic, modular, and tested. They must never 
 | Seasonal naive | Mandatory baseline |
 | Moving average | Mandatory baseline |
 | Linear/Ridge | Mandatory baseline |
-| LightGBM or CatBoost | Main MVP model |
+| LightGBM | Primary MVP model |
+| CatBoost | P1 comparison model if time allows |
 | ARIMA/SARIMA | Optional for selected crop-mandi diagnostics only |
+
+### Temporal Validation Strategy
+
+Default approach: single global date-based cutoff split.
+
+| Split | Rule |
+|---|---|
+| Train | All data before `cutoff_date` |
+| Validation | `cutoff_date` to `cutoff_date + validation_days` (default 90 days) |
+| Test | All data after validation end |
+
+Split configuration:
+
+- Reserve approximately the latest 6 months of available data for validation and test combined.
+- All remaining earlier data is used for training.
+- Split dates must be logged with every MLflow experiment run.
+
+Minimum history requirements:
+
+- Exclude mandis with fewer than 180 clean price days from model training.
+- Mandis excluded for insufficient history must be documented and flagged in mandi metadata.
+
+Rolling or walk-forward validation may be added as an improvement after initial fixed-split results are established.
 
 ## Uncertainty Layer
 
@@ -132,6 +157,36 @@ risk_adjusted_score = expected_net_price - uncertainty_penalty
 - Quantity in quintals
 - Candidate mandi metadata
 - Forecast output with uncertainty
+
+### Transport Cost Model (MVP)
+
+The MVP uses a simple distance-based cost estimate. This is an approximation, not a production-grade routing system.
+
+Formula:
+
+```text
+haversine_km = haversine(farmer_lat_lon, mandi_lat_lon)
+road_km = haversine_km * ROAD_DISTANCE_FACTOR
+transport_cost_per_qtl = road_km * COST_PER_KM_PER_QTL
+total_transport_cost = transport_cost_per_qtl * quantity_quintal
+```
+
+Default parameters (configurable in `configs/recommendation.yaml`):
+
+| Parameter | Default | Description |
+|---|---|---|
+| `cost_per_km_per_quintal` | 4.0 INR | Flat transport rate |
+| `road_distance_factor` | 1.3 | Multiplier to approximate road distance from haversine |
+| `max_transport_radius_km` | 500 | Maximum considered distance; mandis beyond this are excluded |
+
+Assumptions:
+
+- Flat rate per km per quintal regardless of truck type or load size.
+- No volume discounts or seasonal rate variation.
+- Road distance is approximated from haversine, not from routing APIs.
+- All assumptions must be documented and visible in the dashboard.
+
+Sensitivity: The dashboard should show how the recommendation changes at plus or minus 20 percent transport cost variation to demonstrate robustness.
 
 ## Regime and Anomaly Layer
 
@@ -257,6 +312,206 @@ sequenceDiagram
 
 Docker Compose is enough for MVP. Do not introduce Kubernetes, service mesh, message queues, or distributed orchestration.
 
+## Configuration Files
+
+All runtime parameters must be managed through YAML config files under `configs/`, not hardcoded in source modules.
+
+### `configs/data.yaml`
+
+- `mvp_crops`: list of MVP crop names (default: `["onion", "tomato"]`)
+- `mvp_states`: list of MVP state names (default: `["maharashtra", "karnataka", "uttar_pradesh"]`)
+- `mvp_mandi_list`: path to curated mandi list CSV or inline list (populated after EDA)
+- `raw_data_path`: path to raw data directory (default: `data/raw/`)
+- `processed_data_path`: path to processed data (default: `data/processed/`)
+- `duckdb_path`: path to DuckDB database file (default: `data/processed/mandipulse.duckdb`)
+- `min_history_days`: minimum clean price days for mandi inclusion (default: 180)
+- `data_source_api_key_env`: environment variable name for the primary data-source token, currently `CEDA_API_TOKEN`
+- `mandi_aliases`: mapping of known mandi spelling variants to canonical names
+- `crop_aliases`: mapping of known crop spelling variants to canonical names
+
+### `configs/model.yaml`
+
+- `horizons`: list of forecast horizons in days (default: `[7, 14, 30]`)
+- `features`: ordered list of feature column names used for training
+- `target_prefix`: target column naming pattern (default: `target_price_t_plus_`)
+- `validation_split`:
+  - `method`: `fixed_cutoff` or `rolling`
+  - `validation_days`: default 90
+  - `test_days`: default 90
+- `lightgbm_params`: dictionary of LightGBM hyperparameters
+- `catboost_params`: dictionary of CatBoost hyperparameters (used only for P1 comparison)
+- `baseline_models`: list of baselines to run (default: `["seasonal_naive", "moving_average", "ridge"]`)
+- `metrics`: list of evaluation metrics (default: `["mae", "rmse", "smape", "mase"]`)
+- `confidence_level`: default 0.90
+
+### `configs/recommendation.yaml`
+
+- `cost_per_km_per_quintal`: default 4.0 INR
+- `road_distance_factor`: default 1.3
+- `max_transport_radius_km`: default 500
+- `uncertainty_penalty_weight`: default 0.3 (multiplied by interval width)
+- `risk_thresholds`:
+  - `low_max_interval_pct`: 10 (interval width below 10 percent of forecast price equals low risk)
+  - `high_min_interval_pct`: 25 (interval width above 25 percent of forecast price equals high risk)
+- `max_alternatives`: default 10
+
+### `configs/app.yaml`
+
+- `api_host`: default `0.0.0.0`
+- `api_port`: default 8000
+- `dashboard_port`: default 8501
+- `mlflow_tracking_uri`: default `./mlruns`
+- `log_level`: default `INFO`
+- `model_artifact_path`: path to saved model artifacts
+- `api_version`: default `0.1.0`
+
+## Project Directory Structure
+
+```text
+mandipulse/
+├── README.md
+├── LICENSE
+├── pyproject.toml
+├── Makefile
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── configs/
+│   ├── data.yaml
+│   ├── model.yaml
+│   ├── recommendation.yaml
+│   └── app.yaml
+│
+├── data/
+│   ├── raw/
+│   ├── interim/
+│   ├── processed/
+│   └── data_dictionary.md
+│
+├── notebooks/
+│   ├── 01_eda_data_quality.ipynb
+│   ├── 02_baseline_forecasting.ipynb
+│   ├── 03_model_training_and_backtesting.ipynb
+│   ├── 04_uncertainty_conformal_prediction.ipynb
+│   ├── 05_recommendation_engine.ipynb
+│   └── 06_regime_anomaly_detection.ipynb
+│
+├── src/
+│   └── mandipulse/
+│       ├── __init__.py
+│       ├── config.py
+│       ├── data/
+│       │   ├── __init__.py
+│       │   ├── ingestion.py
+│       │   ├── validation.py
+│       │   ├── preprocessing.py
+│       │   └── schemas.py
+│       ├── features/
+│       │   ├── __init__.py
+│       │   ├── time_features.py
+│       │   ├── price_features.py
+│       │   ├── weather_features.py
+│       │   └── distance_features.py
+│       ├── models/
+│       │   ├── __init__.py
+│       │   ├── baselines.py
+│       │   ├── trainer.py
+│       │   ├── forecaster.py
+│       │   ├── uncertainty.py
+│       │   └── evaluation.py
+│       ├── recommendation/
+│       │   ├── __init__.py
+│       │   ├── transport_cost.py
+│       │   ├── mandi_ranker.py
+│       │   └── regret_metrics.py
+│       ├── regime/
+│       │   ├── __init__.py
+│       │   ├── anomaly_detector.py
+│       │   └── regime_classifier.py
+│       ├── explainability/
+│       │   ├── __init__.py
+│       │   ├── shap_explainer.py
+│       │   └── narratives.py
+│       ├── monitoring/
+│       │   ├── __init__.py
+│       │   ├── data_drift.py
+│       │   ├── data_quality.py
+│       │   └── performance_monitor.py
+│       └── api/
+│           ├── __init__.py
+│           ├── main.py
+│           ├── routes/
+│           │   ├── health.py
+│           │   ├── forecast.py
+│           │   ├── recommend.py
+│           │   ├── regime.py
+│           │   └── metrics.py
+│           └── response_models.py
+│
+├── dashboard/
+│   ├── app.py
+│   ├── pages/
+│   │   ├── 1_overview.py
+│   │   ├── 2_forecast.py
+│   │   ├── 3_recommendation.py
+│   │   ├── 4_regime_anomaly.py
+│   │   └── 5_monitoring.py
+│   └── components/
+│       ├── charts.py
+│       ├── maps.py
+│       └── tables.py
+│
+├── tests/
+│   ├── unit/
+│   │   ├── test_features.py
+│   │   ├── test_forecaster.py
+│   │   ├── test_uncertainty.py
+│   │   ├── test_recommendation.py
+│   │   └── test_regime.py
+│   ├── integration/
+│   │   └── test_api.py
+│   └── conftest.py
+│
+├── docs/
+│   ├── PRD.md
+│   ├── TECH_STACK.md
+│   ├── ARCHITECTURE.md
+│   ├── APP_FLOW.md
+│   ├── DATA_SCHEMA.md
+│   ├── API_SPEC.md
+│   ├── IMPLEMENTATION_PLAN.md
+│   ├── TRACKER.md
+│   ├── RULES.md
+│   └── DESIGN.md
+│
+├── reports/
+│   ├── figures/
+│   ├── model_card.md
+│   └── final_report.md
+│
+├── artifacts/
+│   ├── models/
+│   ├── predictions/
+│   └── monitoring/
+│
+└── mlruns/
+```
+
+Notes:
+
+- `data/raw/` contains raw API and CSV downloads. Not committed if large.
+- `data/processed/` contains cleaned tables and DuckDB file. Not committed.
+- `mlruns/` is MLflow local tracking. Not committed.
+- `artifacts/` is for saved model artifacts. Not committed unless lightweight.
+- `configs/` is committed and version-controlled.
+- `docs/` contains all planning and reference documentation.
+
 ## Advanced Modules Boundary
 
 | Module | Status | Notes |
@@ -265,4 +520,3 @@ Docker Compose is enough for MVP. Do not introduce Kubernetes, service mesh, mes
 | Price propagation graph | Future/P2 | Use predictive transmission wording, not causal propagation |
 | Causal inference | Future/P2 research | Must avoid strong causal claims |
 | Similar historical days | Future/P2 | Useful interview feature after MVP |
-

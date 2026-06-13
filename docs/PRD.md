@@ -80,7 +80,7 @@ A single crop price prediction is not enough. The useful decision is:
 | US-01 | As a user, I can select crop, state, mandi, and horizon to see a forecast. | P0 | Forecast includes price, lower bound, upper bound, confidence level, and regime label. |
 | US-02 | As a farmer/FPO, I can enter location, crop, quantity, candidate states, and horizon to get ranked mandis. | P0 | Output includes recommended mandi, transport cost, expected net price, risk level, and alternatives. |
 | US-03 | As a market analyst, I can see whether a mandi is normal, volatile, or in crisis/anomaly. | P0 | Dashboard explains the regime with a simple reason such as high rolling volatility. |
-| US-04 | As a reviewer, I can inspect baseline vs main model metrics. | P0 | Metrics compare seasonal naive, moving average, linear/Ridge, and LightGBM/CatBoost. |
+| US-04 | As a reviewer, I can inspect baseline vs main model metrics. | P0 | Metrics compare seasonal naive, moving average, linear/Ridge, and the primary LightGBM model. CatBoost is P1 comparison only. |
 | US-05 | As a user, I can see uncertainty bands on forecasts. | P0 | Forecast charts show calibrated intervals for 7/14/30-day horizons. |
 | US-06 | As a maintainer, I can reproduce experiments. | P0 | MLflow logs parameters, metrics, model artifacts, and run metadata. |
 | US-07 | As an operator, I can check if data is fresh and the API is healthy. | P0 | `/health` and `/metrics` provide current status. |
@@ -94,10 +94,10 @@ A single crop price prediction is not enough. The useful decision is:
 |---|---|---:|
 | Data ingestion | Collect mandi price data for selected crops, states, and mandis. | P0 |
 | Data cleaning | Normalize names, units, dates, duplicates, missing values. | P0 |
-| Feature engineering | Lag, rolling, returns, volatility, calendar, arrival, optional weather and distance features. | P0 |
+| Feature engineering | Lag, rolling, returns, volatility, calendar, arrival, and distance features. Weather is P1 and must not block MVP. | P0 |
 | Temporal validation | Train on older dates and validate/test on later dates. | P0 |
 | Baselines | Seasonal naive, moving average, linear/Ridge. | P0 |
-| Main model | LightGBM or CatBoost. | P0 |
+| Main model | LightGBM as the first primary model. CatBoost is P1 comparison only. | P0 |
 | Uncertainty intervals | Conformal prediction, quantile regression, or residual intervals. | P0 |
 | Recommendation engine | Net expected price after transport cost and uncertainty penalty. | P0 |
 | Regime/anomaly detection | Rolling volatility, z-score, or Isolation Forest based labels. | P0 |
@@ -159,7 +159,7 @@ A single crop price prediction is not enough. The useful decision is:
 ## Final Resume Positioning
 
 **MandiPulse India - Agricultural Market Intelligence Platform**  
-Built an end-to-end mandi decision intelligence system for Indian agricultural markets using temporal price forecasting, sparse-data imputation, conformal prediction intervals, regime/anomaly detection, and transport-cost-aware mandi recommendation; deployed with FastAPI, Streamlit, MLflow, Docker, and monitoring.
+Built an end-to-end mandi decision intelligence system for Indian agricultural markets using temporal price forecasting, conformal prediction intervals, regime/anomaly detection, and transport-cost-aware mandi recommendation across 50-100 mandis; deployed with FastAPI, Streamlit, MLflow, Docker, and monitoring.
 
 ## MVP Acceptance Checklist
 
@@ -175,4 +175,3 @@ Built an end-to-end mandi decision intelligence system for Indian agricultural m
 - [ ] Logs experiments and artifacts with MLflow.
 - [ ] Runs with Docker Compose.
 - [ ] Includes basic monitoring and tests.
-

@@ -9,6 +9,70 @@
 - Every model row must be reproducible from source data and configuration.
 - Never allow future information into lag or rolling features.
 
+## Primary Data Source
+
+### CEDA AGMARKNET API
+
+The primary data source is the CEDA API, which exposes AGMARKNET commodity, geography, market, price, and quantity endpoints.
+
+| Detail | Value |
+|---|---|
+| Documentation | https://api.ceda.ashoka.edu.in/documentation/ |
+| API base | `https://api.ceda.ashoka.edu.in/v1` |
+| Response format | JSON with `data` arrays for market, price, and quantity endpoints |
+| Authentication | Bearer token in the `Authorization` header |
+| Token env var | `CEDA_API_TOKEN` |
+
+Key endpoints:
+
+| Endpoint | Method | Use |
+|---|---:|---|
+| `/agmarknet/commodities` | GET | Commodity ID/name lookup |
+| `/agmarknet/geographies` | GET | State and district ID/name lookup |
+| `/agmarknet/markets` | POST | Market ID/name lookup |
+| `/agmarknet/prices` | POST | Min, max, modal prices |
+| `/agmarknet/quantities` | POST | Arrival quantities |
+
+**To be confirmed during Day 0 API validation:**
+
+- Token creation and auth behavior.
+- Commodity, state, district, and market IDs for MVP scope.
+- Rate limits and throttling behavior.
+- Maximum safe date range per request.
+- Historical date coverage (expected approximately 2014 to present).
+- Any API downtime patterns or known instability.
+
+### Known CEDA Field Names
+
+Price records are expected to include:
+
+| Source Field | Maps To |
+|---|---|
+| `date` | `arrival_date_raw` |
+| `commodity_id` | `source_commodity_id` |
+| `census_state_id` | `source_state_id` |
+| `census_district_id` | `source_district_id` |
+| `market_id` | `source_market_id` |
+| `min_price` | `min_price_raw` |
+| `max_price` | `max_price_raw` |
+| `modal_price` | `modal_price_raw` |
+
+Readable crop, state, district, and mandi names must be resolved through CEDA lookup endpoints and preserved in raw and clean tables.
+
+### Known Data Quality Issues
+
+These are commonly reported issues with AGMARKNET data. Confirm and extend during EDA.
+
+- Inconsistent mandi name spellings across records and dates.
+- Missing arrival quantity for many records.
+- Occasional unit ambiguity (per quintal vs per kg).
+- Gaps in reporting for weekends, holidays, and low-activity mandis.
+- Duplicate records for the same crop-mandi-date.
+
+### Fallback Data Source
+
+Data.gov.in / AGMARKNET may be used as a fallback if registration works later. Kaggle AGMARKNET datasets or pre-cleaned historical CSV files may be used only as bootstrap data for initial EDA and historical experiments. They must not be treated as the final source of truth for the MVP pipeline.
+
 ## Raw Mandi Price Schema
 
 Table: `raw_mandi_prices`
@@ -17,6 +81,10 @@ Table: `raw_mandi_prices`
 |---|---|---:|---|
 | `source_record_id` | string | Yes | Unique source-level record ID if available; otherwise generated hash |
 | `source_name` | string | Yes | Source system or file name |
+| `source_commodity_id` | string/integer | No | Source commodity ID if provided |
+| `source_state_id` | string/integer | No | Source state ID if provided |
+| `source_district_id` | string/integer | No | Source district ID if provided |
+| `source_market_id` | string/integer | No | Source market ID if provided |
 | `arrival_date_raw` | string | Yes | Date as received from source |
 | `state_raw` | string | Yes | State name as received |
 | `district_raw` | string | No | District name as received |
@@ -30,7 +98,6 @@ Table: `raw_mandi_prices`
 | `arrival_quantity_raw` | string/float | No | Raw arrival quantity |
 | `unit_raw` | string | No | Source unit |
 | `ingested_at` | datetime | Yes | Ingestion timestamp |
-| `raw_payload` | json/string | No | Optional raw record for traceability |
 
 ## Cleaned Mandi Price Schema
 
@@ -60,6 +127,38 @@ Natural key:
 ```text
 date + crop_id + mandi_id
 ```
+
+## ID Generation Rules
+
+### `mandi_id`
+
+Format: `{slugified_state}__{slugified_mandi_name}`
+
+Generation steps:
+
+1. Strip leading and trailing whitespace.
+2. Convert to lowercase.
+3. Remove punctuation except hyphens.
+4. Replace spaces with underscores.
+5. Collapse consecutive underscores.
+6. Concatenate state slug, double underscore separator, and mandi slug.
+
+Example: `"  Lasalgaon "` in `"Maharashtra"` becomes `maharashtra__lasalgaon`.
+
+### `crop_id`
+
+Format: `{lowercase_stripped_crop_name}`
+
+Example: `"Onion"` becomes `onion`. `"Tomato"` becomes `tomato`.
+
+### Alias Maps
+
+Maintain alias maps in `configs/data.yaml` for known spelling variants:
+
+- Mandi aliases: map `lasalgoan`, `lasalgaon`, `LASALGAON` to the canonical `lasalgaon`.
+- Crop aliases: map `Onion`, `ONION`, `onion (nashik)` to `onion`.
+
+The ingestion pipeline must apply alias resolution before generating IDs.
 
 ## Mandi Metadata Schema
 
@@ -143,6 +242,16 @@ Training targets for horizons should be generated explicitly:
 | `target_price_t_plus_7` | float | Yes | Price 7 days ahead |
 | `target_price_t_plus_14` | float | Yes | Price 14 days ahead |
 | `target_price_t_plus_30` | float | Yes | Price 30 days ahead |
+
+### Target Leakage Prevention
+
+When training a model for forecast horizon H:
+
+- **Target variable**: `target_price_t_plus_{H}` (the price H days in the future).
+- **Allowed features**: all lag, rolling, calendar, and arrival columns computed strictly from data on or before `date`.
+- **Forbidden as feature**: `target_price_inr_qtl` must never appear in `X_train` or `X_test`. It is the current-day modal price used only for computing lag features. Including it as a direct feature would leak the answer.
+- **Exclusion rule**: rows where `target_price_t_plus_{H}` is null must be excluded from training and evaluation for that horizon.
+- **Validation**: automated tests must verify that no column in the feature vector contains future price information.
 
 ## Forecast Output Schema
 
@@ -274,4 +383,3 @@ Table: `api_request_logs`
 - [ ] Forecast horizons limited to 7, 14, and 30 days.
 - [ ] All model features reproducible from cleaned tables.
 - [ ] Missingness and exclusions documented.
-

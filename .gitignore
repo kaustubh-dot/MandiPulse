@@ -151,10 +151,17 @@ cython_debug/
 .vscode/
 
 # MandiPulse India Local Data & Analytics Store
-data/
+data/raw/
+data/interim/
+data/processed/
+data/external/private/
 *.db
 *.duckdb
+*.duckdb.wal
 *.sqlite
 mlruns/
+artifacts/models/
+artifacts/predictions/
+artifacts/monitoring/
 outputs/
 logs/
