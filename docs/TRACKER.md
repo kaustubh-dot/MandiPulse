@@ -36,7 +36,7 @@
 | ID | Priority | Status | Task |
 |---|---|---|---|
 | TD-04 | P0 mandatory | Done | Build raw data ingestion |
-| TD-05 | P0 mandatory | Not started | Build cleaned mandi price table |
+| TD-05 | P0 mandatory | Done | Build cleaned mandi price table |
 | TD-06 | P0 mandatory | Done | Create initial EDA/profile report |
 | TD-07 | P0 mandatory | Done | Select top 10-15 Maharashtra onion mandis |
 
@@ -59,6 +59,8 @@
 | DN-07 | P0 mandatory | Done | Onion/Maharashtra CEDA fetch script smoke-tested |
 | DN-08 | P0 mandatory | Done | Full Onion/Maharashtra raw dump saved locally with 86,052 rows |
 | DN-09 | P0 mandatory | Done | Candidate top-15 mandi list created from coverage profile |
+| DN-10 | P0 mandatory | Done | Clean Onion/Maharashtra panel built for selected 15 mandis |
+| DN-11 | P0 mandatory | Done | Leakage-safe 7-day feature table built |
 
 ### Blocked
 
@@ -75,7 +77,7 @@
 | W1-03 | P0 mandatory | Done | Add `.gitignore` rules for data, secrets, artifacts, MLflow runs | W1-01 |
 | W1-04 | P0 mandatory | Done | Confirm mandi data source | None |
 | W1-05 | P0 mandatory | Done | Fetch full Onion/Maharashtra CEDA history before key expiry | W1-04 |
-| W1-06 | P0 mandatory | Not started | Normalize initial dates and basic fields | W1-05 |
+| W1-06 | P0 mandatory | Done | Normalize initial dates and basic fields | W1-05 |
 | W1-07 | P0 mandatory | Done | Create raw and cleaned data storage convention | W1-05 |
 | W1-08 | P0 mandatory | Done | Start EDA notebook for Onion/Maharashtra coverage and quality | W1-06 |
 | W1-09 | P0 mandatory | Done | Select top 10-15 Maharashtra onion mandis based on EDA | W1-08 |
@@ -87,15 +89,15 @@
 
 | ID | Priority | Status | Task | Depends On |
 |---|---|---|---|---|
-| W2-01 | P0 mandatory | Not started | Normalize crop, state, district, mandi names | W1-09 |
-| W2-02 | P0 mandatory | Not started | Convert prices to INR/quintal | W2-01 |
-| W2-03 | P0 mandatory | Not started | Handle duplicate crop-mandi-date records | W2-01 |
-| W2-04 | P0 mandatory | Not started | Implement missing data flags | W2-01 |
-| W2-05 | P0 mandatory | Not started | Build crop-mandi-date panel | W2-02 |
-| W2-06 | P0 mandatory | Not started | Add lag features: 1, 3, 7, 14, 30 days for 7-day target features | W2-05 |
-| W2-07 | P0 mandatory | Not started | Add rolling mean, median, std, returns, volatility | W2-06 |
-| W2-08 | P0 mandatory | Not started | Add calendar features | W2-05 |
-| W2-09 | P0 mandatory | Not started | Add validation checks | W2-05 |
+| W2-01 | P0 mandatory | Done | Normalize crop, state, district, mandi names | W1-09 |
+| W2-02 | P0 mandatory | Done | Convert prices to INR/quintal | W2-01 |
+| W2-03 | P0 mandatory | Done | Handle duplicate crop-mandi-date records | W2-01 |
+| W2-04 | P0 mandatory | Done | Implement missing data flags | W2-01 |
+| W2-05 | P0 mandatory | Done | Build crop-mandi-date panel | W2-02 |
+| W2-06 | P0 mandatory | Done | Add lag features: 1, 3, 7, 14, 30 days for 7-day target features | W2-05 |
+| W2-07 | P0 mandatory | Done | Add rolling mean, median, std, returns, volatility | W2-06 |
+| W2-08 | P0 mandatory | Done | Add calendar features | W2-05 |
+| W2-09 | P0 mandatory | Done | Add validation checks | W2-05 |
 | W2-10 | P1 important | Not started | Add weather features only after price, arrival, and calendar features work | W2-08 |
 
 **Week 2 Definition of Done:** Feature table is reproducible with no future data leakage. Rows with insufficient history are flagged or excluded. Validation checks pass or generate documented failures. Feature table supports the 7-day target.
