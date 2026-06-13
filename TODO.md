@@ -12,21 +12,21 @@ This is the quick working checklist. Keep the detailed roadmap in `docs/TRACKER.
 
 Stop after validation. Do not build full ingestion yet.
 
-- [ ] Confirm CEDA bearer-token auth using `CEDA_API_TOKEN`.
-- [ ] Run `python scripts\day0_validate_ceda.py --from-date 2025-03-01 --to-date 2025-03-31`.
-- [ ] Fetch commodity IDs from `/agmarknet/commodities`.
-- [ ] Fetch state/district IDs from `/agmarknet/geographies`.
-- [ ] Fetch market IDs from `/agmarknet/markets` for one MVP commodity/state/district.
-- [ ] Test a small Onion price request.
-- [ ] Test a small Tomato price request.
-- [ ] Test at least one MVP state and district filter.
-- [ ] Verify response fields and casing.
-- [ ] Verify price fields: min, max, modal.
-- [ ] Verify market, commodity, state, district, and date ID mappings.
+- [x] Confirm CEDA bearer-token auth using `CEDA_API_TOKEN`.
+- [x] Run `python scripts\day0_validate_ceda.py --from-date 2025-03-01 --to-date 2025-03-31`.
+- [x] Fetch commodity IDs from `/agmarknet/commodities`.
+- [x] Fetch state/district IDs from `/agmarknet/geographies`.
+- [x] Fetch market IDs from `/agmarknet/markets` for one MVP commodity/state/district.
+- [x] Test a small Onion price request.
+- [x] Test a small Tomato price request.
+- [x] Test at least one MVP state and district filter.
+- [x] Verify response fields and casing.
+- [x] Verify price fields: min, max, modal.
+- [x] Verify market, commodity, state, district, and date ID mappings.
 - [ ] Verify whether date ranges need chunking or rate-limit handling.
-- [ ] Save one small sample response under `data/raw/samples/`.
-- [ ] Update `docs/DATA_SOURCES.md` with findings.
-- [ ] Stop before full ingestion.
+- [x] Save one small sample response under `data/raw/samples/`.
+- [x] Update `docs/DATA_SOURCES.md` with findings.
+- [x] Stop before full ingestion.
 
 ## Week 1 Priorities
 

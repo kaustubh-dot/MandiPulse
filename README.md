@@ -21,6 +21,12 @@ python -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
+For simple runtime-only installs, such as basic deployment environments:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
 Create a local `.env` from `.env.example` and set:
 
 ```text

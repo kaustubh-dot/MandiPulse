@@ -38,22 +38,22 @@ CEDA uses numeric IDs, so Day 0 should first build a small lookup table for comm
 
 Day 0 is a verification task only. Stop before building full ingestion.
 
-- [ ] Confirm bearer-token auth using `CEDA_API_TOKEN`.
-- [ ] Fetch and save a small commodity lookup sample.
-- [ ] Fetch and save a small geography lookup sample.
-- [ ] Fetch and save market IDs for one MVP commodity/state/district.
-- [ ] Test a small Onion price request.
-- [ ] Test a small Tomato price request.
-- [ ] Test at least one MVP state and district filter.
-- [ ] Verify response fields and casing.
-- [ ] Verify date format.
-- [ ] Verify price fields: min, max, modal.
-- [ ] Verify market, commodity, state, district, and date ID mappings.
+- [x] Confirm bearer-token auth using `CEDA_API_TOKEN`.
+- [x] Fetch and save a small commodity lookup sample.
+- [x] Fetch and save a small geography lookup sample.
+- [x] Fetch and save market IDs for one MVP commodity/state/district.
+- [x] Test a small Onion price request.
+- [x] Test a small Tomato price request.
+- [x] Test at least one MVP state and district filter.
+- [x] Verify response fields and casing.
+- [x] Verify date format.
+- [x] Verify price fields: min, max, modal.
+- [x] Verify market, commodity, state, district, and date ID mappings.
 - [ ] Verify whether long date ranges need chunking.
 - [ ] Record 401, 429, 500, downtime, or rate-limit behavior.
-- [ ] Save one small sample response under `data/raw/samples/`.
-- [ ] Record the sample filename and request payload in this file.
-- [ ] Stop before full ingestion.
+- [x] Save one small sample response under `data/raw/samples/`.
+- [x] Record the sample filename and request payload in this file.
+- [x] Stop before full ingestion.
 
 ## Day 0 Query Templates
 
@@ -129,13 +129,13 @@ Fill this section after validation.
 | Item | Finding |
 |---|---|
 | Confirmed endpoint URL | `https://api.ceda.ashoka.edu.in/v1` |
-| Auth behavior | TBD |
-| Onion request status | TBD |
-| Tomato request status | TBD |
-| Date-range behavior | TBD |
+| Auth behavior | Bearer token accepted; key is time-limited and should be refreshed before future data pulls |
+| Onion request status | Success: `commodity_id=23`; non-empty Maharashtra/Dhule sample saved with 20 records for 2025-03-01 to 2025-03-31 |
+| Tomato request status | Success: `commodity_id=78`; non-empty Maharashtra/Nandurbar sample saved with 1 record for 2025-03-01 to 2025-03-31 |
+| Date-range behavior | One-month market-level sample requests succeeded |
 | Sample response path | `data/raw/samples/day0_ceda_summary.json` after running the validation script |
-| Historical coverage | TBD |
-| Rate limits or API quirks | TBD |
+| Historical coverage | CEDA portal states agri-market data spans from 2000/present; project-specific coverage still needs full MVP pull |
+| Rate limits or API quirks | Commodity/geography responses use nested `output.data`; geographies are flat district rows, not nested state objects |
 
 ## Fallback Source
 
