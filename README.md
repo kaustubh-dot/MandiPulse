@@ -74,7 +74,7 @@ Evaluate the first temporal baselines:
 python scripts\train_baselines_7d.py
 ```
 
-The current best test baseline is `moving_average_7d` with MAE 142.45 INR/quintal. LightGBM should be trained next and judged against this number, not in isolation.
+The current best test baseline is `moving_average_7d` with MAE 139.57 INR/quintal. Ridge still underperforms after the leakage fixes, so the next sanity check is observed-only/imputation sensitivity before treating LightGBM as the next guaranteed step.
 
 Raw and processed CSVs are ignored by Git. Reproducible scripts and small reports are committed.
 

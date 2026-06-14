@@ -7,7 +7,7 @@
 - Markets: 15
 - Date range: 2020-01-01 to 2025-10-30
 - Target: `target_price_t_plus_7`
-- Leakage rule: lag and rolling features are shifted; rolling windows exclude current row.
+- Leakage rule: features may use information known on the as-of date, including current-day modal price; they must not use rows after the as-of date.
 
 ## Trainable Rows By Market
 
@@ -32,5 +32,5 @@
 ## Notes
 
 - Rows with missing lag/rolling features or missing target are not trainable.
-- Current-day modal price is retained for diagnostics but should not be used as a model feature.
+- Current-day modal price is a valid 7-day forecast feature because it is known on the as-of date.
 - Use `feature_row_valid == True` for baseline/model training.

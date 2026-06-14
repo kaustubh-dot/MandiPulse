@@ -210,7 +210,7 @@ Table: `feature_table`
 | `mandi` | string | Yes | Mandi name |
 | `state` | string | Yes | State |
 | `district` | string | No | District |
-| `target_price_inr_qtl` | float | Yes | Modal price for current date |
+| `target_price_inr_qtl` | float | Yes | Modal price known on the current as-of date |
 | `arrival_quantity_qtl` | float | No | Arrival quantity |
 | `price_lag_1` | float | Yes | Price lagged 1 day |
 | `price_lag_3` | float | Yes | Price lagged 3 days |
@@ -248,8 +248,8 @@ Training targets for horizons should be generated explicitly:
 When training a model for forecast horizon H:
 
 - **Target variable**: `target_price_t_plus_{H}` (the price H days in the future).
-- **Allowed features**: all lag, rolling, calendar, and arrival columns computed strictly from data on or before `date`.
-- **Forbidden as feature**: `target_price_inr_qtl` must never appear in `X_train` or `X_test`. It is the current-day modal price used only for computing lag features. Including it as a direct feature would leak the answer.
+- **Allowed features**: current-day modal price plus lag, rolling, calendar, and arrival columns computed strictly from data on or before `date`.
+- **Forbidden as feature**: any price, arrival, rolling statistic, imputation signal, or target derived from rows after `date`.
 - **Exclusion rule**: rows where `target_price_t_plus_{H}` is null must be excluded from training and evaluation for that horizon.
 - **Validation**: automated tests must verify that no column in the feature vector contains future price information.
 
@@ -362,7 +362,7 @@ Table: `api_request_logs`
 - Rows with insufficient history must be excluded or flagged.
 - Training rows must have target for the selected horizon.
 - No feature may directly or indirectly include target future price.
-- Temporal split boundaries must be recorded.
+- Temporal split boundaries must be recorded, and training rows must be purged by the forecast horizon before validation/test windows.
 
 ## Missing Data Handling Rules
 

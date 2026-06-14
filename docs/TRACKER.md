@@ -22,7 +22,9 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M3-01 | Next | Train first LightGBM 7-day model | Baseline report |
+| M2-06 | Next | Run observed-only/imputation sensitivity on baseline split | Baseline report |
+| M2-07 | Next | Diagnose why Ridge underperforms moving average | M2-06 |
+| M3-01 | Next | Train first LightGBM 7-day model only after sensitivity check | M2-07 |
 | M3-02 | Next | Compare LightGBM against baselines | M3-01 |
 | M3-03 | Next | Save model artifact and feature schema | M3-02 |
 

@@ -193,7 +193,7 @@ Feature table result:
 | Panel rows | 31,950 |
 | Trainable rows | 20,004 |
 | Markets | 15 |
-| Leakage guard | Lag and rolling features are shifted; current-day modal price is diagnostics-only |
+| Leakage guard | Features may use information known on the as-of date, including current-day modal price; no feature may use rows after the as-of date |
 
 ## Fallback Source
 

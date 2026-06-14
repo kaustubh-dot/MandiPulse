@@ -49,16 +49,13 @@ def add_group_features(group: pd.DataFrame, horizon_days: int) -> pd.DataFrame:
             group["is_imputed"].astype("boolean").shift(lag).fillna(False).astype(bool)
         )
 
-    shifted_price = price.shift(1)
     for window in [3, 7, 14, 30]:
-        group[f"rolling_mean_{window}"] = shifted_price.rolling(window, min_periods=window).mean()
-        group[f"rolling_median_{window}"] = (
-            shifted_price.rolling(window, min_periods=window).median()
-        )
-        group[f"rolling_std_{window}"] = shifted_price.rolling(window, min_periods=window).std()
+        group[f"rolling_mean_{window}"] = price.rolling(window, min_periods=window).mean()
+        group[f"rolling_median_{window}"] = price.rolling(window, min_periods=window).median()
+        group[f"rolling_std_{window}"] = price.rolling(window, min_periods=window).std()
 
-    group["return_1d"] = price.pct_change(1, fill_method=None).shift(1)
-    group["return_7d"] = price.pct_change(7, fill_method=None).shift(1)
+    group["return_1d"] = price.pct_change(1, fill_method=None)
+    group["return_7d"] = price.pct_change(7, fill_method=None)
     group["target_price_t_plus_7"] = price.shift(-horizon_days)
     group["target_available"] = group["target_price_t_plus_7"].notna()
     return group
@@ -133,8 +130,8 @@ def write_report(features: pd.DataFrame, report_path: Path) -> None:
         f"- Markets: {features['market_id'].nunique():,}",
         f"- Date range: {features['date'].min().date()} to {features['date'].max().date()}",
         "- Target: `target_price_t_plus_7`",
-        "- Leakage rule: lag and rolling features are shifted; rolling windows exclude "
-        "current row.",
+        "- Leakage rule: features may use information known on the as-of date, including "
+        "current-day modal price; they must not use rows after the as-of date.",
         "",
         "## Trainable Rows By Market",
         "",
@@ -143,8 +140,8 @@ def write_report(features: pd.DataFrame, report_path: Path) -> None:
         "## Notes",
         "",
         "- Rows with missing lag/rolling features or missing target are not trainable.",
-        "- Current-day modal price is retained for diagnostics but should not be used as "
-        "a model feature.",
+        "- Current-day modal price is a valid 7-day forecast feature because it is known "
+        "on the as-of date.",
         "- Use `feature_row_valid == True` for baseline/model training.",
     ]
     report_path.parent.mkdir(parents=True, exist_ok=True)

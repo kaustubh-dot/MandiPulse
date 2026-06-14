@@ -19,6 +19,7 @@ mvp_scope:
   state_name: Maharashtra
   start_date: "2020-01-01"
   end_date: "2026-06-13"
+  latest_returned_date: "2025-10-30"
   selection_rule: top_10_to_15_mandis_by_nonzero_price_coverage_and_arrival_volume
   key_expiry_risk: Raw CEDA data has been cached locally; refreshes require a valid key.
 
