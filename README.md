@@ -68,6 +68,14 @@ python scripts\build_clean_onion_panel.py
 python scripts\build_feature_table.py
 ```
 
+Evaluate the first temporal baselines:
+
+```powershell
+python scripts\train_baselines_7d.py
+```
+
+The current best test baseline is `moving_average_7d` with MAE 142.45 INR/quintal. LightGBM should be trained next and judged against this number, not in isolation.
+
 Raw and processed CSVs are ignored by Git. Reproducible scripts and small reports are committed.
 
 ## Project Docs

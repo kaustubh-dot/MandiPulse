@@ -9,7 +9,8 @@ This is the quick working checklist. Keep the detailed roadmap in `docs/TRACKER.
 - [x] Phase 1 Day 0 complete.
 - [x] Raw CEDA data captured locally.
 - [x] Clean panel and leakage-safe feature table built.
-- [ ] Implement temporal split and baseline metrics.
+- [x] Implement temporal split and baseline metrics.
+- [ ] Train first LightGBM model and compare against baselines.
 
 ## Phase 1 Day 0: CEDA / AGMARKNET Validation
 
@@ -42,7 +43,7 @@ Stop after validation. Do not build full ingestion yet.
 - [x] Select top 10-15 Maharashtra onion mandis based on non-empty price coverage and arrival volume.
 - [x] Build cleaned Onion/Maharashtra panel for selected mandis.
 - [x] Build leakage-safe 7-day feature table.
-- [ ] Implement temporal split and baseline metrics.
+- [x] Implement temporal split and baseline metrics.
 - [ ] Add latitude/longitude for selected MVP mandis before recommendation logic.
 - [ ] Update `docs/TRACKER.md` after completed tasks.
 
@@ -50,7 +51,7 @@ Stop after validation. Do not build full ingestion yet.
 
 - [x] Narrow MVP to Onion, Maharashtra, and 10-15 mandis.
 - [x] Use temporal validation only.
-- [ ] Use LightGBM as the first primary model.
+- [ ] Use LightGBM as the first primary model and beat or explain the baseline result.
 - [ ] Keep CatBoost as P1 comparison only.
 - [ ] Keep weather and SHAP as P1, not blockers.
 - [x] Keep 14-day and 30-day horizons out of the MVP until the 7-day system works.
