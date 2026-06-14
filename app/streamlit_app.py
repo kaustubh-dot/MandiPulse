@@ -7,6 +7,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import streamlit as st  # noqa: E402
 
+from mandipulse.app.data_access import load_forecasts  # noqa: E402
+
 st.set_page_config(
     page_title="MandiPulse India",
     page_icon="🌾",
@@ -15,9 +17,21 @@ st.set_page_config(
 )
 
 st.title("MandiPulse India — Onion / Maharashtra")
+
+try:
+    _forecasts = load_forecasts()
+    _max_as_of = _forecasts["as_of_date"].max()
+    _n_stale = int((_forecasts["as_of_date"] < _max_as_of).sum())
+    _staleness_note = (
+        " · some mandis older — see Forecast/Recommendation pages" if _n_stale > 0 else ""
+    )
+    _as_of_label = f"**{_max_as_of}**{_staleness_note}"
+except Exception:
+    _as_of_label = "unavailable (run the pipeline first)"
+
 st.caption(
     "Transport-cost-aware 7-day mandi decision intelligence · "
-    "Data: CEDA/AGMARKNET · As-of date: **2025-10-30** (offline showcase)"
+    f"Data: CEDA/AGMARKNET · Latest as-of date: {_as_of_label} (offline showcase)"
 )
 
 st.info(

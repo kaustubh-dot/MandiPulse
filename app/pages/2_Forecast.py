@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
+import pandas as pd  # noqa: E402
 import plotly.graph_objects as go  # noqa: E402
 import streamlit as st  # noqa: E402
 
@@ -32,6 +33,10 @@ market_id = int(mandi_row["market_id"])
 
 history = history_for_mandi(panel, market_id)
 
+# Staleness: compare this mandi's as_of_date to the freshest across all mandis
+_max_as_of = forecasts["as_of_date"].max()
+_staleness_days = (pd.Timestamp(_max_as_of) - pd.Timestamp(mandi_row["as_of_date"])).days
+
 # --- Forecast KPIs ---
 st.divider()
 col1, col2, col3, col4 = st.columns(4)
@@ -51,10 +56,23 @@ col4.metric(
     "Confidence Level",
     f"{mandi_row['confidence_level']:.0%}",
 )
+
+_staleness_suffix = (
+    f" · ⚠️ **{_staleness_days}d older** than freshest mandi ({_max_as_of})"
+    if _staleness_days > 0
+    else " · ✅ freshest data"
+)
 st.caption(
-    f"As-of date: **{mandi_row['as_of_date']}** · "
+    f"As-of date: **{mandi_row['as_of_date']}**{_staleness_suffix} · "
     f"Model: `{mandi_row['model_name']}` · "
     f"Horizon: {mandi_row['horizon_days']} days"
+)
+
+st.info(
+    f"**Shipped forecaster:** `{mandi_row['model_name']}` (7-day moving average). "
+    "LightGBM was trained but not shipped — it did not beat the moving-average baseline "
+    "(test MAE 188 vs 140 INR/quintal). The moving-average is the honest MVP forecaster.",
+    icon="ℹ️",
 )
 
 # --- Historical price chart with forecast + interval ---
@@ -90,8 +108,6 @@ if imputed_mask.any():
     )
 
 # Forecast point (7 days after as_of_date)
-import pandas as pd  # noqa: E402 (local import to avoid top-level namespace pollution)
-
 as_of = pd.to_datetime(mandi_row["as_of_date"])
 forecast_date = as_of + pd.Timedelta(days=7)
 
@@ -127,7 +143,7 @@ fig.add_trace(
         fillcolor="rgba(217,119,6,0.12)",
         line=dict(color="rgba(0,0,0,0)"),
         showlegend=True,
-        name="90% interval",
+        name=f"{mandi_row['confidence_level']:.0%} interval",
     )
 )
 
