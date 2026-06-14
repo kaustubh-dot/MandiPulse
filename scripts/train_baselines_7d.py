@@ -21,6 +21,7 @@ MARKET_ID_COLUMN = "market_id"
 MARKET_NAME_COLUMN = "market_name"
 
 NUMERIC_FEATURES = [
+    CURRENT_PRICE_COLUMN,
     "price_lag_1",
     "price_lag_3",
     "price_lag_7",
@@ -55,6 +56,7 @@ CATEGORICAL_FEATURES = ["market_id", "district_id"]
 class SplitConfig:
     validation_days: int
     test_days: int
+    horizon_days: int
 
 
 @dataclass(frozen=True)
@@ -83,11 +85,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--predictions",
-        default="reports/modeling/baseline_predictions_7d.csv",
+        default="artifacts/predictions/baseline_predictions_7d.csv",
         help="Per-row validation/test prediction output path.",
     )
     parser.add_argument("--validation-days", type=int, default=90)
     parser.add_argument("--test-days", type=int, default=90)
+    parser.add_argument("--horizon-days", type=int, default=7)
     parser.add_argument("--ridge-alpha", type=float, default=1.0)
     return parser.parse_args()
 
@@ -134,7 +137,9 @@ def make_temporal_splits(df: pd.DataFrame, config: SplitConfig) -> tuple[pd.Data
     validation_end = test_start - pd.Timedelta(days=1)
     validation_start = validation_end - pd.Timedelta(days=config.validation_days - 1)
 
-    train = df[df[DATE_COLUMN] < validation_start].copy()
+    train_cutoff = validation_start - pd.Timedelta(days=config.horizon_days)
+
+    train = df[df[DATE_COLUMN] < train_cutoff].copy()
     validation = df[(df[DATE_COLUMN] >= validation_start) & (df[DATE_COLUMN] <= validation_end)].copy()
     test = df[df[DATE_COLUMN] >= test_start].copy()
 
@@ -317,6 +322,7 @@ def write_report(
     per_market: pd.DataFrame,
 ) -> None:
     best_test = summary[summary["split"] == "test"].sort_values("mae").iloc[0]
+    ridge_test = summary[(summary["split"] == "test") & (summary["model"] == "ridge")].iloc[0]
     test_market_table = (
         per_market[(per_market["split"] == "test") & (per_market["model"] == best_test["model"])]
         .sort_values("mae")
@@ -338,6 +344,9 @@ def write_report(
         f"- Validation dates: {split_dates.validation_start.date()} to {split_dates.validation_end.date()}",
         f"- Test dates: {split_dates.test_start.date()} to {split_dates.test_end.date()}",
         f"- Best test baseline by MAE: `{best_test['model']}` ({best_test['mae']} INR/quintal)",
+        f"- Ridge test MAE: {ridge_test['mae']} INR/quintal",
+        "- Next sanity check: run observed-only/imputation sensitivity before treating "
+        "LightGBM as the next guaranteed step.",
         "",
         "## Overall Metrics",
         "",
@@ -351,10 +360,13 @@ def write_report(
         "",
         "- `seasonal_naive_7d`: predicts the 7-day-ahead price as the current as-of date modal price. "
         "This is an explicit naive benchmark, not a feature used by Ridge.",
-        "- `moving_average_7d`: predicts using the past-only 7-day rolling mean.",
-        "- `moving_average_30d`: predicts using the past-only 30-day rolling mean.",
+        "- `moving_average_7d`: predicts using the 7-day rolling mean available on the as-of date, "
+        "including the current-day modal price.",
+        "- `moving_average_30d`: predicts using the 30-day rolling mean available on the as-of date, "
+        "including the current-day modal price.",
         "- `ridge`: linear baseline using lag, rolling, return, calendar, market, and district features. "
-        "It excludes current-day modal price and future target columns.",
+        "It includes current-day modal price because that value is known on the as-of date. "
+        "It excludes future target columns.",
         "",
         "## Metric Notes",
         "",
@@ -362,6 +374,8 @@ def write_report(
         "- sMAPE is percentage error.",
         "- MASE is scaled by the average absolute 7-day seasonal difference in the training period.",
         "- Splits are date-based only; no random split is used.",
+        "- The training split is purged by the forecast horizon so no training target resolves "
+        "inside the validation window.",
     ]
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines), encoding="utf-8")
@@ -376,7 +390,11 @@ def main() -> int:
     trainable = load_trainable_features(feature_path)
     train, validation, test, split_dates = make_temporal_splits(
         trainable,
-        SplitConfig(validation_days=args.validation_days, test_days=args.test_days),
+        SplitConfig(
+            validation_days=args.validation_days,
+            test_days=args.test_days,
+            horizon_days=args.horizon_days,
+        ),
     )
     predictions = predict_baselines(train, validation, test, ridge_alpha=args.ridge_alpha)
     summary = summarize_predictions(predictions, train)

@@ -36,7 +36,8 @@ Next:
 1. Create temporal train/validation/test splits.
 2. Implement baselines.
 3. Save baseline metrics report.
-4. Train first LightGBM model only after baselines are in place.
+4. Run observed-only/imputation sensitivity and diagnose Ridge underperformance.
+5. Train first LightGBM model only after baseline assumptions are stable.
 
 ## Active Milestones
 
@@ -93,7 +94,7 @@ Definition of done:
 
 - LightGBM is compared to every baseline.
 - Results are reported even if LightGBM underperforms.
-- Feature list excludes current-day price as a model feature.
+- Feature list may include current-day price because it is known on the as-of date; it must exclude future prices and target columns.
 - Saved model can be loaded for inference.
 
 ### Milestone 4: Uncertainty
