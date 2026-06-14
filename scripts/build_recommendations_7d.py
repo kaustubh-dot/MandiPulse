@@ -1,79 +1,74 @@
 from __future__ import annotations
 
 import argparse
-import math
 import sys
-import uuid
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from mandipulse.config import load_yaml_config  # noqa: E402
+from mandipulse.recommend.engine import score_recommendations  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
 
+_CONFIG_PATH = "configs/recommendation.yaml"
 
-def parse_args() -> argparse.Namespace:
+
+def _load_recommend_config() -> dict:
+    return load_yaml_config(_CONFIG_PATH)
+
+
+def parse_args(cfg: dict) -> argparse.Namespace:
+    tc = cfg.get("transport_cost", {})
+    rk = cfg.get("ranking", {})
+    rt = cfg.get("risk_thresholds", {})
+
     parser = argparse.ArgumentParser(
         description="Build transport-aware 7-day mandi recommendations from latest forecast outputs."
     )
+    parser.add_argument("--forecasts", default="artifacts/forecasts/forecast_outputs_7d.csv")
+    parser.add_argument("--mandis", default="data/external/mvp_mandis.csv")
+    parser.add_argument("--report", default="reports/modeling/recommendation_report_7d.md")
     parser.add_argument(
-        "--forecasts",
-        default="artifacts/forecasts/forecast_outputs_7d.csv",
-    )
-    parser.add_argument(
-        "--mandis",
-        default="data/external/mvp_mandis.csv",
-    )
-    parser.add_argument(
-        "--report",
-        default="reports/modeling/recommendation_report_7d.md",
-    )
-    parser.add_argument(
-        "--output",
-        default="artifacts/recommendations/recommendation_outputs_7d.csv",
+        "--output", default="artifacts/recommendations/recommendation_outputs_7d.csv"
     )
     parser.add_argument("--farmer-latitude", type=float, default=19.99750)
     parser.add_argument("--farmer-longitude", type=float, default=73.78981)
     parser.add_argument("--quantity-quintal", type=float, default=100.0)
-    parser.add_argument(
-        "--candidate-state",
-        default="maharashtra",
-    )
+    parser.add_argument("--candidate-state", default="maharashtra")
     parser.add_argument(
         "--road-factor",
         type=float,
-        default=1.25,
-        help="Approximate road-vs-airline distance multiplier.",
+        default=tc.get("road_distance_factor", 1.3),
+        help="Approximate road-vs-airline distance multiplier (from configs/recommendation.yaml).",
     )
     parser.add_argument(
-        "--transport-cost-inr-per-km",
+        "--cost-per-km-per-quintal",
         type=float,
-        default=18.0,
-        help="Assumed total transport cost per km before dividing by quantity.",
+        default=tc.get("cost_per_km_per_quintal", 4.0),
+        help="Transport cost in INR per km per quintal (from configs/recommendation.yaml).",
     )
     parser.add_argument(
-        "--uncertainty-penalty-fraction",
+        "--uncertainty-penalty-weight",
         type=float,
-        default=0.25,
+        default=rk.get("uncertainty_penalty_weight", 0.3),
         help="Fraction of interval width converted into a per-quintal risk penalty.",
     )
-    return parser.parse_args()
-
-
-def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    radius_km = 6371.0
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-    delta_phi = math.radians(lat2 - lat1)
-    delta_lambda = math.radians(lon2 - lon1)
-    a = (
-        math.sin(delta_phi / 2) ** 2
-        + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+    parser.add_argument(
+        "--low-max-interval-pct",
+        type=float,
+        default=rt.get("low_max_interval_pct", 10) / 100,
+        help="Relative interval width at or below which risk is 'low'.",
     )
-    return 2 * radius_km * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    parser.add_argument(
+        "--high-min-interval-pct",
+        type=float,
+        default=rt.get("high_min_interval_pct", 25) / 100,
+        help="Relative interval width at or above which risk is 'high'.",
+    )
+    return parser.parse_args()
 
 
 def load_forecasts(path: Path, candidate_state: str) -> pd.DataFrame:
@@ -83,7 +78,6 @@ def load_forecasts(path: Path, candidate_state: str) -> pd.DataFrame:
         "generated_at",
         "as_of_date",
         "crop",
-        "crop_id",
         "state",
         "mandi",
         "mandi_id",
@@ -116,98 +110,13 @@ def load_mandi_metadata(path: Path) -> pd.DataFrame:
     return mandis
 
 
-def risk_level(relative_interval_width: float) -> str:
-    if relative_interval_width <= 0.2:
-        return "low"
-    if relative_interval_width <= 0.4:
-        return "medium"
-    return "high"
-
-
-def build_recommendations(
-    forecasts: pd.DataFrame,
-    mandis: pd.DataFrame,
-    farmer_latitude: float,
-    farmer_longitude: float,
-    quantity_quintal: float,
-    road_factor: float,
-    transport_cost_inr_per_km: float,
-    uncertainty_penalty_fraction: float,
-    candidate_state: str,
-) -> pd.DataFrame:
-    merged = forecasts.merge(
-        mandis[["mandi_id", "market_name", "district_name", "latitude", "longitude"]],
-        on="mandi_id",
-        how="left",
-        validate="one_to_one",
-    )
-    missing_coords = merged[merged["latitude"].isna() | merged["longitude"].isna()]
-    if not missing_coords.empty:
-        raise ValueError("Some candidate mandis are still missing coordinates.")
-
-    merged["air_distance_km"] = merged.apply(
-        lambda row: haversine_km(
-            farmer_latitude,
-            farmer_longitude,
-            float(row["latitude"]),
-            float(row["longitude"]),
-        ),
-        axis=1,
-    )
-    merged["road_distance_km"] = merged["air_distance_km"] * road_factor
-    merged["estimated_transport_cost_inr_qtl"] = (
-        merged["road_distance_km"] * transport_cost_inr_per_km / quantity_quintal
-    )
-    merged["expected_net_price_inr_qtl"] = (
-        merged["forecast_price_inr_qtl"] - merged["estimated_transport_cost_inr_qtl"]
-    )
-    merged["interval_width_inr_qtl"] = merged["upper_bound_inr_qtl"] - merged["lower_bound_inr_qtl"]
-    merged["uncertainty_penalty_inr_qtl"] = (
-        merged["interval_width_inr_qtl"] * uncertainty_penalty_fraction
-    )
-    merged["risk_adjusted_score"] = (
-        merged["expected_net_price_inr_qtl"] - merged["uncertainty_penalty_inr_qtl"]
-    )
-    merged["relative_interval_width"] = merged["interval_width_inr_qtl"] / merged[
-        "forecast_price_inr_qtl"
-    ].clip(lower=1.0)
-    merged["risk_level"] = merged["relative_interval_width"].map(risk_level)
-    merged = merged.sort_values(
-        ["risk_adjusted_score", "expected_net_price_inr_qtl"],
-        ascending=[False, False],
-    ).reset_index(drop=True)
-    merged["rank"] = range(1, len(merged) + 1)
-    merged["recommendation_id"] = [str(uuid.uuid4()) for _ in range(len(merged))]
-    merged["generated_at"] = datetime.now(UTC).replace(microsecond=0).isoformat()
-    merged["quantity_quintal"] = quantity_quintal
-    merged["farmer_latitude"] = farmer_latitude
-    merged["farmer_longitude"] = farmer_longitude
-    merged["candidate_states"] = candidate_state
-    merged["reason"] = merged.apply(
-        lambda row: (
-            f"{row['market_name']} ranks #{row['rank']} with forecast "
-            f"{row['forecast_price_inr_qtl']:.2f}, transport cost "
-            f"{row['estimated_transport_cost_inr_qtl']:.2f}, and risk-adjusted score "
-            f"{row['risk_adjusted_score']:.2f} INR/quintal."
-        ),
-        axis=1,
-    )
-    merged["state"] = candidate_state
-    merged["mandi"] = merged["market_name"]
-    output_columns = [
-        "recommendation_id",
-        "generated_at",
-        "crop",
-        "model_name",
-        "horizon_days",
-        "quantity_quintal",
-        "farmer_latitude",
-        "farmer_longitude",
-        "candidate_states",
-        "rank",
-        "mandi_id",
-        "mandi",
-        "state",
+def write_report(
+    report_path: Path,
+    recommendations: pd.DataFrame,
+    args: argparse.Namespace,
+) -> None:
+    top3 = recommendations.head(3).copy()
+    for col in [
         "forecast_price_inr_qtl",
         "lower_bound_inr_qtl",
         "upper_bound_inr_qtl",
@@ -215,29 +124,9 @@ def build_recommendations(
         "expected_net_price_inr_qtl",
         "uncertainty_penalty_inr_qtl",
         "risk_adjusted_score",
-        "risk_level",
-        "reason",
-        "air_distance_km",
         "road_distance_km",
-        "district_name",
-    ]
-    return merged[output_columns]
-
-
-def write_report(
-    report_path: Path,
-    recommendations: pd.DataFrame,
-    args: argparse.Namespace,
-) -> None:
-    top3 = recommendations.head(3).copy()
-    top3["forecast_price_inr_qtl"] = top3["forecast_price_inr_qtl"].round(2)
-    top3["lower_bound_inr_qtl"] = top3["lower_bound_inr_qtl"].round(2)
-    top3["upper_bound_inr_qtl"] = top3["upper_bound_inr_qtl"].round(2)
-    top3["estimated_transport_cost_inr_qtl"] = top3["estimated_transport_cost_inr_qtl"].round(2)
-    top3["expected_net_price_inr_qtl"] = top3["expected_net_price_inr_qtl"].round(2)
-    top3["uncertainty_penalty_inr_qtl"] = top3["uncertainty_penalty_inr_qtl"].round(2)
-    top3["risk_adjusted_score"] = top3["risk_adjusted_score"].round(2)
-    top3["road_distance_km"] = top3["road_distance_km"].round(2)
+    ]:
+        top3[col] = top3[col].round(2)
 
     lines = [
         "# Onion/Maharashtra 7-Day Recommendation Report",
@@ -248,9 +137,10 @@ def write_report(
         f"- Farmer longitude: {args.farmer_longitude}",
         f"- Quantity: {args.quantity_quintal} quintals",
         f"- Candidate state: `{args.candidate_state}`",
-        f"- Road factor: {args.road_factor}",
-        f"- Transport cost assumption: {args.transport_cost_inr_per_km} INR/km total, divided by quantity",
-        f"- Uncertainty penalty fraction: {args.uncertainty_penalty_fraction} of interval width",
+        f"- Road distance factor: {args.road_factor} (from configs/recommendation.yaml)",
+        f"- Transport cost: {args.cost_per_km_per_quintal} INR/km/quintal (from configs/recommendation.yaml)",
+        f"- Uncertainty penalty weight: {args.uncertainty_penalty_weight} (from configs/recommendation.yaml)",
+        f"- Risk thresholds: low ≤ {args.low_max_interval_pct:.0%}, high ≥ {args.high_min_interval_pct:.0%} (from configs/recommendation.yaml)",
         f"- Production forecast model: `{recommendations['model_name'].iloc[0]}` via latest `forecast_outputs_7d.csv` artifact",
         "",
         "## Top 3 Ranked Mandis",
@@ -274,8 +164,8 @@ def write_report(
         "",
         "## Notes",
         "",
-        "- Distance is haversine distance multiplied by a simple road-factor approximation.",
-        "- Transport cost is intentionally transparent and easy to tune for demo sensitivity checks.",
+        "- Distance is haversine distance multiplied by road_distance_factor from configs/recommendation.yaml.",
+        "- Transport cost is INR per km per quintal (load-size-independent), consistent with the config unit.",
         "- This is decision support, not a guaranteed-profit recommendation.",
     ]
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -283,20 +173,28 @@ def write_report(
 
 
 def main() -> int:
-    args = parse_args()
+    cfg = _load_recommend_config()
+    args = parse_args(cfg)
+
     forecasts = load_forecasts(Path(args.forecasts), candidate_state=args.candidate_state)
     mandis = load_mandi_metadata(Path(args.mandis))
-    recommendations = build_recommendations(
+    recommendations = score_recommendations(
         forecasts=forecasts,
         mandis=mandis,
         farmer_latitude=args.farmer_latitude,
         farmer_longitude=args.farmer_longitude,
-        quantity_quintal=args.quantity_quintal,
-        road_factor=args.road_factor,
-        transport_cost_inr_per_km=args.transport_cost_inr_per_km,
-        uncertainty_penalty_fraction=args.uncertainty_penalty_fraction,
+        cost_per_km_per_quintal=args.cost_per_km_per_quintal,
+        road_distance_factor=args.road_factor,
+        uncertainty_penalty_weight=args.uncertainty_penalty_weight,
+        low_max_interval_pct=args.low_max_interval_pct,
+        high_min_interval_pct=args.high_min_interval_pct,
         candidate_state=args.candidate_state,
     )
+    # Attach request-context metadata for traceability
+    recommendations.insert(4, "farmer_latitude", args.farmer_latitude)
+    recommendations.insert(5, "farmer_longitude", args.farmer_longitude)
+    recommendations.insert(6, "quantity_quintal", args.quantity_quintal)
+
     output_path = Path(args.output)
     report_path = Path(args.report)
     output_path.parent.mkdir(parents=True, exist_ok=True)

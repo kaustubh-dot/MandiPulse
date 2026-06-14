@@ -30,9 +30,25 @@ REQUIRED_FORECAST_COLUMNS = [
     "return_7d",
 ]
 
+# Minimum columns required per model for latest-forecast eligibility.
+# Rows lacking these are excluded from the forecast output.
+_MODEL_REQUIRED_COLUMNS: dict[str, list[str]] = {
+    "seasonal_naive_7d": [CURRENT_PRICE_COLUMN],
+    "moving_average_7d": ["rolling_mean_7"],
+    "moving_average_30d": ["rolling_mean_30"],
+}
 
-def latest_forecastable_rows(features: pd.DataFrame) -> pd.DataFrame:
-    forecastable = features[features[REQUIRED_FORECAST_COLUMNS].notna().all(axis=1)].copy()
+
+def latest_forecastable_rows(
+    features: pd.DataFrame,
+    model_name: str | None = None,
+) -> pd.DataFrame:
+    check_cols = (
+        _MODEL_REQUIRED_COLUMNS.get(model_name) if model_name else REQUIRED_FORECAST_COLUMNS
+    )
+    if check_cols is None:
+        check_cols = REQUIRED_FORECAST_COLUMNS
+    forecastable = features[features[check_cols].notna().all(axis=1)].copy()
     forecastable = forecastable.dropna(
         subset=[DATE_COLUMN, MARKET_ID_COLUMN, MARKET_NAME_COLUMN, CURRENT_PRICE_COLUMN]
     )
@@ -86,11 +102,16 @@ def build_backtest(
 
 
 def summarize_backtest(backtest: pd.DataFrame) -> pd.DataFrame:
+    _COVERAGE_LABEL = {
+        "validation": "coverage (in-sample calibration)",
+        "test": "coverage (out-of-sample)",
+    }
     rows = []
     for split_name, group in backtest.groupby("split"):
         rows.append(
             {
                 "split": split_name,
+                "coverage_type": _COVERAGE_LABEL.get(split_name, split_name),
                 "rows": len(group),
                 "empirical_coverage": round(float(group["covered"].mean()), 4),
                 "avg_interval_width_inr_qtl": round(
@@ -118,7 +139,8 @@ def build_latest_forecast_output(
     }
     if model_name not in prediction_column_map:
         raise ValueError(
-            "Latest forecast output currently supports the baseline production models only."
+            f"Latest forecast output does not support model '{model_name}'. "
+            f"Supported: {sorted(prediction_column_map)}."
         )
     prediction_column = prediction_column_map[model_name]
     generated_at = datetime.now(UTC).replace(microsecond=0).isoformat()
@@ -133,7 +155,7 @@ def build_latest_forecast_output(
     forecasts["crop"] = forecasts["crop"].fillna("onion")
     forecasts["crop_id"] = forecasts["crop_id"].fillna("onion")
     forecasts["state"] = forecasts["state"].fillna("maharashtra")
-    forecasts["mandi"] = forecasts["mandi"].fillna(forecasts[MARKET_NAME_COLUMN].str.lower())
+    forecasts["mandi"] = forecasts["mandi"].fillna(forecasts[MARKET_NAME_COLUMN])
     forecasts["horizon_days"] = 7
     forecasts["confidence_level"] = confidence_level
     forecasts["model_name"] = model_name
@@ -148,6 +170,7 @@ def build_latest_forecast_output(
         "state",
         "mandi",
         "mandi_id",
+        MARKET_ID_COLUMN,
         "horizon_days",
         "forecast_price_inr_qtl",
         "lower_bound_inr_qtl",

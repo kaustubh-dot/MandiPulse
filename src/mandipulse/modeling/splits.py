@@ -78,9 +78,13 @@ def make_temporal_splits(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, SplitDates]:
     max_date = df[DATE_COLUMN].max().normalize()
     test_start = max_date - pd.Timedelta(days=config.test_days - 1)
-    validation_end = test_start - pd.Timedelta(days=1)
+    # Purge gap: validation targets must not overlap the test period.
+    # Since target is t+horizon, validation rows within horizon_days of
+    # test_start would have targets landing inside the test window.
+    validation_end = test_start - pd.Timedelta(days=1 + config.horizon_days)
     validation_start = validation_end - pd.Timedelta(days=config.validation_days - 1)
 
+    # Purge gap: training targets must not overlap the validation period.
     train_cutoff = validation_start - pd.Timedelta(days=config.horizon_days)
 
     train = df[df[DATE_COLUMN] < train_cutoff].copy()

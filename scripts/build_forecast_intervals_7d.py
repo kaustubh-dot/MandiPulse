@@ -64,8 +64,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-name",
-        choices=["seasonal_naive_7d", "moving_average_7d", "moving_average_30d", "ridge"],
+        choices=["seasonal_naive_7d", "moving_average_7d", "moving_average_30d"],
         default="moving_average_7d",
+        help="Baseline model for interval calibration (ridge not supported for latest forecast output).",
     )
     parser.add_argument("--confidence-level", type=float, default=0.90)
     return parser.parse_args()
@@ -162,7 +163,7 @@ def main() -> int:
     interval_summary = summarize_backtest(backtest)
 
     full_features = load_full_feature_table(feature_path)
-    latest_rows = latest_forecastable_rows(full_features)
+    latest_rows = latest_forecastable_rows(full_features, model_name=args.model_name)
     latest_forecasts = build_latest_forecast_output(
         latest_rows=latest_rows,
         model_name=args.model_name,
