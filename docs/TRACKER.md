@@ -20,17 +20,22 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ### Next
 
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| M6-01 | Next | Build Streamlit data coverage page | D2-04 |
-| M6-02 | Next | Build Streamlit forecast page | D4-03 |
-| M6-03 | Next | Build Streamlit recommendation page | D5-03 |
+None — Milestone F complete. Pending task below.
+
+### Done (Milestone F — tests + reliability hardening, `<commit-sha>`)
+
+| ID | Status | Task |
+|---|---|---|
+| F-01 | Done | RULES-required pytest suite: 58 tests, 6 test files, golden fixtures |
+| F-02 | Done | Per-mandi forecast staleness warning on Recommendation + Forecast pages (warn, keep ranking) |
+| F-03 | Done | Data-driven confidence-level label on forecast chart (`confidence_level` from artifact) |
+| F-04 | Done | Surface shipped forecaster (moving-average) vs benched LightGBM on Forecast page |
+| F-05 | Done | Map center computed from centroid of all plotted points + farmer location |
 
 ### Pending
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M3-03 | Pending | Save model artifact and feature schema | D3-06 |
 | M3-04 | Pending | Reformulate target or features to beat moving-average baseline honestly | D3-06 |
 
 ### Done
@@ -60,6 +65,10 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 | D5-01 | Done | Mandi latitude/longitude metadata filled |
 | D5-02 | Done | Transport cost estimator implemented |
 | D5-03 | Done | Risk-adjusted recommendation ranking artifact generated |
+| M3-03 | Done | Save model artifact and feature schema (`train_lightgbm_7d.py` → `persistence.py`) |
+| M6-01 | Done | Build Streamlit data coverage page (`75d6515`) |
+| M6-02 | Done | Build Streamlit forecast page (`75d6515`) |
+| M6-03 | Done | Build Streamlit recommendation page (`75d6515`) |
 
 ### Deferred
 

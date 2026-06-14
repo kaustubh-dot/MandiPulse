@@ -36,6 +36,12 @@ with st.spinner("Loading data…"):
     forecasts = load_forecasts()
     mandis_meta = load_mandi_metadata()
 
+# Compute per-mandi staleness against the freshest as_of_date in the artifact
+_max_as_of = forecasts["as_of_date"].max()
+forecasts["staleness_days"] = (
+    pd.Timestamp(_max_as_of) - pd.to_datetime(forecasts["as_of_date"])
+).dt.days
+
 # --- Sidebar inputs ---
 st.sidebar.header("Farmer Location & Inputs")
 
@@ -112,6 +118,10 @@ except Exception as exc:
     st.error(f"Recommendation engine error: {exc}")
     st.stop()
 
+# Merge staleness back (engine output_columns doesn't include as_of_date / staleness_days)
+_stale_cols = forecasts[["market_id", "as_of_date", "staleness_days"]].copy()
+recs = recs.merge(_stale_cols, on="market_id", how="left")
+
 # --- Top-3 callout ---
 st.markdown("### Top 3 Mandis by Risk-Adjusted Net Price")
 
@@ -119,16 +129,30 @@ _RISK_COLOR = {"low": "#16A34A", "medium": "#D97706", "high": "#DC2626"}
 _RISK_ICON = {"low": "✅", "medium": "⚠️", "high": "🔴"}
 
 top3 = recs.head(3)
+_stale_count = int((recs["staleness_days"] > 0).sum())
+if _stale_count > 0:
+    st.caption(
+        f"⚠️ {_stale_count} of {len(recs)} mandis have forecasts older than "
+        f"{_max_as_of} (latest). Stale mandis are ranked but flagged."
+    )
+
 cols = st.columns(3)
 for i, (col, (_, row)) in enumerate(zip(cols, top3.iterrows())):
     risk = str(row["risk_level"])
     color = _RISK_COLOR.get(risk, "#475569")
     icon = _RISK_ICON.get(risk, "")
+    stale_days = int(row.get("staleness_days", 0))
+    stale_badge = (
+        f"<br><small style='color:#B45309'>⚠️ forecast {stale_days}d old (as-of {row['as_of_date']})</small>"
+        if stale_days > 0
+        else ""
+    )
     with col:
         st.markdown(
             f"<div style='border:1px solid {color};border-radius:8px;padding:14px;background:#fff'>"
             f"<b>#{int(row['rank'])} {row['mandi']}</b><br>"
-            f"<small style='color:#475569'>{row['district_name']}</small><br><br>"
+            f"<small style='color:#475569'>{row['district_name']}</small>"
+            f"{stale_badge}<br><br>"
             f"<b>Forecast:</b> ₹{row['forecast_price_inr_qtl']:.0f}<br>"
             f"<b>Transport:</b> ₹{row['estimated_transport_cost_inr_qtl']:.0f} "
             f"({row['road_distance_km']:.0f} km road)<br>"
@@ -147,6 +171,8 @@ display_cols = [
     "rank",
     "mandi",
     "district_name",
+    "as_of_date",
+    "staleness_days",
     "forecast_price_inr_qtl",
     "road_distance_km",
     "estimated_transport_cost_inr_qtl",
@@ -171,6 +197,8 @@ table = table.rename(
         "rank": "Rank",
         "mandi": "Mandi",
         "district_name": "District",
+        "as_of_date": "As-of Date",
+        "staleness_days": "Stale (days)",
         "forecast_price_inr_qtl": "Forecast ₹/qtl",
         "road_distance_km": "Road km",
         "estimated_transport_cost_inr_qtl": "Transport ₹/qtl",
@@ -222,10 +250,14 @@ fig_map.add_trace(
         name="Farmer",
     )
 )
+_all_lats = list(map_data["latitude"]) + [farmer_lat]
+_all_lons = list(map_data["longitude"]) + [farmer_lon]
+_center_lat = sum(_all_lats) / len(_all_lats)
+_center_lon = sum(_all_lons) / len(_all_lons)
 fig_map.update_layout(
     mapbox_style="open-street-map",
     mapbox_zoom=6,
-    mapbox_center={"lat": (farmer_lat + 19.5) / 2, "lon": (farmer_lon + 75.5) / 2},
+    mapbox_center={"lat": _center_lat, "lon": _center_lon},
     height=450,
     margin=dict(t=0, b=0, l=0, r=0),
 )
