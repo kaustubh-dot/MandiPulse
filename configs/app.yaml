@@ -11,7 +11,7 @@ dashboard:
   port: 8501
 
 mlflow:
-  tracking_uri: ./mlruns
+  tracking_uri: sqlite:///mlruns/mlflow.db
 
 artifacts:
   model_artifact_path: artifacts/models

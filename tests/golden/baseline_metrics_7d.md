@@ -66,3 +66,4 @@
 - MASE is scaled by the average absolute 7-day seasonal difference in the training period.
 - Splits are date-based only; no random split is used.
 - The training split is purged by the forecast horizon so no training target resolves inside the validation window.
+- The validation split is also purged by the forecast horizon so no validation target resolves inside the test window (both gaps = horizon_days = 7 days).

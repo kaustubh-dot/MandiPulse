@@ -18,6 +18,13 @@ from mandipulse.modeling.splits import (  # noqa: E402
     load_trainable_features,
     make_temporal_splits,
 )
+from mandipulse.modeling.tracking import (
+    log_artifact,
+    log_metrics,
+    log_params,
+    set_experiment,
+    start_run,
+)  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 
 
@@ -122,6 +129,8 @@ def write_report(
         "- Splits are date-based only; no random split is used.",
         "- The training split is purged by the forecast horizon so no training target resolves "
         "inside the validation window.",
+        "- The validation split is also purged by the forecast horizon so no validation target "
+        "resolves inside the test window (both gaps = horizon_days = 7 days).",
     ]
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines), encoding="utf-8")
@@ -169,6 +178,49 @@ def main() -> int:
         summary=summary,
         per_market=per_market,
     )
+
+    # MLflow tracking — one run per model
+    set_experiment("mandipulse_baselines_7d")
+    for model_name in sorted(summary["model"].unique()):
+        val_row = summary[(summary["split"] == "validation") & (summary["model"] == model_name)]
+        test_row = summary[(summary["split"] == "test") & (summary["model"] == model_name)]
+        with start_run(run_name=f"baseline_{model_name}"):
+            log_params(
+                {
+                    "model": model_name,
+                    "row_filter": args.row_filter,
+                    "ridge_alpha": args.ridge_alpha,
+                    "train_start": str(split_dates.train_start.date()),
+                    "train_end": str(split_dates.train_end.date()),
+                    "validation_start": str(split_dates.validation_start.date()),
+                    "validation_end": str(split_dates.validation_end.date()),
+                    "test_start": str(split_dates.test_start.date()),
+                    "test_end": str(split_dates.test_end.date()),
+                }
+            )
+            metrics: dict[str, float] = {}
+            if not val_row.empty:
+                r = val_row.iloc[0]
+                metrics.update(
+                    {
+                        "val_mae": float(r["mae"]),
+                        "val_rmse": float(r["rmse"]),
+                        "val_smape_pct": float(r["smape_pct"]),
+                        "val_mase": float(r["mase"]),
+                    }
+                )
+            if not test_row.empty:
+                r = test_row.iloc[0]
+                metrics.update(
+                    {
+                        "test_mae": float(r["mae"]),
+                        "test_rmse": float(r["rmse"]),
+                        "test_smape_pct": float(r["smape_pct"]),
+                        "test_mase": float(r["mase"]),
+                    }
+                )
+            log_metrics(metrics)
+            log_artifact(report_path)
 
     print(f"Wrote predictions: {prediction_path}")
     print(f"Wrote report: {report_path}")

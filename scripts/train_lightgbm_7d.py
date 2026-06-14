@@ -9,15 +9,32 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mandipulse.modeling.baselines import predict_baselines  # noqa: E402
-from mandipulse.modeling.columns import MARKET_ID_COLUMN, MARKET_NAME_COLUMN  # noqa: E402
-from mandipulse.modeling.lightgbm_model import predict_lightgbm  # noqa: E402
+from mandipulse.modeling.columns import (  # noqa: E402
+    CATEGORICAL_FEATURES,
+    MARKET_ID_COLUMN,
+    MARKET_NAME_COLUMN,
+    NUMERIC_FEATURES,
+    TARGET_COLUMN,
+)
+from mandipulse.modeling.lightgbm_model import (
+    build_lightgbm_pipeline,
+    predict_lightgbm,
+)  # noqa: E402
 from mandipulse.modeling.metrics import per_market_metrics, summarize_predictions  # noqa: E402
+from mandipulse.modeling.persistence import save_feature_schema, save_model  # noqa: E402
 from mandipulse.modeling.splits import (  # noqa: E402
     SplitConfig,
     apply_row_filter,
     load_trainable_features,
     make_temporal_splits,
 )
+from mandipulse.modeling.tracking import (
+    log_artifact,
+    log_metrics,
+    log_params,
+    set_experiment,
+    start_run,
+)  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 
 
@@ -59,6 +76,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--reg-alpha", type=float, default=0.0)
     parser.add_argument("--reg-lambda", type=float, default=0.0)
     parser.add_argument("--random-state", type=int, default=42)
+    parser.add_argument(
+        "--model-path",
+        default="artifacts/models/lightgbm_7d.joblib",
+    )
+    parser.add_argument(
+        "--schema-path",
+        default="artifacts/models/feature_schema_7d.json",
+    )
     return parser.parse_args()
 
 
@@ -129,10 +154,12 @@ def main() -> int:
     report_path = Path(args.report)
     metrics_path = Path(args.metrics_csv)
     predictions_path = Path(args.predictions_csv)
+    model_path = Path(args.model_path)
+    schema_path = Path(args.schema_path)
 
     trainable = load_trainable_features(feature_path)
     filtered = apply_row_filter(trainable, args.row_filter)
-    train, validation, test, _ = make_temporal_splits(
+    train, validation, test, split_dates = make_temporal_splits(
         filtered,
         SplitConfig(
             validation_days=args.validation_days,
@@ -157,9 +184,9 @@ def main() -> int:
         random_state=args.random_state,
     )
     all_predictions = pd.concat([baseline_predictions, lightgbm_predictions], ignore_index=True)
-    all_predictions = all_predictions.dropna(
-        subset=["prediction", "target_price_t_plus_7"]
-    ).reset_index(drop=True)
+    all_predictions = all_predictions.dropna(subset=["prediction", TARGET_COLUMN]).reset_index(
+        drop=True
+    )
 
     summary = summarize_predictions(all_predictions, train)
     per_market = pd.concat(
@@ -188,9 +215,81 @@ def main() -> int:
         per_market=per_market,
     )
 
+    # Save fitted model and feature schema
+    lgbm_pipeline = build_lightgbm_pipeline(
+        n_estimators=args.n_estimators,
+        learning_rate=args.learning_rate,
+        num_leaves=args.num_leaves,
+        min_child_samples=args.min_child_samples,
+        subsample=args.subsample,
+        colsample_bytree=args.colsample_bytree,
+        reg_alpha=args.reg_alpha,
+        reg_lambda=args.reg_lambda,
+        random_state=args.random_state,
+    )
+    lgbm_pipeline.fit(train[NUMERIC_FEATURES + CATEGORICAL_FEATURES], train[TARGET_COLUMN])
+    save_model(lgbm_pipeline, model_path)
+    save_feature_schema(
+        schema_path,
+        numeric_features=NUMERIC_FEATURES,
+        categorical_features=CATEGORICAL_FEATURES,
+        target=TARGET_COLUMN,
+        horizon_days=args.horizon_days,
+    )
+
+    # MLflow tracking
+    lgbm_test = summary[(summary["split"] == "test") & (summary["model"] == "lightgbm")]
+    lgbm_val = summary[(summary["split"] == "validation") & (summary["model"] == "lightgbm")]
+    set_experiment("mandipulse_lightgbm_7d")
+    with start_run(run_name="lightgbm_7d"):
+        log_params(
+            {
+                "n_estimators": args.n_estimators,
+                "learning_rate": args.learning_rate,
+                "num_leaves": args.num_leaves,
+                "min_child_samples": args.min_child_samples,
+                "subsample": args.subsample,
+                "colsample_bytree": args.colsample_bytree,
+                "reg_alpha": args.reg_alpha,
+                "reg_lambda": args.reg_lambda,
+                "random_state": args.random_state,
+                "row_filter": args.row_filter,
+                "train_start": str(split_dates.train_start.date()),
+                "train_end": str(split_dates.train_end.date()),
+                "validation_start": str(split_dates.validation_start.date()),
+                "validation_end": str(split_dates.validation_end.date()),
+                "test_start": str(split_dates.test_start.date()),
+                "test_end": str(split_dates.test_end.date()),
+            }
+        )
+        if not lgbm_test.empty:
+            row = lgbm_test.iloc[0]
+            log_metrics(
+                {
+                    "test_mae": float(row["mae"]),
+                    "test_rmse": float(row["rmse"]),
+                    "test_smape_pct": float(row["smape_pct"]),
+                    "test_mase": float(row["mase"]),
+                }
+            )
+        if not lgbm_val.empty:
+            row = lgbm_val.iloc[0]
+            log_metrics(
+                {
+                    "val_mae": float(row["mae"]),
+                    "val_rmse": float(row["rmse"]),
+                    "val_smape_pct": float(row["smape_pct"]),
+                    "val_mase": float(row["mase"]),
+                }
+            )
+        log_artifact(report_path)
+        log_artifact(metrics_path)
+
     print(f"Wrote metrics CSV: {metrics_path}")
     print(f"Wrote predictions CSV: {predictions_path}")
     print(f"Wrote report: {report_path}")
+    print(f"Saved model: {model_path}")
+    print(f"Saved schema: {schema_path}")
     print(summary.sort_values(["split", "mae"]).to_string(index=False))
     return 0
 
