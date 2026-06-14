@@ -155,7 +155,7 @@ def build_latest_forecast_output(
     forecasts["crop"] = forecasts["crop"].fillna("onion")
     forecasts["crop_id"] = forecasts["crop_id"].fillna("onion")
     forecasts["state"] = forecasts["state"].fillna("maharashtra")
-    forecasts["mandi"] = forecasts["mandi"].fillna(forecasts[MARKET_NAME_COLUMN])
+    forecasts["mandi"] = forecasts[MARKET_NAME_COLUMN]
     forecasts["horizon_days"] = 7
     forecasts["confidence_level"] = confidence_level
     forecasts["model_name"] = model_name

@@ -26,6 +26,13 @@ from mandipulse.modeling.splits import (  # noqa: E402
     load_trainable_features,
     make_temporal_splits,
 )
+from mandipulse.modeling.tracking import (
+    log_artifact,
+    log_metrics,
+    log_params,
+    set_experiment,
+    start_run,
+)  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 
 
@@ -203,6 +210,41 @@ def main() -> int:
         interval_summary=interval_summary,
         latest_forecasts=latest_forecasts,
     )
+
+    # MLflow tracking
+    test_coverage = interval_summary[interval_summary["split"] == "test"]
+    val_coverage = interval_summary[interval_summary["split"] == "validation"]
+    set_experiment("mandipulse_forecast_intervals_7d")
+    with start_run(run_name=f"intervals_{args.model_name}"):
+        log_params(
+            {
+                "model_name": args.model_name,
+                "row_filter": args.row_filter,
+                "confidence_level": args.confidence_level,
+                "lower_residual": round(lower_residual, 6),
+                "upper_residual": round(upper_residual, 6),
+            }
+        )
+        metrics: dict[str, float] = {}
+        if not test_coverage.empty:
+            r = test_coverage.iloc[0]
+            metrics.update(
+                {
+                    "test_empirical_coverage": float(r["empirical_coverage"]),
+                    "test_avg_interval_width": float(r["avg_interval_width_inr_qtl"]),
+                }
+            )
+        if not val_coverage.empty:
+            r = val_coverage.iloc[0]
+            metrics.update(
+                {
+                    "val_empirical_coverage": float(r["empirical_coverage"]),
+                    "val_avg_interval_width": float(r["avg_interval_width_inr_qtl"]),
+                }
+            )
+        log_metrics(metrics)
+        log_artifact(report_path)
+        log_artifact(forecast_output_path)
 
     print(f"Wrote forecast outputs: {forecast_output_path}")
     print(f"Wrote backtest outputs: {backtest_output_path}")

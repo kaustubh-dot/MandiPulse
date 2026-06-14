@@ -57,8 +57,8 @@ def score_recommendations(
     candidate_state: str,
 ) -> pd.DataFrame:
     merged = forecasts.merge(
-        mandis[["mandi_id", "market_name", "district_name", "latitude", "longitude"]],
-        on="mandi_id",
+        mandis[["market_id", "market_name", "district_name", "latitude", "longitude"]],
+        on="market_id",
         how="left",
         validate="one_to_one",
     )
@@ -122,6 +122,7 @@ def score_recommendations(
         "horizon_days",
         "candidate_states",
         "rank",
+        "market_id",
         "mandi_id",
         "mandi",
         "state",

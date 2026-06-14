@@ -81,6 +81,7 @@ def load_forecasts(path: Path, candidate_state: str) -> pd.DataFrame:
         "state",
         "mandi",
         "mandi_id",
+        "market_id",
         "horizon_days",
         "forecast_price_inr_qtl",
         "lower_bound_inr_qtl",
@@ -103,7 +104,7 @@ def load_mandi_metadata(path: Path) -> pd.DataFrame:
     mandis["state"] = "maharashtra"
     mandis["mandi"] = mandis["market_name"].fillna("").map(slugify)
     mandis["mandi_id"] = mandis["market_name"].fillna("").map(make_mandi_id)
-    required = {"mandi_id", "market_name", "latitude", "longitude", "district_name"}
+    required = {"market_id", "mandi_id", "market_name", "latitude", "longitude", "district_name"}
     missing = sorted(required - set(mandis.columns))
     if missing:
         raise ValueError(f"Mandi metadata missing required columns: {missing}")
