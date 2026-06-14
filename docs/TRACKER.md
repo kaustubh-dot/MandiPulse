@@ -22,24 +22,16 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M2-06 | Next | Run observed-only/imputation sensitivity on baseline split | Baseline report |
-| M2-07 | Next | Diagnose why Ridge underperforms moving average | M2-06 |
-| M3-01 | Next | Train first LightGBM 7-day model only after sensitivity check | M2-07 |
-| M3-02 | Next | Compare LightGBM against baselines | M3-01 |
-| M3-03 | Next | Save model artifact and feature schema | M3-02 |
+| M6-01 | Next | Build Streamlit data coverage page | D2-04 |
+| M6-02 | Next | Build Streamlit forecast page | D4-03 |
+| M6-03 | Next | Build Streamlit recommendation page | D5-03 |
 
 ### Pending
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M4-01 | Pending | Add uncertainty intervals | M3-03 |
-| M4-02 | Pending | Evaluate empirical coverage | M4-01 |
-| M5-01 | Pending | Fill mandi latitude/longitude metadata | M2-05 |
-| M5-02 | Pending | Implement transport cost estimator | M5-01 |
-| M5-03 | Pending | Implement risk-adjusted mandi ranking | M4-01, M5-02 |
-| M6-01 | Pending | Build Streamlit data coverage page | M2-05 |
-| M6-02 | Pending | Build Streamlit forecast page | M3-03 |
-| M6-03 | Pending | Build Streamlit recommendation page | M5-03 |
+| M3-03 | Pending | Save model artifact and feature schema | D3-06 |
+| M3-04 | Pending | Reformulate target or features to beat moving-average baseline honestly | D3-06 |
 
 ### Done
 
@@ -59,6 +51,15 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 | D3-01 | Done | Temporal train/validation/test split utility added |
 | D3-02 | Done | Seasonal naive, moving-average, and Ridge baselines evaluated |
 | D3-03 | Done | Baseline metrics report generated |
+| D3-04 | Done | Observed-only baseline sensitivity report generated |
+| D3-05 | Done | Ridge underperformance diagnosed as a global linear-model limitation |
+| D3-06 | Done | First LightGBM 7-day model trained and compared against baselines |
+| D4-01 | Done | Residual interval calibration script added for the MVP baseline |
+| D4-02 | Done | Empirical interval coverage measured on held-out test data |
+| D4-03 | Done | Forecast output artifact with lower and upper bounds generated |
+| D5-01 | Done | Mandi latitude/longitude metadata filled |
+| D5-02 | Done | Transport cost estimator implemented |
+| D5-03 | Done | Risk-adjusted recommendation ranking artifact generated |
 
 ### Deferred
 
@@ -91,9 +92,15 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 | Raw CEDA CSV | Local only | Ignored under `data/raw/` |
 | Clean panel CSV | Local only | Ignored under `data/processed/` |
 | Feature table CSV | Local only | Ignored under `data/processed/` |
-| Mandi list | Tracked | Coordinates still need to be filled |
+| Mandi list | Tracked | `data/external/mvp_mandis.csv` now includes latitude/longitude |
 | Quality reports | Tracked | Keep updated when data scripts change |
 | Baseline report | Tracked | `reports/modeling/baseline_metrics_7d.md` |
+| Baseline sensitivity report | Tracked | `reports/modeling/baseline_sensitivity_7d.md` |
+| LightGBM report | Tracked | `reports/modeling/lightgbm_metrics_7d.md` |
+| Forecast interval report | Tracked | `reports/modeling/forecast_intervals_7d.md` |
+| Forecast output artifact | Local only | `artifacts/forecasts/forecast_outputs_7d.csv` |
+| Recommendation report | Tracked | `reports/modeling/recommendation_report_7d.md` |
+| Recommendation artifact | Local only | `artifacts/recommendations/recommendation_outputs_7d.csv` |
 
 ## Guardrails
 

@@ -22,15 +22,17 @@ The MVP interface is a Streamlit dashboard over local artifacts for Onion/Mahara
 
 ## Color Semantics
 
-Color must reinforce status and risk.
+Color must reinforce status and risk. Hex values below are the canonical tokens
+(see [Design System Tokens](#design-system-tokens) for the full palette). All text-on-surface
+pairings meet WCAG AA (4.5:1); status fills meet 3:1 for graphical use.
 
-| Color | Meaning | Usage |
-|---|---|---|
-| Green | Healthy/low risk | Good data coverage, low recommendation risk |
-| Yellow | Warning/medium risk | Elevated uncertainty, stale-ish data, medium risk |
-| Red | Problem/high risk | Stale data, missing model, high risk |
-| Blue/neutral | Informational | Forecast lines, selected filters, neutral KPIs |
-| Gray | Secondary | Gridlines, disabled states, helper labels |
+| Color | Meaning | Hex (text / fill) | Usage |
+|---|---|---|---|
+| Green | Healthy/low risk | `#15803D` / `#16A34A` | Good data coverage, low recommendation risk |
+| Yellow/Amber | Warning/medium risk | `#B45309` / `#D97706` | Elevated uncertainty, stale-ish data, medium risk |
+| Red | Problem/high risk | `#B91C1C` / `#DC2626` | Stale data, missing model, high risk |
+| Blue/neutral | Informational | `#1E40AF` / `#3B82F6` | Forecast lines, selected filters, neutral KPIs |
+| Gray | Secondary | `#475569` / `#E2E8F0` | Gridlines, disabled states, helper labels |
 
 Rules:
 
@@ -38,6 +40,72 @@ Rules:
 - Use green/yellow/red only when status has meaning.
 - Avoid one-note palettes dominated by a single hue.
 - Use red sparingly for true user-impacting problems.
+
+## Design System Tokens
+
+Concrete, implementation-ready tokens for the Streamlit MVP. Style direction: **Data-Dense
+Dashboard** (BI/analytics, space-efficient, maximum data visibility, WCAG AA). These values are
+mirrored in [`.streamlit/config.toml`](../.streamlit/config.toml) for the app theme; keep the two
+in sync. Provenance: generated and validated with the `ui-ux-pro-max` design skill, then adjusted
+for this product's risk semantics.
+
+### Color Palette
+
+| Role | Token | Hex | Notes |
+|---|---|---|---|
+| Primary / brand | `--color-primary` | `#1E40AF` | Selected filters, neutral KPIs, primary actions |
+| Secondary | `--color-secondary` | `#3B82F6` | Secondary series, links, subtle emphasis |
+| Accent / forecast | `--color-accent` | `#D97706` | Forecast line + highlights (amber, distinct from blue history) |
+| Background (page) | `--color-background` | `#F8FAFC` | App canvas |
+| Surface (card) | `--color-surface` | `#FFFFFF` | KPI cards, panels |
+| Muted surface | `--color-muted` | `#E9EEF6` | Sidebar, secondary panels, table header fill |
+| Border | `--color-border` | `#CBD5E1` | Card/table borders, dividers (visible, not faint) |
+| Foreground (text) | `--color-foreground` | `#0F172A` | Body and table text (slate-900) |
+| Secondary text | `--color-text-muted` | `#475569` | Captions, helper text, units (slate-600) |
+| Gridline | `--color-grid` | `#E2E8F0` | Chart gridlines (low-contrast, never compete with data) |
+| Success / low risk | `--color-success` | `#15803D` | Risk badge text; fill `#16A34A` |
+| Warning / med risk | `--color-warning` | `#B45309` | Risk badge text; fill `#D97706` |
+| Danger / high risk | `--color-danger` | `#B91C1C` | Risk badge text; fill `#DC2626` |
+
+Rule: never convey status by color alone — pair every risk color with an icon or text label
+(e.g. `● Low`, `▲ Medium`, `■ High`).
+
+### Typography
+
+| Use | Font | Rationale |
+|---|---|---|
+| Headings & body | **Fira Sans** (400/500/600/700) | Clean, compact, credible analytical sans |
+| Numeric / tabular data | **Fira Code** (tabular figures) | Prices, INR/quintal columns, metrics — prevents column jitter |
+
+- Base body size 16px, line-height 1.5; table text may step down to 14px but no smaller.
+- Type scale: 12 / 14 / 16 / 20 / 24 / 32. Weight for hierarchy: 600–700 headings, 400 body, 500 labels.
+- Use tabular figures for every numeric column and KPI value so digits align.
+
+### Spacing & Layout
+
+- 4 / 8 px spacing rhythm; section spacing tiers 16 / 24 / 32.
+- Dashboard grid, no marketing hero. KPI strip → primary chart/table → supporting detail.
+- Keep numeric columns right-aligned; show units (INR/quintal) in the column label or caption.
+
+### Chart Specifications
+
+Library: Plotly (charts) + Folium/PyDeck (maps). Apply these per chart family:
+
+| Chart | When | Encoding |
+|---|---|---|
+| **Line + confidence band** | 7-day price forecast | Historical actual: solid `#1E40AF`. Forecast: **dashed** `#D97706`. Interval: same-hue fill at 15% opacity. Distinguish actual vs forecast by line style, not color alone. |
+| **Bar (sorted desc)** | Baseline vs model comparison; coverage by mandi | One bar per category, sorted by value, value labels visible. Use for ≤15 categories, else table. |
+| **Choropleth / bubble map** | Farmer ↔ candidate mandis, transport distance | Single-hue gradient or sized bubbles; highlight top recommendation; always provide the ranked table as the accessible fallback. |
+
+Cross-cutting chart rules: legends always visible with line-style described; tooltips show exact
+values; gridlines `#E2E8F0`; label axes with units; show a "No data" empty state and a skeleton
+while loading; respect `prefers-reduced-motion` (data must read without animation).
+
+### Effects & Anti-Patterns
+
+- Allowed: hover tooltips, row highlight on hover, chart zoom, smooth (150–300ms) filter transitions.
+- Avoid: ornate decoration, farm clipart, decorative gradients, emoji-as-icons, one-note all-green
+  palettes, charts without filtering or legends.
 
 ## MVP Navigation
 
@@ -185,3 +253,7 @@ Capture these after implementation:
 - [ ] Data coverage and model limitations are visible.
 - [ ] Empty and error states are understandable.
 - [ ] No optional advanced module appears before it exists.
+- [ ] Palette and fonts match [Design System Tokens](#design-system-tokens) / `.streamlit/config.toml`.
+- [ ] Risk status uses icon or text in addition to color (never color alone).
+- [ ] Numeric columns use tabular figures and show INR/quintal units.
+- [ ] Text-on-surface pairings pass WCAG AA (4.5:1); chart series readable without color.
