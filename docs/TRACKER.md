@@ -22,19 +22,14 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M2-01 | Next | Create temporal train/validation/test split utility | Feature table |
-| M2-02 | Next | Implement seasonal naive baseline | M2-01 |
-| M2-03 | Next | Implement moving-average baseline | M2-01 |
-| M2-04 | Next | Implement Ridge/linear baseline | M2-01 |
-| M2-05 | Next | Save baseline metrics report | M2-02, M2-03, M2-04 |
+| M3-01 | Next | Train first LightGBM 7-day model | Baseline report |
+| M3-02 | Next | Compare LightGBM against baselines | M3-01 |
+| M3-03 | Next | Save model artifact and feature schema | M3-02 |
 
 ### Pending
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M3-01 | Pending | Train first LightGBM 7-day model | M2-05 |
-| M3-02 | Pending | Compare LightGBM against baselines | M3-01 |
-| M3-03 | Pending | Save model artifact and feature schema | M3-02 |
 | M4-01 | Pending | Add uncertainty intervals | M3-03 |
 | M4-02 | Pending | Evaluate empirical coverage | M4-01 |
 | M5-01 | Pending | Fill mandi latitude/longitude metadata | M2-05 |
@@ -59,6 +54,9 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 | D2-02 | Done | Clean panel report generated |
 | D2-03 | Done | Leakage-safe 7-day feature table built |
 | D2-04 | Done | Feature table report generated |
+| D3-01 | Done | Temporal train/validation/test split utility added |
+| D3-02 | Done | Seasonal naive, moving-average, and Ridge baselines evaluated |
+| D3-03 | Done | Baseline metrics report generated |
 
 ### Deferred
 
@@ -93,6 +91,7 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 | Feature table CSV | Local only | Ignored under `data/processed/` |
 | Mandi list | Tracked | Coordinates still need to be filled |
 | Quality reports | Tracked | Keep updated when data scripts change |
+| Baseline report | Tracked | `reports/modeling/baseline_metrics_7d.md` |
 
 ## Guardrails
 
