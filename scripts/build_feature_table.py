@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-def dataframe_to_markdown(df: pd.DataFrame) -> str:
-    columns = [str(column) for column in df.columns]
-    rows = [
-        "| " + " | ".join(columns) + " |",
-        "| " + " | ".join("---" for _ in columns) + " |",
-    ]
-    for _, row in df.iterrows():
-        rows.append("| " + " | ".join(str(row[column]) for column in df.columns) + " |")
-    return "\n".join(rows)
+from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -58,6 +52,12 @@ def add_group_features(group: pd.DataFrame, horizon_days: int) -> pd.DataFrame:
     group["return_7d"] = price.pct_change(7, fill_method=None)
     group["target_price_t_plus_7"] = price.shift(-horizon_days)
     group["target_available"] = group["target_price_t_plus_7"].notna()
+    group["target_observed_t_plus_7"] = (
+        group["is_observed"].astype("boolean").shift(-horizon_days).fillna(False).astype(bool)
+    )
+    group["target_imputed_t_plus_7"] = (
+        group["is_imputed"].astype("boolean").shift(-horizon_days).fillna(False).astype(bool)
+    )
     return group
 
 
@@ -130,6 +130,8 @@ def write_report(features: pd.DataFrame, report_path: Path) -> None:
         f"- Markets: {features['market_id'].nunique():,}",
         f"- Date range: {features['date'].min().date()} to {features['date'].max().date()}",
         "- Target: `target_price_t_plus_7`",
+        f"- Trainable rows with observed 7-day target: {int((trainable['target_observed_t_plus_7']).sum()):,}",
+        f"- Trainable rows with imputed 7-day target: {int((trainable['target_imputed_t_plus_7']).sum()):,}",
         "- Leakage rule: features may use information known on the as-of date, including "
         "current-day modal price; they must not use rows after the as-of date.",
         "",

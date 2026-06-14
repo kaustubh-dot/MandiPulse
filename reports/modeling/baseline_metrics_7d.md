@@ -8,6 +8,10 @@
 - Validation rows: 1,307
 - Test rows: 1,204
 - Markets: 15
+- Row filter: `all`
+- Observed targets in train: 13,959
+- Observed targets in validation: 1,066
+- Observed targets in test: 919
 - Train dates: 2020-01-31 to 2025-04-19
 - Validation dates: 2025-04-27 to 2025-07-25
 - Test dates: 2025-07-26 to 2025-10-23
@@ -50,10 +54,10 @@
 
 ## Baseline Definitions
 
-- `seasonal_naive_7d`: predicts the 7-day-ahead price as the current as-of date modal price. This is an explicit naive benchmark, not a feature used by Ridge.
-- `moving_average_7d`: predicts using the 7-day rolling mean available on the as-of date, including the current-day modal price.
-- `moving_average_30d`: predicts using the 30-day rolling mean available on the as-of date, including the current-day modal price.
-- `ridge`: linear baseline using lag, rolling, return, calendar, market, and district features. It includes current-day modal price because that value is known on the as-of date. It excludes future target columns.
+- `seasonal_naive_7d`: predicts the 7-day-ahead price as the current as-of date modal price.
+- `moving_average_7d`: predicts using the 7-day rolling mean available on the as-of date.
+- `moving_average_30d`: predicts using the 30-day rolling mean available on the as-of date.
+- `ridge`: linear baseline using lag, rolling, return, calendar, market, and district features.
 
 ## Metric Notes
 

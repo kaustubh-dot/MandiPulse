@@ -7,6 +7,8 @@
 - Markets: 15
 - Date range: 2020-01-01 to 2025-10-30
 - Target: `target_price_t_plus_7`
+- Trainable rows with observed 7-day target: 15,993
+- Trainable rows with imputed 7-day target: 4,011
 - Leakage rule: features may use information known on the as-of date, including current-day modal price; they must not use rows after the as-of date.
 
 ## Trainable Rows By Market

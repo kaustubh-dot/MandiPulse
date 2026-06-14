@@ -10,7 +10,7 @@ This is the quick working checklist. Keep the detailed roadmap in `docs/TRACKER.
 - [x] Raw CEDA data captured locally.
 - [x] Clean panel and leakage-safe feature table built.
 - [x] Implement temporal split and baseline metrics.
-- [ ] Run observed-only/imputation sensitivity and Ridge diagnostics before LightGBM.
+- [x] Run observed-only/imputation sensitivity and Ridge diagnostics before LightGBM.
 
 ## Phase 1 Day 0: CEDA / AGMARKNET Validation
 
@@ -44,17 +44,19 @@ Stop after validation. Do not build full ingestion yet.
 - [x] Build cleaned Onion/Maharashtra panel for selected mandis.
 - [x] Build leakage-safe 7-day feature table.
 - [x] Implement temporal split and baseline metrics.
-- [ ] Run observed-only/imputation sensitivity on the baseline split.
-- [ ] Add latitude/longitude for selected MVP mandis before recommendation logic.
-- [ ] Update `docs/TRACKER.md` after completed tasks.
+- [x] Run observed-only/imputation sensitivity on the baseline split.
+- [x] Add latitude/longitude for selected MVP mandis before recommendation logic.
+- [x] Add residual uncertainty intervals and forecast output artifact for the MVP baseline.
+- [x] Update `docs/TRACKER.md` after completed tasks.
 
 ## Scope Guardrails
 
 - [x] Narrow MVP to Onion, Maharashtra, and 10-15 mandis.
 - [x] Use temporal validation only.
-- [ ] Use LightGBM only after baseline sensitivity checks; beat or explain the baseline result.
+- [x] Use LightGBM only after baseline sensitivity checks; beat or explain the baseline result.
 - [ ] Keep CatBoost as P1 comparison only.
 - [ ] Keep weather and SHAP as P1, not blockers.
+- [x] Implement transport-cost ranking now that coordinates and interval outputs exist.
 - [x] Keep 14-day and 30-day horizons out of the MVP until the 7-day system works.
 - [x] Keep FastAPI, regime/anomaly detection, and advanced monitoring out of the MVP.
 - [x] Do not add P2 endpoints or advanced modules during MVP.

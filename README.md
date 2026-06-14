@@ -74,7 +74,21 @@ Evaluate the first temporal baselines:
 python scripts\train_baselines_7d.py
 ```
 
-The current best test baseline is `moving_average_7d` with MAE 139.57 INR/quintal. Ridge still underperforms after the leakage fixes, so the next sanity check is observed-only/imputation sensitivity before treating LightGBM as the next guaranteed step.
+Run the imputation sensitivity check and first LightGBM pass:
+
+```powershell
+python scripts\run_baseline_sensitivity_7d.py
+python scripts\train_lightgbm_7d.py
+python scripts\build_forecast_intervals_7d.py
+```
+
+Current status:
+
+- Best test baseline remains `moving_average_7d` at 139.57 INR/quintal.
+- The observed-only sensitivity check did not change the ranking; `moving_average_7d` improved modestly to 133.61 MAE on the stricter subset, so the 3-day forward-fill policy is not the main reason the baseline wins.
+- Ridge still underperforms at 224.43 MAE on the full test split.
+- The first LightGBM run underperformed the baseline at 187.75 test MAE, so the current story is "strong honest benchmark first" rather than "booster already won."
+- Residual uncertainty intervals are now available for the MVP baseline. The nominal 90% interval calibrated on validation achieved 86.63% empirical coverage on the held-out test split, and latest-per-mandi forecasts are written to `artifacts/forecasts/forecast_outputs_7d.csv`.
 
 Raw and processed CSVs are ignored by Git. Reproducible scripts and small reports are committed.
 

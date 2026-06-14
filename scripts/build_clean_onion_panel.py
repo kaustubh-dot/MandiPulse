@@ -1,28 +1,15 @@
 from __future__ import annotations
 
 import argparse
-import re
+import sys
 from pathlib import Path
 
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-def slugify(value: str) -> str:
-    text = value.strip().lower()
-    text = re.sub(r"[^a-z0-9\s-]", "", text)
-    text = re.sub(r"[\s-]+", "_", text)
-    return re.sub(r"_+", "_", text).strip("_")
-
-
-def dataframe_to_markdown(df: pd.DataFrame) -> str:
-    columns = [str(column) for column in df.columns]
-    rows = [
-        "| " + " | ".join(columns) + " |",
-        "| " + " | ".join("---" for _ in columns) + " |",
-    ]
-    for _, row in df.iterrows():
-        rows.append("| " + " | ".join(str(row[column]) for column in df.columns) + " |")
-    return "\n".join(rows)
+from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
+from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -98,9 +85,7 @@ def add_short_gap_imputations(
                 price_columns,
             ]
             group.loc[short_internal_gap, "is_imputed"] = True
-            group.loc[short_internal_gap, "imputation_method"] = (
-                f"ffill_gap_le_{max_gap_days}_days"
-            )
+            group.loc[short_internal_gap, "imputation_method"] = f"ffill_gap_le_{max_gap_days}_days"
 
         group["is_observed"] = group["source_rows"].fillna(0).astype(int) > 0
         group["quality_flag"] = "ok"
@@ -172,7 +157,7 @@ def build_panel(
     panel["state"] = "maharashtra"
     panel["district"] = panel["district_name"].fillna("").map(slugify)
     panel["mandi"] = panel["market_name"].fillna("").map(slugify)
-    panel["mandi_id"] = "maharashtra__" + panel["mandi"]
+    panel["mandi_id"] = panel["market_name"].fillna("").map(make_mandi_id)
     panel["source_name"] = "ceda_agmarknet"
     panel["unit"] = "INR/quintal"
     panel["source_rows"] = panel["source_rows"].fillna(0).astype(int)
@@ -242,9 +227,9 @@ def write_report(panel: pd.DataFrame, summary: dict, report_path: Path) -> None:
         )
         .reset_index()
     )
-    by_market["observed_pct"] = (
-        by_market["observed_days"] / by_market["panel_days"] * 100
-    ).round(2)
+    by_market["observed_pct"] = (by_market["observed_days"] / by_market["panel_days"] * 100).round(
+        2
+    )
     by_market = by_market.sort_values(["observed_days", "observed_pct"], ascending=False)
 
     lines = [

@@ -170,8 +170,7 @@ def validate_price_samples(
                     if (market_id := first_int(market, ["market_id", "id"])) is not None
                 ]
                 markets_file = (
-                    output_dir
-                    / f"day0_ceda_{crop_name}_{state_name}_{district_id}_markets.json"
+                    output_dir / f"day0_ceda_{crop_name}_{state_name}_{district_id}_markets.json"
                 )
                 save_json(markets_file, markets_payload)
 

@@ -385,5 +385,5 @@ Table: `api_request_logs`
 - [x] Forecast horizon limited to 7 days for MVP.
 - [x] All model features reproducible from cleaned tables.
 - [x] Missingness and exclusions documented in data-quality reports.
-- [ ] Mandi latitude/longitude completed before recommendation work.
-- [ ] Temporal split dates documented before modeling.
+- [x] Mandi latitude/longitude completed before recommendation work.
+- [x] Temporal split dates documented before modeling.
