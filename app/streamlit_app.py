@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import streamlit as st  # noqa: E402
 
-from mandipulse.app.data_access import load_forecasts  # noqa: E402
+from mandipulse.app.data_access import add_staleness_days, load_forecasts  # noqa: E402
 
 st.set_page_config(
     page_title="MandiPulse India",
@@ -19,9 +19,9 @@ st.set_page_config(
 st.title("MandiPulse India — Onion / Maharashtra")
 
 try:
-    _forecasts = load_forecasts()
-    _max_as_of = _forecasts["as_of_date"].max()
-    _n_stale = int((_forecasts["as_of_date"] < _max_as_of).sum())
+    _forecasts_with_staleness = add_staleness_days(load_forecasts())
+    _max_as_of = _forecasts_with_staleness["as_of_date"].max()
+    _n_stale = int((_forecasts_with_staleness["staleness_days"] > 0).sum())
     _staleness_note = (
         " · some mandis older — see Forecast/Recommendation pages" if _n_stale > 0 else ""
     )

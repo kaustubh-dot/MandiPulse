@@ -18,11 +18,17 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Next
+### Done (Milestone G — recommendation eval + F-review cleanups)
 
-None — Milestone F complete. Pending task below.
+| ID | Status | Task |
+|---|---|---|
+| G-01 | Done | Recommendation backtest: regret@K + nearest-mandi baseline (`recommend/evaluation.py` + `run_recommendation_backtest_7d.py`) |
+| G-02 | Done | Extract + test `add_staleness_days` helper; remove cached-frame mutation |
+| G-03 | Done | Test missing-artifact and duplicate-market_id guards; 84 tests pass |
 
-### Done (Milestone F — tests + reliability hardening, `<commit-sha>`)
+Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
+
+### Done (Milestone F — tests + reliability hardening, `6d5f192`)
 
 | ID | Status | Task |
 |---|---|---|
@@ -110,6 +116,8 @@ None — Milestone F complete. Pending task below.
 | Forecast output artifact | Local only | `artifacts/forecasts/forecast_outputs_7d.csv` |
 | Recommendation report | Tracked | `reports/modeling/recommendation_report_7d.md` |
 | Recommendation artifact | Local only | `artifacts/recommendations/recommendation_outputs_7d.csv` |
+| Recommendation backtest artifact | Local only | `artifacts/recommendations/recommendation_backtest_7d.csv` |
+| Recommendation backtest report | Tracked | `reports/modeling/recommendation_backtest_7d.md` |
 
 ## Guardrails
 

@@ -83,3 +83,15 @@ def reports_data_quality_dir() -> Path:
 
 def mvp_mandis_path() -> Path:
     return PROJECT_ROOT / "data" / "external" / "mvp_mandis.csv"
+
+
+def recommendation_backtest_path() -> Path:
+    return recommendations_dir() / "recommendation_backtest_7d.csv"
+
+
+def recommendation_backtest_report_path() -> Path:
+    return reports_modeling_dir() / "recommendation_backtest_7d.md"
+
+
+def baseline_predictions_path() -> Path:
+    return predictions_dir() / "baseline_predictions_7d.csv"

@@ -10,6 +10,7 @@ import plotly.graph_objects as go  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from mandipulse.app.data_access import (  # noqa: E402
+    add_staleness_days,
     load_forecasts,
     load_mandi_metadata,
 )
@@ -33,14 +34,10 @@ LOW_MAX_PCT = float(_rt.get("low_max_interval_pct", 10)) / 100
 HIGH_MIN_PCT = float(_rt.get("high_min_interval_pct", 25)) / 100
 
 with st.spinner("Loading data…"):
-    forecasts = load_forecasts()
+    forecasts = add_staleness_days(load_forecasts())
     mandis_meta = load_mandi_metadata()
 
-# Compute per-mandi staleness against the freshest as_of_date in the artifact
 _max_as_of = forecasts["as_of_date"].max()
-forecasts["staleness_days"] = (
-    pd.Timestamp(_max_as_of) - pd.to_datetime(forecasts["as_of_date"])
-).dt.days
 
 # --- Sidebar inputs ---
 st.sidebar.header("Farmer Location & Inputs")

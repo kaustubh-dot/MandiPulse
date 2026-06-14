@@ -103,6 +103,37 @@ class TestLoadFeatureTable:
         assert pd.api.types.is_datetime64_any_dtype(df["date"])
 
 
+class TestMissingArtifactGuard:
+    def test_missing_artifact_calls_st_stop(self) -> None:
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock, patch
+
+        from mandipulse.app import data_access
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            missing_path = Path(tmpdir) / "nonexistent.csv"
+
+            mock_stop = MagicMock()
+            mock_error = MagicMock()
+
+            with (
+                patch.object(data_access, "forecast_outputs_path", return_value=missing_path),
+                patch("streamlit.stop", mock_stop),
+                patch("streamlit.error", mock_error),
+            ):
+                try:
+                    fn = getattr(
+                        data_access.load_forecasts, "__wrapped__", data_access.load_forecasts
+                    )
+                    fn()
+                except Exception:
+                    pass
+
+        mock_stop.assert_called_once()
+        mock_error.assert_called_once()
+
+
 class TestAvailableMandis:
     def test_returns_sorted_list(self, golden_forecasts) -> None:
         from mandipulse.app.data_access import available_mandis

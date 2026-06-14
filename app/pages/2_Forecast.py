@@ -10,6 +10,7 @@ import plotly.graph_objects as go  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from mandipulse.app.data_access import (  # noqa: E402
+    add_staleness_days,
     available_mandis,
     history_for_mandi,
     load_clean_panel,
@@ -23,7 +24,7 @@ st.caption("Select a mandi to review its price history, 7-day forecast, and unce
 
 with st.spinner("Loading data…"):
     panel = load_clean_panel()
-    forecasts = load_forecasts()
+    forecasts = add_staleness_days(load_forecasts())
 
 mandis = available_mandis(forecasts)
 selected_mandi = st.selectbox("Select Mandi", mandis, index=0)
@@ -33,9 +34,8 @@ market_id = int(mandi_row["market_id"])
 
 history = history_for_mandi(panel, market_id)
 
-# Staleness: compare this mandi's as_of_date to the freshest across all mandis
 _max_as_of = forecasts["as_of_date"].max()
-_staleness_days = (pd.Timestamp(_max_as_of) - pd.Timestamp(mandi_row["as_of_date"])).days
+_staleness_days = int(mandi_row["staleness_days"])
 
 # --- Forecast KPIs ---
 st.divider()

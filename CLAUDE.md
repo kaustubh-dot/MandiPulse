@@ -19,14 +19,15 @@ showcase: forecast a 7-day price, subtract distance-based transport cost, rank n
 
 ## Testing
 - Run: `pytest` (config: `testpaths=["tests"]`, `pythonpath=["src"]`)
-- No `tests/` dir exists yet — create it for new test coverage
+- 84 tests across 7 files; golden fixtures in `tests/golden/`
 - Coverage: `pytest --cov=mandipulse`
 
 ## Build & Run
 - Setup: `python -m pip install -e ".[dev]"`
 - Pipeline order: `build_clean_onion_panel.py` → `build_feature_table.py` →
   `train_baselines_7d.py` → `run_baseline_sensitivity_7d.py` → `train_lightgbm_7d.py` →
-  `build_forecast_intervals_7d.py` → `build_recommendations_7d.py`
+  `build_forecast_intervals_7d.py` → `build_recommendations_7d.py` →
+  `run_recommendation_backtest_7d.py`
 
 ## Project Structure
 - `src/mandipulse/` — reusable library (config loader, CEDA client)
