@@ -203,3 +203,32 @@ class TestScoreRecommendations:
         top = golden_recommendations[golden_recommendations["rank"] == 1]
         assert len(top) == 1
         assert "Pimpalgaon" in top["mandi"].iloc[0]
+
+    def test_raises_on_duplicate_market_id_in_forecasts(self, minimal_mandis) -> None:
+        forecasts_with_dup = pd.DataFrame(
+            {
+                "market_id": [1, 1, 2],  # market_id=1 duplicated
+                "mandi_id": ["mh__a", "mh__a2", "mh__b"],
+                "mandi": ["MandiA", "MandiA2", "MandiB"],
+                "crop": ["onion"] * 3,
+                "model_name": ["moving_average_7d"] * 3,
+                "horizon_days": [7] * 3,
+                "forecast_price_inr_qtl": [1400.0, 1350.0, 1200.0],
+                "lower_bound_inr_qtl": [1190.0, 1140.0, 990.0],
+                "upper_bound_inr_qtl": [1610.0, 1560.0, 1410.0],
+                "confidence_level": [0.9] * 3,
+            }
+        )
+        with pytest.raises(Exception):
+            score_recommendations(
+                forecasts=forecasts_with_dup,
+                mandis=minimal_mandis,
+                farmer_latitude=19.9975,
+                farmer_longitude=73.7898,
+                cost_per_km_per_quintal=4.0,
+                road_distance_factor=1.3,
+                uncertainty_penalty_weight=0.3,
+                low_max_interval_pct=0.10,
+                high_min_interval_pct=0.25,
+                candidate_state="maharashtra",
+            )

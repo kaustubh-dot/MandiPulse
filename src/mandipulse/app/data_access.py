@@ -89,3 +89,17 @@ def available_mandis(forecasts: pd.DataFrame) -> list[str]:
 
 def history_for_mandi(panel: pd.DataFrame, market_id: int) -> pd.DataFrame:
     return panel[panel["market_id"] == market_id].sort_values("date").reset_index(drop=True)
+
+
+def add_staleness_days(forecasts: pd.DataFrame) -> pd.DataFrame:
+    """Return a copy of forecasts with a staleness_days column.
+
+    staleness_days = max(as_of_date) - as_of_date in integer days.
+    The freshest mandi gets 0; older mandis get a positive integer.
+    as_of_date is parsed robustly from string or datetime.
+    """
+    df = forecasts.copy()
+    dates = pd.to_datetime(df["as_of_date"])
+    max_date = dates.max()
+    df["staleness_days"] = (max_date - dates).dt.days
+    return df
