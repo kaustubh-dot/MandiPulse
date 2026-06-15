@@ -18,19 +18,21 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Next (Milestone J — DuckDB read-layer + coverage gating)
+### Done (Milestone J — DuckDB read-layer + coverage gating)
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| J-01 | Next | `DuckDBStore` read-layer in `data/store.py` (DuckDB over CSV; CSV stays source of truth) | - |
-| J-02 | Next | Route `data_access.py` reads through the store; preserve stop-vs-degrade guards | J-01 |
-| J-03 | Next | Route backtest/script input reads through the store where drop-in (no write-path change) | J-01 |
-| J-04 | Next | `pytest --cov-fail-under` floor (~58% baseline) + cheap util tests to lift it honestly | - |
-| J-05 | Next | Store tests: read-parity vs pd.read_csv, date parsing, missing-file error | J-01 |
-| J-06 | Next | Docs: ARCHITECTURE storage decision, TRACKER, README; MVP loop RULES-complete | J-02 |
+| J-01 | Done | `read_csv_via_duckdb` in `data/store.py` (in-memory DuckDB over CSV; CSV stays source of truth) | - |
+| J-02 | Done | Route `data_access.py` reads through the store; preserve stop-vs-degrade guards | J-01 |
+| J-03 | Done | Route backtest/build_recommendations input reads through the store | J-01 |
+| J-04 | Done | `pytest --cov-fail-under=60` in `pyproject.toml`; post-J coverage 61%; floor set at 60 | - |
+| J-05 | Done | Store tests (parity, date, missing-file) + util tests (formatting, slugify, make_mandi_id); 127 tests | J-01 |
+| J-06 | Done | Docs: ARCHITECTURE storage decision + rationale, TRACKER, README; MVP loop RULES-complete | J-02 |
 
 Plan: `docs/MILESTONE_J_PLAN.md`. Decision: DuckDB is a **read-layer over CSV**, not a storage rewrite —
-CSV stays the on-disk source of truth. Data-access + tests + docs only; no modeling/forecaster/number changes.
+CSV stays on-disk source of truth. Data-access + tests + docs only; no modeling/forecaster/number changes.
+
+**The MVP loop is now RULES-complete.** No Milestone K is queued. Post-MVP levers are in TRACKER §Deferred.
 
 ### Done (Milestone I — residual-target reformulation, M3-04)
 

@@ -9,6 +9,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mandipulse.config import load_yaml_config  # noqa: E402
+from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
 from mandipulse.recommend.engine import score_recommendations  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
@@ -72,7 +73,7 @@ def parse_args(cfg: dict) -> argparse.Namespace:
 
 
 def load_forecasts(path: Path, candidate_state: str) -> pd.DataFrame:
-    forecasts = pd.read_csv(path)
+    forecasts = read_csv_via_duckdb(path)
     required = {
         "forecast_id",
         "generated_at",
@@ -100,7 +101,7 @@ def load_forecasts(path: Path, candidate_state: str) -> pd.DataFrame:
 
 
 def load_mandi_metadata(path: Path) -> pd.DataFrame:
-    mandis = pd.read_csv(path)
+    mandis = read_csv_via_duckdb(path)
     mandis["state"] = "maharashtra"
     mandis["mandi"] = mandis["market_name"].fillna("").map(slugify)
     mandis["mandi_id"] = mandis["market_name"].fillna("").map(make_mandi_id)

@@ -9,6 +9,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mandipulse.config import load_yaml_config  # noqa: E402
+from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
 from mandipulse.paths import (  # noqa: E402
     baseline_predictions_path,
     clean_panel_path,
@@ -84,7 +85,7 @@ def load_interval_residuals(model_name: str) -> tuple[float, float]:
             f"Interval metadata not found: {metadata_path}\n"
             "Run scripts/build_forecast_intervals_7d.py first."
         )
-    meta = pd.read_csv(metadata_path)
+    meta = read_csv_via_duckdb(metadata_path)
     row = meta[meta["model_name"] == model_name]
     if row.empty:
         raise ValueError(f"No interval metadata found for model '{model_name}'.")
@@ -92,7 +93,7 @@ def load_interval_residuals(model_name: str) -> tuple[float, float]:
 
 
 def load_mandi_metadata(path: Path) -> pd.DataFrame:
-    mandis = pd.read_csv(path)
+    mandis = read_csv_via_duckdb(path)
     mandis["state"] = "maharashtra"
     mandis["mandi"] = mandis["market_name"].fillna("").map(slugify)
     mandis["mandi_id"] = mandis["market_name"].fillna("").map(make_mandi_id)
@@ -237,8 +238,8 @@ def main() -> int:
     args = parse_args(cfg)
 
     print("Loading artifacts...")
-    predictions = pd.read_csv(args.predictions)
-    panel = pd.read_csv(args.panel)
+    predictions = read_csv_via_duckdb(Path(args.predictions))
+    panel = read_csv_via_duckdb(Path(args.panel))
     mandis = load_mandi_metadata(Path(args.mandis))
 
     # Filter to requested split and model
