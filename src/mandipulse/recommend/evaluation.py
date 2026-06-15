@@ -143,6 +143,8 @@ def backtest_recommendations(
     mandis_with_coords = mandis.dropna(subset=["latitude", "longitude"])
 
     rows = []
+    n_scoring_failures = 0
+    first_scoring_error: str | None = None
     for as_of_date, group in predictions.groupby("date"):
         as_of_date = pd.Timestamp(as_of_date)
         target_date = as_of_date + timedelta(days=7)
@@ -171,6 +173,12 @@ def backtest_recommendations(
         if forecast_for_scoring.empty:
             continue
 
+        # score_recommendations pulls market_name/district_name from the mandis frame;
+        # drop the prediction-side copies so the merge does not produce _x/_y suffixes.
+        forecast_for_scoring = forecast_for_scoring.drop(
+            columns=["market_name", "district"], errors="ignore"
+        )
+
         try:
             ranked = score_recommendations(
                 forecasts=forecast_for_scoring,
@@ -184,7 +192,10 @@ def backtest_recommendations(
                 high_min_interval_pct=high_min_interval_pct,
                 candidate_state="maharashtra",
             )
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — surface, don't silently skip
+            n_scoring_failures += 1
+            if first_scoring_error is None:
+                first_scoring_error = f"{type(exc).__name__}: {exc}"
             continue
 
         # Compute per-mandi transport cost for realized net price calculation
@@ -238,6 +249,12 @@ def backtest_recommendations(
         row["nearest_mandi_regret"] = nm_regret
 
         rows.append(row)
+
+    if n_scoring_failures:
+        raise RuntimeError(
+            f"score_recommendations failed on {n_scoring_failures} as-of date(s); "
+            f"first error: {first_scoring_error}"
+        )
 
     if not rows:
         return pd.DataFrame()
