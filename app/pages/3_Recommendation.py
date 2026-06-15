@@ -13,7 +13,10 @@ from mandipulse.app.data_access import (  # noqa: E402
     add_staleness_days,
     load_forecasts,
     load_mandi_metadata,
+    load_recommendation_backtest,
+    load_report_markdown,
 )
+from mandipulse.recommend.evaluation import summarize_backtest  # noqa: E402
 from mandipulse.config import load_yaml_config  # noqa: E402
 from mandipulse.recommend.engine import score_recommendations  # noqa: E402
 
@@ -206,6 +209,48 @@ table = table.rename(
     }
 )
 st.dataframe(table, use_container_width=True, hide_index=True)
+
+# --- Historical performance (backtest) ---
+st.divider()
+st.markdown("### Historical Performance (Backtest)")
+
+_backtest = load_recommendation_backtest()
+if _backtest is None:
+    st.info(
+        "Backtest not generated yet. "
+        "Run `python scripts/run_recommendation_backtest_7d.py` to see how this ranking has performed historically."
+    )
+else:
+    _bt_metrics = summarize_backtest(_backtest, k_values=[1, 3])
+    if _bt_metrics:
+        _c1, _c2, _c3, _c4 = st.columns(4)
+        _c1.metric(
+            "Mean regret@1",
+            f"{_bt_metrics['regret_at_1_mean']:.0f} ₹/qtl",
+            help="How much net price was missed vs the best available mandi, on average. Lower is better.",
+        )
+        _c2.metric(
+            "Beats nearest-mandi",
+            f"{_bt_metrics['beats_nearest_1']:.0%}",
+            help="Fraction of backtest dates where ranking outperformed the naive nearest-mandi strategy.",
+        )
+        _c3.metric(
+            "Optimal pick rate@1",
+            f"{_bt_metrics['optimal_rate_1']:.0%}",
+            help="Fraction of dates where the top-1 recommendation captured the best available mandi (zero regret).",
+        )
+        _c4.metric(
+            "Nearest-mandi regret",
+            f"{_bt_metrics['nearest_mandi_regret_mean']:.0f} ₹/qtl",
+            help="Baseline: mean regret if farmer always went to the geographically nearest mandi.",
+        )
+        st.caption(
+            f"Backtest over {_bt_metrics['n_dates']} as-of dates"
+            f" ({_bt_metrics['date_min']} to {_bt_metrics['date_max']},"
+            " moving-average forecaster, test split). Lower regret is better."
+        )
+    with st.expander("Full backtest report"):
+        st.markdown(load_report_markdown("recommendation_backtest_7d.md"))
 
 # --- Map ---
 st.markdown("### Map: Farmer Location + Mandis")

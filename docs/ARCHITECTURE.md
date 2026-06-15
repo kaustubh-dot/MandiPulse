@@ -42,9 +42,13 @@ flowchart TD
     E --> N["Data coverage report"]
     J --> O["Model report"]
     L --> P["Streamlit app"]
+    L --> Q["Recommendation backtest"]
+    Q --> P
     N --> P
     O --> P
 ```
+
+The Recommendation page reads the backtest artifact (`artifacts/recommendations/recommendation_backtest_7d.csv`) as optional context. If absent, it shows a guidance message; the live ranking still renders.
 
 ## Local Artifacts
 

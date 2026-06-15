@@ -17,7 +17,10 @@ from mandipulse.paths import (  # noqa: E402
     recommendation_backtest_path,
     recommendation_backtest_report_path,
 )
-from mandipulse.recommend.evaluation import backtest_recommendations  # noqa: E402
+from mandipulse.recommend.evaluation import (
+    backtest_recommendations,
+    summarize_backtest,
+)  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
 
@@ -116,8 +119,8 @@ def write_report(
         "- Leakage safeguard: predictions come from the leakage-safe baseline predictions artifact",
         "  (`baseline_predictions_7d.csv`), which uses only information up to each as-of date.",
         "- Realized price: modal price from the clean panel at as-of date + 7 days",
-        "  (±2-day tolerance; observed rows preferred over imputed).",
-        f"- Farmer location: ({args.farmer_latitude}, {args.farmer_longitude}) — Nashik region",
+        "  (+-2-day tolerance; observed rows preferred over imputed).",
+        f"- Farmer location: ({args.farmer_latitude}, {args.farmer_longitude}) -- Nashik region",
         f"- Road distance factor: {args.road_factor}",
         f"- Transport cost: {args.cost_per_km} INR/km/quintal",
         f"- Uncertainty penalty weight: {args.penalty_weight}",
@@ -126,70 +129,69 @@ def write_report(
         "",
     ]
 
-    n_dates = len(backtest)
-    if n_dates == 0:
-        lines.append("*No backtest rows produced — check prediction and panel artifacts.*")
+    metrics = summarize_backtest(backtest, k_values)
+
+    if not metrics:
+        lines.append("*No backtest rows produced -- check prediction and panel artifacts.*")
     else:
-        date_range = f"{backtest['as_of_date'].min()} → {backtest['as_of_date'].max()}"
+        date_range = f"{metrics['date_min']} to {metrics['date_max']}"
         summary_rows = []
 
         for k in k_values:
             col = f"regret_at_{k}"
-            if col in backtest.columns:
-                valid = backtest[col].dropna()
-                # "Optimal rate" = how often the top-K captured the best mandi (zero regret).
-                optimal_rate = float((valid <= 0).mean()) * 100 if not valid.empty else float("nan")
-                # "Beats nearest" = how often top-K regret is strictly below the
-                # nearest-mandi baseline regret (the comparison this milestone is about).
-                both = backtest[[col, "nearest_mandi_regret"]].dropna()
-                beats_rate = (
-                    float((both[col] < both["nearest_mandi_regret"]).mean()) * 100
-                    if not both.empty
-                    else float("nan")
-                )
-                summary_rows.append(
-                    {
-                        "metric": f"Regret@{k} (mean)",
-                        "value": f"{valid.mean():.1f} INR/qtl" if not valid.empty else "N/A",
-                    }
-                )
-                summary_rows.append(
-                    {
-                        "metric": f"Regret@{k} (median)",
-                        "value": f"{valid.median():.1f} INR/qtl" if not valid.empty else "N/A",
-                    }
-                )
-                summary_rows.append(
-                    {
-                        "metric": f"Optimal rate@{k} (top-{k} captured best mandi)",
-                        "value": f"{optimal_rate:.1f}%",
-                    }
-                )
-                summary_rows.append(
-                    {
-                        "metric": f"Beats nearest-mandi@{k}",
-                        "value": f"{beats_rate:.1f}%",
-                    }
-                )
+            if f"regret_at_{k}_mean" not in metrics:
+                continue
+            mean_val = metrics[f"regret_at_{k}_mean"]
+            median_val = metrics[f"regret_at_{k}_median"]
+            optimal_rate = metrics[f"optimal_rate_{k}"] * 100
+            beats_rate = metrics[f"beats_nearest_{k}"] * 100
+            summary_rows.append(
+                {
+                    "metric": f"Regret@{k} (mean)",
+                    "value": f"{mean_val:.1f} INR/qtl" if not pd.isna(mean_val) else "N/A",
+                }
+            )
+            summary_rows.append(
+                {
+                    "metric": f"Regret@{k} (median)",
+                    "value": f"{median_val:.1f} INR/qtl" if not pd.isna(median_val) else "N/A",
+                }
+            )
+            summary_rows.append(
+                {
+                    "metric": f"Optimal rate@{k} (top-{k} captured best mandi)",
+                    "value": f"{optimal_rate:.1f}%",
+                }
+            )
+            summary_rows.append(
+                {
+                    "metric": f"Beats nearest-mandi@{k}",
+                    "value": f"{beats_rate:.1f}%",
+                }
+            )
+            del col
 
-        nm_regret = backtest["nearest_mandi_regret"].dropna()
+        nm_mean = metrics["nearest_mandi_regret_mean"]
+        nm_median = metrics["nearest_mandi_regret_median"]
         summary_rows.append(
             {
                 "metric": "Nearest-mandi baseline regret (mean)",
-                "value": f"{nm_regret.mean():.1f} INR/qtl" if not nm_regret.empty else "N/A",
+                "value": f"{nm_mean:.1f} INR/qtl" if not pd.isna(nm_mean) else "N/A",
             }
         )
         summary_rows.append(
             {
                 "metric": "Nearest-mandi baseline regret (median)",
-                "value": f"{nm_regret.median():.1f} INR/qtl" if not nm_regret.empty else "N/A",
+                "value": f"{nm_median:.1f} INR/qtl" if not pd.isna(nm_median) else "N/A",
             }
         )
-        summary_rows.append({"metric": "As-of dates evaluated", "value": str(n_dates)})
+        summary_rows.append({"metric": "As-of dates evaluated", "value": str(metrics["n_dates"])})
         summary_rows.append({"metric": "Date range", "value": date_range})
-        total_dropped = int(backtest["n_dropped"].sum())
         summary_rows.append(
-            {"metric": "Mandi-dates dropped (no realized price)", "value": str(total_dropped)}
+            {
+                "metric": "Mandi-dates dropped (no realized price)",
+                "value": str(metrics["n_dropped"]),
+            }
         )
 
         lines.append(dataframe_to_markdown(pd.DataFrame(summary_rows)))
@@ -198,9 +200,9 @@ def write_report(
         # Verdict
         lines.append("## Verdict")
         lines.append("")
-        if "regret_at_1" in backtest.columns:
-            mean_r1 = backtest["regret_at_1"].dropna().mean()
-            mean_nm = nm_regret.mean() if not nm_regret.empty else float("nan")
+        mean_r1 = metrics.get("regret_at_1_mean", float("nan"))
+        if not pd.isna(mean_r1):
+            mean_nm = nm_mean if not pd.isna(nm_mean) else float("nan")
             if mean_r1 <= mean_nm:
                 verdict = (
                     f"The model's top-1 recommendation achieves **mean regret@1 of {mean_r1:.1f} INR/qtl**, "
@@ -220,8 +222,8 @@ def write_report(
     lines += [
         "## Assumptions and Caveats",
         "",
-        "- Realized-price tolerance: ±2 days. Observed rows preferred; imputed used as fallback.",
-        "- Transport cost is haversine × road_factor × cost_per_km — same formula as the recommendation engine.",
+        "- Realized-price tolerance: +-2 days. Observed rows preferred; imputed used as fallback.",
+        "- Transport cost is haversine x road_factor x cost_per_km -- same formula as the recommendation engine.",
         "- This is offline evaluation on historical data; past regret does not guarantee future performance.",
         "- This is decision support, not a guaranteed-profit recommendation.",
     ]

@@ -18,15 +18,15 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Next (Milestone H — surface the backtest in the dashboard)
+### Done (Milestone H — surface the backtest in the dashboard)
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| H-01 | Next | Extract tested `summarize_backtest()` into `evaluation.py`; rewrite `write_report` to use it | G-01 |
-| H-02 | Next | Add optional `load_recommendation_backtest()` loader (returns None when absent) | G-01 |
-| H-03 | Next | Add "Historical performance" section to Recommendation page; graceful degrade | H-01, H-02 |
-| H-04 | Next | Tests: `summarize_backtest` + None-returning loader | H-01, H-02 |
-| H-05 | Next | Docs refresh: README, TRACKER, ARCHITECTURE | H-03 |
+| H-01 | Done | Extract tested `summarize_backtest()` into `evaluation.py`; rewrite `write_report` to use it | G-01 |
+| H-02 | Done | Add optional `load_recommendation_backtest()` loader (returns None when absent) | G-01 |
+| H-03 | Done | Add "Historical performance" section to Recommendation page; graceful degrade | H-01, H-02 |
+| H-04 | Done | Tests: `summarize_backtest` + None-returning loader | H-01, H-02 |
+| H-05 | Done | Docs refresh: README, TRACKER, ARCHITECTURE | H-03 |
 
 Plan: `docs/MILESTONE_H_PLAN.md`. Dashboard + docs only — no modeling or data-store changes.
 

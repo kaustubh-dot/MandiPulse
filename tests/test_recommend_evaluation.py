@@ -8,6 +8,7 @@ from mandipulse.recommend.evaluation import (
     nearest_mandi_regret,
     realized_net_price,
     regret_at_k,
+    summarize_backtest,
 )
 
 
@@ -222,6 +223,83 @@ class TestNearestMandiRegret:
         )
         assert r is not None
         assert r >= 0.0
+
+
+class TestSummarizeBacktest:
+    def _make_backtest(self) -> pd.DataFrame:
+        # 3 dates: regret@1 = [0, 100, 200], nearest_mandi_regret = [50, 50, 50]
+        return pd.DataFrame(
+            {
+                "as_of_date": ["2025-10-01", "2025-10-02", "2025-10-03"],
+                "regret_at_1": [0.0, 100.0, 200.0],
+                "regret_at_3": [0.0, 0.0, 100.0],
+                "nearest_mandi_regret": [50.0, 50.0, 50.0],
+                "n_dropped": [1, 0, 2],
+            }
+        )
+
+    def test_empty_frame_returns_empty_dict(self) -> None:
+        result = summarize_backtest(pd.DataFrame(), k_values=[1, 3])
+        assert result == {}
+
+    def test_mean_regret_correct(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        assert result["regret_at_1_mean"] == pytest.approx(100.0)
+
+    def test_median_regret_correct(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        assert result["regret_at_1_median"] == pytest.approx(100.0)
+
+    def test_optimal_rate_fraction_regret_le_zero(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        # only row 0 has regret=0 -> 1/3
+        assert result["optimal_rate_1"] == pytest.approx(1 / 3)
+
+    def test_beats_nearest_fraction(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        # regret@1 < nearest(50) only for row 0 (0 < 50) -> 1/3
+        assert result["beats_nearest_1"] == pytest.approx(1 / 3)
+
+    def test_nearest_mandi_mean_and_median(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        assert result["nearest_mandi_regret_mean"] == pytest.approx(50.0)
+        assert result["nearest_mandi_regret_median"] == pytest.approx(50.0)
+
+    def test_keys_present_for_each_k(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1, 3])
+        for k in [1, 3]:
+            assert f"regret_at_{k}_mean" in result
+            assert f"regret_at_{k}_median" in result
+            assert f"optimal_rate_{k}" in result
+            assert f"beats_nearest_{k}" in result
+        assert "nearest_mandi_regret_mean" in result
+        assert "nearest_mandi_regret_median" in result
+        assert "n_dates" in result
+        assert "date_min" in result
+        assert "date_max" in result
+        assert "n_dropped" in result
+
+    def test_n_dropped_sum(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        assert result["n_dropped"] == 3
+
+    def test_n_dates(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        assert result["n_dates"] == 3
+
+    def test_rates_are_fractions_not_percentages(self) -> None:
+        df = self._make_backtest()
+        result = summarize_backtest(df, k_values=[1])
+        assert 0.0 <= result["optimal_rate_1"] <= 1.0
+        assert 0.0 <= result["beats_nearest_1"] <= 1.0
 
 
 class TestBacktestRecommendations:

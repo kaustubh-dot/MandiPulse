@@ -134,6 +134,28 @@ class TestMissingArtifactGuard:
         mock_error.assert_called_once()
 
 
+class TestLoadRecommendationBacktest:
+    def test_returns_none_when_artifact_missing(self) -> None:
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+
+        from mandipulse.app import data_access
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            missing_path = Path(tmpdir) / "recommendation_backtest_7d.csv"
+            with patch.object(
+                data_access, "recommendation_backtest_path", return_value=missing_path
+            ):
+                fn = getattr(
+                    data_access.load_recommendation_backtest,
+                    "__wrapped__",
+                    data_access.load_recommendation_backtest,
+                )
+                result = fn()
+        assert result is None
+
+
 class TestAvailableMandis:
     def test_returns_sorted_list(self, golden_forecasts) -> None:
         from mandipulse.app.data_access import available_mandis

@@ -8,8 +8,8 @@
 - Leakage safeguard: predictions come from the leakage-safe baseline predictions artifact
   (`baseline_predictions_7d.csv`), which uses only information up to each as-of date.
 - Realized price: modal price from the clean panel at as-of date + 7 days
-  (±2-day tolerance; observed rows preferred over imputed).
-- Farmer location: (19.9975, 73.78981) — Nashik region
+  (+-2-day tolerance; observed rows preferred over imputed).
+- Farmer location: (19.9975, 73.78981) -- Nashik region
 - Road distance factor: 1.3
 - Transport cost: 4.0 INR/km/quintal
 - Uncertainty penalty weight: 0.3
@@ -29,7 +29,7 @@
 | Nearest-mandi baseline regret (mean) | 370.1 INR/qtl |
 | Nearest-mandi baseline regret (median) | 225.1 INR/qtl |
 | As-of dates evaluated | 90 |
-| Date range | 2025-07-26 → 2025-10-23 |
+| Date range | 2025-07-26 to 2025-10-23 |
 | Mandi-dates dropped (no realized price) | 0 |
 
 ## Verdict
@@ -38,7 +38,7 @@ The model's top-1 recommendation achieves **mean regret@1 of 296.3 INR/qtl**, wh
 
 ## Assumptions and Caveats
 
-- Realized-price tolerance: ±2 days. Observed rows preferred; imputed used as fallback.
-- Transport cost is haversine × road_factor × cost_per_km — same formula as the recommendation engine.
+- Realized-price tolerance: +-2 days. Observed rows preferred; imputed used as fallback.
+- Transport cost is haversine x road_factor x cost_per_km -- same formula as the recommendation engine.
 - This is offline evaluation on historical data; past regret does not guarantee future performance.
 - This is decision support, not a guaranteed-profit recommendation.
