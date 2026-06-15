@@ -18,13 +18,26 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Done (Milestone G — recommendation eval + F-review cleanups)
+### Next (Milestone H — surface the backtest in the dashboard)
+
+| ID | Status | Task | Depends On |
+|---|---|---|---|
+| H-01 | Next | Extract tested `summarize_backtest()` into `evaluation.py`; rewrite `write_report` to use it | G-01 |
+| H-02 | Next | Add optional `load_recommendation_backtest()` loader (returns None when absent) | G-01 |
+| H-03 | Next | Add "Historical performance" section to Recommendation page; graceful degrade | H-01, H-02 |
+| H-04 | Next | Tests: `summarize_backtest` + None-returning loader | H-01, H-02 |
+| H-05 | Next | Docs refresh: README, TRACKER, ARCHITECTURE | H-03 |
+
+Plan: `docs/MILESTONE_H_PLAN.md`. Dashboard + docs only — no modeling or data-store changes.
+
+### Done (Milestone G — recommendation eval + F-review cleanups, `4437ed9` + fix `b53de0f`)
 
 | ID | Status | Task |
 |---|---|---|
-| G-01 | Done | Recommendation backtest: regret@K + nearest-mandi baseline (`recommend/evaluation.py` + `run_recommendation_backtest_7d.py`) |
+| G-01 | Done | Recommendation backtest: regret@K + nearest-mandi baseline (`recommend/evaluation.py` + `run_recommendation_backtest_7d.py`); regret@1 296.3 vs nearest 370.1, beats nearest 78.8% |
 | G-02 | Done | Extract + test `add_staleness_days` helper; remove cached-frame mutation |
-| G-03 | Done | Test missing-artifact and duplicate-market_id guards; 84 tests pass |
+| G-03 | Done | Test missing-artifact and duplicate-market_id guards |
+| G-04 | Done | Review fix: drop market_name merge collision (was silently 0 rows); raise on scoring failure; correct win-rate labels; 87 tests |
 
 Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
 
@@ -42,7 +55,8 @@ Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| M3-04 | Pending | Reformulate target or features to beat moving-average baseline honestly | D3-06 |
+| I-01 (M3-04) | Pending | Milestone I: reformulate target or features to beat moving-average baseline honestly | D3-06 |
+| J-01 | Pending | Milestone J: adopt DuckDB as local store per RULES §Architecture (or document justification) + `pytest --cov` gating | - |
 
 ### Done
 
