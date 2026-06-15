@@ -48,3 +48,5 @@ showcase: forecast a 7-day price, subtract distance-based transport cost, rank n
 ## Git
 - Imperative commit subjects ("Fix baseline leakage and prediction artifacts")
 - Commit/push only when asked
+- NEVER add Claude as a co-author or contributor: omit any `Co-Authored-By: Claude ...`
+  trailer from commits and any "Generated with Claude Code" line from PR descriptions
