@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from mandipulse.recommend.evaluation import (
+    backtest_recommendations,
     nearest_mandi_regret,
     realized_net_price,
     regret_at_k,
@@ -221,3 +222,101 @@ class TestNearestMandiRegret:
         )
         assert r is not None
         assert r >= 0.0
+
+
+class TestBacktestRecommendations:
+    """Integration tests for the full backtest loop.
+
+    Regression guard: predictions carry a ``market_name`` column that collides
+    with the one score_recommendations pulls from the mandis frame. The loop must
+    drop it before scoring, otherwise every date fails silently and the backtest
+    returns zero rows (the Milestone G review bug).
+    """
+
+    @pytest.fixture()
+    def mandis(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "market_id": [1, 2],
+                "market_name": ["MandiA", "MandiB"],
+                "district_name": ["Nashik", "Pune"],
+                "latitude": [20.0, 18.5],
+                "longitude": [73.8, 73.9],
+            }
+        )
+
+    @pytest.fixture()
+    def predictions(self) -> pd.DataFrame:
+        # One as-of date (2025-10-15); target_date = 2025-10-22. market_name present
+        # on purpose to exercise the merge-collision guard.
+        return pd.DataFrame(
+            {
+                "date": ["2025-10-15", "2025-10-15"],
+                "market_id": [1, 2],
+                "market_name": ["MandiA", "MandiB"],
+                "mandi_id": ["mh__a", "mh__b"],
+                "district": ["Nashik", "Pune"],
+                "target_price_t_plus_7": [1500.0, 1300.0],
+                "split": ["test", "test"],
+                "model": ["moving_average_7d", "moving_average_7d"],
+                "prediction": [1450.0, 1280.0],
+            }
+        )
+
+    @pytest.fixture()
+    def panel(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "market_id": [1, 2],
+                "date": ["2025-10-22", "2025-10-22"],
+                "modal_price_inr_qtl": [1500.0, 1300.0],
+                "is_observed": [True, True],
+            }
+        )
+
+    def _run(self, panel, mandis, predictions, k_values=(1, 3)):
+        return backtest_recommendations(
+            panel=panel,
+            mandis=mandis,
+            predictions=predictions,
+            k_values=list(k_values),
+            farmer_lat=19.9975,
+            farmer_lon=73.78981,
+            cost_per_km_per_quintal=4.0,
+            road_distance_factor=1.3,
+            uncertainty_penalty_weight=0.3,
+            low_max_interval_pct=0.10,
+            high_min_interval_pct=0.25,
+            lower_residual=-210.0,
+            upper_residual=292.0,
+        )
+
+    def test_produces_one_row_per_as_of_date(self, panel, mandis, predictions) -> None:
+        result = self._run(panel, mandis, predictions)
+        assert len(result) == 1
+        assert result["as_of_date"].iloc[0] == "2025-10-15"
+        assert result["target_date"].iloc[0] == "2025-10-22"
+
+    def test_does_not_silently_return_empty_on_market_name_collision(
+        self, panel, mandis, predictions
+    ) -> None:
+        # The regression: predictions has market_name; must still produce rows.
+        result = self._run(panel, mandis, predictions)
+        assert not result.empty
+        assert "regret_at_1" in result.columns
+        assert "nearest_mandi_regret" in result.columns
+
+    def test_raises_when_scoring_fails(self, panel, predictions) -> None:
+        # mandis missing district_name -> score_recommendations raises on every date;
+        # the loop must surface it, not swallow it into an empty frame.
+        broken_mandis = pd.DataFrame(
+            {
+                "market_id": [1, 2],
+                "market_name": ["MandiA", "MandiB"],
+                # district_name intentionally absent
+                "latitude": [20.0, 18.5],
+                "longitude": [73.8, 73.9],
+            }
+        )
+        with pytest.raises(RuntimeError, match="score_recommendations failed"):
+            self._run(panel, broken_mandis, predictions)

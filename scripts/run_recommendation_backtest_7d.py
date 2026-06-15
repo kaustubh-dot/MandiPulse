@@ -137,10 +137,15 @@ def write_report(
             col = f"regret_at_{k}"
             if col in backtest.columns:
                 valid = backtest[col].dropna()
-                win_col = f"win_at_{k}"
-                backtest[win_col] = backtest[col] <= 0
-                win_rate = (
-                    float(backtest[win_col].mean()) * 100 if len(backtest) > 0 else float("nan")
+                # "Optimal rate" = how often the top-K captured the best mandi (zero regret).
+                optimal_rate = float((valid <= 0).mean()) * 100 if not valid.empty else float("nan")
+                # "Beats nearest" = how often top-K regret is strictly below the
+                # nearest-mandi baseline regret (the comparison this milestone is about).
+                both = backtest[[col, "nearest_mandi_regret"]].dropna()
+                beats_rate = (
+                    float((both[col] < both["nearest_mandi_regret"]).mean()) * 100
+                    if not both.empty
+                    else float("nan")
                 )
                 summary_rows.append(
                     {
@@ -156,8 +161,14 @@ def write_report(
                 )
                 summary_rows.append(
                     {
-                        "metric": f"Win rate@{k} (top-{k} ≥ nearest-mandi)",
-                        "value": f"{win_rate:.1f}%",
+                        "metric": f"Optimal rate@{k} (top-{k} captured best mandi)",
+                        "value": f"{optimal_rate:.1f}%",
+                    }
+                )
+                summary_rows.append(
+                    {
+                        "metric": f"Beats nearest-mandi@{k}",
+                        "value": f"{beats_rate:.1f}%",
                     }
                 )
 
@@ -223,7 +234,7 @@ def main() -> int:
     cfg = load_yaml_config(_CONFIG_PATH)
     args = parse_args(cfg)
 
-    print("Loading artifacts…")
+    print("Loading artifacts...")
     predictions = pd.read_csv(args.predictions)
     panel = pd.read_csv(args.panel)
     mandis = load_mandi_metadata(Path(args.mandis))
@@ -243,7 +254,7 @@ def main() -> int:
     n_dates = predictions["date"].nunique()
     print(
         f"Backtesting over {n_dates} as-of dates "
-        f"({predictions['date'].min()} → {predictions['date'].max()})…"
+        f"({predictions['date'].min()} to {predictions['date'].max()})"
     )
 
     lower_residual, upper_residual = load_interval_residuals(args.model)
