@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from mandipulse.modeling.columns import NUMERIC_FEATURES, TARGET_COLUMN
-from mandipulse.modeling.lightgbm_model import predict_lightgbm, predict_lightgbm_residual
+from mandipulse.modeling.columns import CATEGORICAL_FEATURES, NUMERIC_FEATURES, TARGET_COLUMN
+from mandipulse.modeling.lightgbm_model import build_lightgbm_pipeline, predict_lightgbm_residual
 from mandipulse.modeling.splits import SplitConfig, make_temporal_splits
 
 
@@ -33,45 +33,40 @@ class TestPredictLightgbmResidual:
         assert set(result["split"].unique()) == {"validation", "test"}
 
     def test_reconstruction_identity(self, synthetic_features) -> None:
-        """prediction == rolling_mean_7 + model_residual within floating tolerance."""
+        """prediction == rolling_mean_7 + model.predict(X), exactly.
+
+        Guards the reconstruction line in predict_lightgbm_residual: the function is
+        deterministic given random_state, so we re-fit the same pipeline on the same
+        residual target and assert the function's output equals the reconstructed value.
+        A bug that forgot to add rolling_mean_7 back would fail this.
+        """
         train, validation, test = _split_synthetic(synthetic_features)
+        feature_columns = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
-        # Train residual model on same data
-        residual_preds = predict_lightgbm_residual(
-            train, validation, test, n_estimators=10, random_state=0
-        )
-        _ = predict_lightgbm(train, validation, test, n_estimators=10, random_state=0)
+        # Reproduce the model the function fits (same data, same seed, same hyperparams)
+        model = build_lightgbm_pipeline(n_estimators=10, random_state=0)
+        model.fit(train[feature_columns], train[TARGET_COLUMN] - train["rolling_mean_7"])
+        expected = test["rolling_mean_7"].to_numpy() + model.predict(test[feature_columns])
 
-        # For each split row, residual prediction must be within plausible range of baseline
-        # (not an exact identity — different models — but reconstruction formula is correct).
-        # We verify the formula: merge test predictions with split_df to check rolling_mean_7 + residual_pred
-        test_rows = residual_preds[residual_preds["split"] == "test"].copy()
-        # Merge rolling_mean_7 from test split
-        merged = test_rows.merge(
-            test[["date", "market_id", "rolling_mean_7"]],
-            on=["date", "market_id"],
-            how="left",
-        )
-        # prediction = rolling_mean_7 + learned_residual
-        # Check: prediction - rolling_mean_7 is the residual; it must be finite
-        residual_learned = merged["prediction"] - merged["rolling_mean_7"]
-        assert residual_learned.notna().all()
-        # And the reconstruction produces finite, non-zero-variance predictions
-        assert merged["prediction"].std() > 0
+        got = predict_lightgbm_residual(train, validation, test, n_estimators=10, random_state=0)
+        # The function builds the test frame in test's row order, so positional compare is valid.
+        got_test = got[got["split"] == "test"]["prediction"].to_numpy()
+        np.testing.assert_allclose(got_test, expected, rtol=1e-9)
 
-    def test_degenerate_zero_residual_collapses_to_baseline(self, synthetic_features) -> None:
-        """A model that predicts zero residual must return predictions == rolling_mean_7."""
+    def test_zero_residual_collapses_to_baseline(self, synthetic_features) -> None:
+        """A model that learns ~0 residual reconstructs to ~rolling_mean_7.
+
+        Verifies the reconstruction arithmetic (rolling_mean_7 + ~0 == rolling_mean_7),
+        not the function itself — we force a near-zero-residual model the public API
+        cannot produce directly.
+        """
         train, validation, test = _split_synthetic(synthetic_features)
-
-        # Manually call build_lightgbm_pipeline with 1 estimator on a constant zero target
-        from mandipulse.modeling.lightgbm_model import build_lightgbm_pipeline
-        from mandipulse.modeling.columns import CATEGORICAL_FEATURES
 
         feature_columns = NUMERIC_FEATURES + CATEGORICAL_FEATURES
         model = build_lightgbm_pipeline(n_estimators=1, num_leaves=2)
         # Train on zero residual
         model.fit(train[feature_columns], pd.Series(np.zeros(len(train)), index=train.index))
-        # Reconstruction: prediction = rolling_mean_7 + model.predict(X) ≈ rolling_mean_7 + ~0
+        # Reconstruction: prediction = rolling_mean_7 + model.predict(X) ~ rolling_mean_7 + ~0
         preds = test["rolling_mean_7"].to_numpy() + model.predict(test[feature_columns])
         np.testing.assert_allclose(preds, test["rolling_mean_7"].to_numpy(), atol=1.0)
 
