@@ -46,7 +46,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "--cov=mandipulse --cov-report=term-missing --cov-fail-under=69"
+addopts = "--cov=mandipulse --cov-report=term-missing --cov-fail-under=70"
 
 [tool.ruff]
 line-length = 100
