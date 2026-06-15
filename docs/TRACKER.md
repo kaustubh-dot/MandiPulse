@@ -18,7 +18,19 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Done (Milestone H — surface the backtest in the dashboard)
+### Next (Milestone I — beat the moving-average baseline honestly, M3-04)
+
+| ID | Status | Task | Depends On |
+|---|---|---|---|
+| I-01 | Next | Add residual-target LightGBM (`lightgbm_residual` = `rolling_mean_7` + model(residual)); keep level-LightGBM for comparison | D3-06 |
+| I-02 | Next | Report + Decision section: residual vs moving-average on test MAE; promotion call | I-01 |
+| I-03 | Next | Wire promotion **only if** residual beats moving-average on test; else change nothing downstream | I-02 |
+| I-04 | Next | Tests: reconstruction correctness + residual-target leakage guard | I-01 |
+| I-05 | Next | Docs: lightgbm report, README modeling status, TRACKER, ARCHITECTURE (if forecaster changed) | I-02 |
+
+Plan: `docs/MILESTONE_I_PLAN.md`. Modeling only — no dashboard or data-store changes. Promotion earned on **test**, not validation. A negative result (baseline stays) is an acceptable, honest outcome.
+
+### Done (Milestone H — surface the backtest in the dashboard, `1e34297`)
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
@@ -55,7 +67,6 @@ Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| I-01 (M3-04) | Pending | Milestone I: reformulate target or features to beat moving-average baseline honestly | D3-06 |
 | J-01 | Pending | Milestone J: adopt DuckDB as local store per RULES §Architecture (or document justification) + `pytest --cov` gating | - |
 
 ### Done
