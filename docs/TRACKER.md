@@ -18,11 +18,19 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Next (Milestone J — DuckDB + coverage gating)
+### Next (Milestone J — DuckDB read-layer + coverage gating)
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| J-01 | Next | Adopt DuckDB as local store per RULES §Architecture (or document justification) + `pytest --cov` gating | - |
+| J-01 | Next | `DuckDBStore` read-layer in `data/store.py` (DuckDB over CSV; CSV stays source of truth) | - |
+| J-02 | Next | Route `data_access.py` reads through the store; preserve stop-vs-degrade guards | J-01 |
+| J-03 | Next | Route backtest/script input reads through the store where drop-in (no write-path change) | J-01 |
+| J-04 | Next | `pytest --cov-fail-under` floor (~58% baseline) + cheap util tests to lift it honestly | - |
+| J-05 | Next | Store tests: read-parity vs pd.read_csv, date parsing, missing-file error | J-01 |
+| J-06 | Next | Docs: ARCHITECTURE storage decision, TRACKER, README; MVP loop RULES-complete | J-02 |
+
+Plan: `docs/MILESTONE_J_PLAN.md`. Decision: DuckDB is a **read-layer over CSV**, not a storage rewrite —
+CSV stays the on-disk source of truth. Data-access + tests + docs only; no modeling/forecaster/number changes.
 
 ### Done (Milestone I — residual-target reformulation, M3-04)
 
