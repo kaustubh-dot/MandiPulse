@@ -56,7 +56,7 @@ Artifacts land in `artifacts/` and reports in `reports/`. Both are git-ignored.
 ## Launch the Dashboard
 
 ```powershell
-streamlit run app\Home.py
+streamlit run app\streamlit_app.py
 ```
 
 Open `http://localhost:8501` in a browser. The dashboard reads artifacts from the pipeline output;
@@ -76,7 +76,7 @@ Coverage floor: 69%. 139 tests across 12 test files.
 |---|---|
 | Shipped forecaster | moving_average_7d |
 | Test MAE | 139.57 INR/quintal |
-| Nominal interval coverage (90%) | 86.63% empirical |
+| Nominal interval coverage (90%) | 86.71% empirical (test, out-of-sample) |
 | Recommendation regret@1 | 296.3 INR/qtl vs 370.1 nearest-mandi baseline |
 | Beats nearest-mandi baseline | 78.8% of as-of dates |
 
