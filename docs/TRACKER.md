@@ -18,6 +18,17 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
+### Done (Milestone K — release hardening + freeze, v0.1-mvp)
+
+| ID | Status | Task | Depends On |
+|---|---|---|---|
+| K-01 | Done | End-to-end pipeline smoke test: 4 tests guard clean-panel→features→predictions→recommendations wiring | - |
+| K-02 | Done | Cover `modeling/tracking.py` (MLflow glue): URI resolution + absent-degradation tests; tracking.py 73% | - |
+| K-03 | Done | Raise `--cov-fail-under` to 69; post-K coverage 70% | K-01, K-02 |
+| K-04 | Done | `RELEASE.md` runbook, TRACKER freeze note, README status line | K-01..K-03 |
+
+**MVP is FROZEN at v0.1-mvp.** 139 tests, 70% coverage. Post-MVP work requires RULES.md + TRACKER scope promotion.
+
 ### Done (Milestone J — DuckDB read-layer + coverage gating)
 
 | ID | Status | Task | Depends On |

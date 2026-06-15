@@ -1,5 +1,7 @@
 # MandiPulse India
 
+**Status: v0.1-mvp (frozen)** — Onion/Maharashtra offline MVP complete. Post-MVP scope requires RULES.md + TRACKER promotion.
+
 MandiPulse India is a transport-cost-aware mandi decision intelligence system. The MVP is deliberately narrow: an offline Onion/Maharashtra showcase that forecasts a 7-day price, subtracts transparent distance-based transport cost, and ranks nearby mandis.
 
 ## Current Implementation Path
