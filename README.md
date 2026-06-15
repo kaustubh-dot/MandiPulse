@@ -6,8 +6,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-70%25-green)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
-> **Live Demo:** _Deploy to Streamlit Community Cloud and paste your URL here._
-> See [Deploy in 3 steps](#deploy-in-3-steps) below.
+> **[Live Demo → mandipulse.streamlit.app](https://mandipulse.streamlit.app/)**
 
 ---
 
