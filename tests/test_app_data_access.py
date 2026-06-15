@@ -113,12 +113,15 @@ class TestMissingArtifactGuard:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             missing_path = Path(tmpdir) / "nonexistent.csv"
+            empty_sample_dir = Path(tmpdir) / "empty_sample"
+            empty_sample_dir.mkdir()
 
             mock_stop = MagicMock()
             mock_error = MagicMock()
 
             with (
                 patch.object(data_access, "forecast_outputs_path", return_value=missing_path),
+                patch.object(data_access, "_SAMPLE_DIR", empty_sample_dir),
                 patch("streamlit.stop", mock_stop),
                 patch("streamlit.error", mock_error),
             ):
@@ -144,8 +147,13 @@ class TestLoadRecommendationBacktest:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             missing_path = Path(tmpdir) / "recommendation_backtest_7d.csv"
-            with patch.object(
-                data_access, "recommendation_backtest_path", return_value=missing_path
+            empty_sample_dir = Path(tmpdir) / "empty_sample"
+            empty_sample_dir.mkdir()
+            with (
+                patch.object(
+                    data_access, "recommendation_backtest_path", return_value=missing_path
+                ),
+                patch.object(data_access, "_SAMPLE_DIR", empty_sample_dir),
             ):
                 fn = getattr(
                     data_access.load_recommendation_backtest,

@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import streamlit as st  # noqa: E402
 
-from mandipulse.app.data_access import add_staleness_days, load_forecasts  # noqa: E402
+from mandipulse.app.data_access import RUNNING_ON_SAMPLE, add_staleness_days, load_forecasts  # noqa: E402
 
 st.set_page_config(
     page_title="MandiPulse India",
@@ -34,9 +34,16 @@ st.caption(
     f"Data: CEDA/AGMARKNET · Latest as-of date: {_as_of_label} (offline showcase)"
 )
 
+_data_source_note = (
+    "Running on **bundled demo data** (Oct 2025 snapshot, column-trimmed). "
+    "Clone the repo and run the full pipeline to load all columns."
+    if RUNNING_ON_SAMPLE
+    else "Running on **local pipeline artifacts** (full data)."
+)
 st.info(
-    "**Offline Demo Mode** — all forecasts and recommendations are computed from cached data "
-    "(Oct 2025). No live API key is required. Use the sidebar to navigate between pages.",
+    f"**Offline Demo Mode** — all forecasts and recommendations are computed from cached data "
+    f"(Oct 2025). No live API key is required. {_data_source_note} "
+    "Use the sidebar to navigate between pages.",
     icon="ℹ️",
 )
 

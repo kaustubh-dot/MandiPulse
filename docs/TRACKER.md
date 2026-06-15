@@ -18,6 +18,20 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
+### Done (Milestone L — clone-runnable demo + Streamlit Cloud deploy)
+
+| ID | Status | Task | Depends On |
+|---|---|---|---|
+| L-01 | Done | `build_demo_sample.py`: slim committed bundle in `data/sample/` (2.4 MB, parity-verified) | - |
+| L-02 | Done | Read-layer fallback in `data_access.py`: full artifact → demo sample → stop; `RUNNING_ON_SAMPLE` flag | L-01 |
+| L-03 | Done | Commit bundle; allow `data/sample/` in `.gitignore` | L-01 |
+| L-04 | Done | `requirements.txt` already present; Streamlit Cloud deploy instructions in README | L-02, L-03 |
+| L-05 | Done | README overhaul: 2-min quickstart, honest results table, architecture diagram, deploy steps | L-04 |
+| L-06 | Done | `test_demo_fallback.py` (8 tests); fix 2 broken existing tests; coverage floor 69→70; 147 tests | all |
+
+**Dashboard runs from a fresh clone on the bundled Oct 2025 snapshot.** No pipeline run required.
+To deploy: connect repo on share.streamlit.io, set entrypoint to `app/streamlit_app.py`, no secrets needed.
+
 ### Done (Milestone K — release hardening + freeze, v0.1-mvp)
 
 | ID | Status | Task | Depends On |

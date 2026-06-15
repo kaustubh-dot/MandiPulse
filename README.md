@@ -1,119 +1,162 @@
 # MandiPulse India
 
-**Status: v0.1-mvp (frozen)** — Onion/Maharashtra offline MVP complete. Post-MVP scope requires RULES.md + TRACKER promotion.
+**Transport-cost-aware mandi decision intelligence for Maharashtra onion farmers.**
 
-MandiPulse India is a transport-cost-aware mandi decision intelligence system. The MVP is deliberately narrow: an offline Onion/Maharashtra showcase that forecasts a 7-day price, subtracts transparent distance-based transport cost, and ranks nearby mandis.
+[![Tests](https://img.shields.io/badge/tests-139%20passed-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-70%25-green)](pyproject.toml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
-## Current Implementation Path
+> **Live Demo:** _Deploy to Streamlit Community Cloud and paste your URL here._
+> See [Deploy in 3 steps](#deploy-in-3-steps) below.
 
-The primary mandi data path is AGMARKNET data through the CEDA API.
+---
 
-- Documentation: `https://api.ceda.ashoka.edu.in/documentation/`
-- API base: `https://api.ceda.ashoka.edu.in/v1`
-- Auth env var: `CEDA_API_TOKEN`
-- Fallback: Data.gov.in / AGMARKNET only if registration becomes available later
+## The problem
 
-CEDA uses numeric IDs. Day 0 validation has confirmed Onion (`commodity_id=23`) and Maharashtra (`state_id=27`). The static historical dump has been saved locally, so modeling work no longer depends on a live API key.
+Maharashtra onion farmers choose which mandi (market) to sell at based on word-of-mouth and nearest
+distance. They ignore transport cost, forecast uncertainty, and historical ranking quality. A farmer
+who drives 40 km to a mandi with a higher forecast price can still lose money if transport costs
+exceed the price premium.
 
-## Local Setup
+MandiPulse forecasts 7-day prices across 15 mandis, subtracts transparent distance-based transport
+cost, and ranks mandis by **net expected price** with uncertainty bounds and risk labels.
+
+---
+
+## Honest results
+
+LightGBM was trained and evaluated — it **did not beat the 7-day moving-average baseline** on the
+held-out test split. The baseline ships. This is reported transparently.
+
+| Model | Test MAE (INR/qtl) | Ships? |
+|---|---|---|
+| `moving_average_7d` | **139.57** | Yes |
+| `ridge` | 224.43 | No |
+| `lightgbm` | 188.2 | No |
+| `lightgbm_residual` | 195.63 | No |
+
+Forecast uncertainty intervals (nominal 90%) achieved **86.71% empirical coverage** on the test
+split — conservative, safe to show to users.
+
+Recommendation backtest (regret@K vs nearest-mandi baseline, held-out test window):
+
+| Metric | Value |
+|---|---|
+| Mean regret@1 | 296.3 INR/qtl |
+| Nearest-mandi baseline regret | 370.1 INR/qtl |
+| Beats nearest-mandi | 78.8% of dates |
+
+---
+
+## Architecture
+
+```
+CEDA/AGMARKNET cache
+       |
+ clean daily panel  (15 mandis × 2020–2025)
+       |
+ leakage-safe features  (lags/rolling/calendar — no future data)
+       |
+ temporal split  (train/val/test — no random splits)
+       |
+ baseline comparison  (moving-avg wins)
+       |
+ residual uncertainty intervals  (validation calibration)
+       |
+ transport-aware recommendation ranking  (haversine + cost/km)
+       |
+ regret@K backtest  (vs nearest-mandi baseline)
+       |
+ Streamlit dashboard  (Data Coverage · Forecast · Recommendation)
+```
+
+Data reads go through a DuckDB query layer (`src/mandipulse/data/store.py`). CSV files remain the
+on-disk source of truth; DuckDB is the read interface per `docs/RULES.md §Architecture`.
+
+---
+
+## Quickstart (2 minutes, no pipeline run required)
+
+The repo ships a bundled demo dataset (`data/sample/`) so the dashboard works from a fresh clone.
 
 ```powershell
+git clone https://github.com/kaustubh-dot/MandiPulse.git
+cd MandiPulse
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
+streamlit run app\streamlit_app.py
 ```
 
-Processed data is queried through a DuckDB read-layer (`src/mandipulse/data/store.py`) — CSV files remain the on-disk source of truth; DuckDB is the query interface per RULES §Architecture. No `.duckdb` file is committed.
+Open `http://localhost:8501`. All three pages load on the bundled Oct 2025 snapshot — no CEDA key,
+no full pipeline run. A banner in the app shows which data source is active.
 
-For simple runtime-only installs, such as basic deployment environments:
+> **Run the full pipeline** to replace the demo bundle with your own freshly-generated artifacts.
+> See [RELEASE.md](RELEASE.md) for the 7-stage pipeline runbook.
+
+---
+
+## Deploy in 3 steps
+
+1. Fork this repo (or push to your GitHub account).
+2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with GitHub, click **New app**.
+3. Set: **Repository** = this repo, **Branch** = `main`, **Main file** = `app/streamlit_app.py`.
+
+No secrets required. The app runs entirely on the committed demo bundle.
+
+Paste the resulting URL in the badge at the top of this README.
+
+---
+
+## Run the full pipeline
+
+If you want to generate fresh artifacts from the raw CEDA data:
 
 ```powershell
-python -m pip install -r requirements.txt
+python scripts\build_clean_onion_panel.py
+python scripts\build_feature_table.py
+python scripts\train_baselines_7d.py
+python scripts\run_baseline_sensitivity_7d.py
+python scripts\train_lightgbm_7d.py
+python scripts\build_forecast_intervals_7d.py
+python scripts\build_recommendations_7d.py
+python scripts\run_recommendation_backtest_7d.py
 ```
 
-Create a local `.env` from `.env.example` and set:
+See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
 
-```text
-CEDA_API_TOKEN=your_ceda_token
-```
+---
 
-Do not commit `.env`, raw datasets, model artifacts, or MLflow runs.
-
-## Day 0 Validation
-
-Run the CEDA validation script before writing full ingestion:
+## Tests
 
 ```powershell
-python scripts\day0_validate_ceda.py --from-date 2025-03-01 --to-date 2025-03-31
+pytest
 ```
 
-The script writes small reproducibility samples under `data/raw/samples/`, which is intentionally ignored by git.
+139 tests, 70% coverage, `--cov-fail-under=69`. Includes pipeline smoke tests, leakage guards,
+temporal-split validation, recommendation scoring, and data-store parity tests.
 
-Day 0 is complete when `docs/DATA_SOURCES.md` contains:
+---
 
-- Confirmed auth behavior
-- Commodity, state, district, and market ID findings
-- Onion/Maharashtra sample status
-- Date-range and rate-limit notes
-- Sample response paths
+## Project docs
 
-## MVP Data Pipeline
+| Doc | Contents |
+|---|---|
+| [RELEASE.md](RELEASE.md) | Full pipeline runbook, key metrics, deploy instructions |
+| [docs/RULES.md](docs/RULES.md) | Development rules (authoritative scope guard) |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, storage decision, data flow |
+| [docs/TRACKER.md](docs/TRACKER.md) | Milestone history; v0.1-mvp is frozen |
+| [docs/PRD.md](docs/PRD.md) | Product scope and requirements |
+| [reports/modeling/](reports/modeling/) | Committed model and evaluation reports |
 
-The raw CEDA dump has already been captured locally. Re-run only if you need to refresh it:
+---
+
+## Setup for data ingestion (optional)
+
+The static historical dump is already used for all modeling. Re-fetch only if you need to refresh:
 
 ```powershell
 python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13
 ```
 
-Build the cleaned panel and 7-day feature table:
-
-```powershell
-python scripts\build_clean_onion_panel.py
-python scripts\build_feature_table.py
-```
-
-Evaluate the first temporal baselines:
-
-```powershell
-python scripts\train_baselines_7d.py
-```
-
-Run the imputation sensitivity check and first LightGBM pass:
-
-```powershell
-python scripts\run_baseline_sensitivity_7d.py
-python scripts\train_lightgbm_7d.py
-python scripts\build_forecast_intervals_7d.py
-```
-
-Current status:
-
-- Best test baseline remains `moving_average_7d` at 139.57 INR/quintal.
-- The observed-only sensitivity check did not change the ranking; `moving_average_7d` improved modestly to 133.61 MAE on the stricter subset, so the 3-day forward-fill policy is not the main reason the baseline wins.
-- Ridge still underperforms at 224.43 MAE on the full test split.
-- The first LightGBM run underperformed the baseline at 188.2 test MAE.
-- **Residual-target reformulation (M3-04):** LightGBM retrained on the residual `target - rolling_mean_7` (prediction = `rolling_mean_7 + model(residual)`). Result: test MAE 195.63 — still worse than the baseline (139.57). No promotion. Moving-average remains the shipped forecaster. See `reports/modeling/lightgbm_metrics_7d.md` for the full comparison and Decision section.
-- Residual uncertainty intervals are now available for the MVP baseline. The nominal 90% interval calibrated on validation achieved 86.63% empirical coverage on the held-out test split, and latest-per-mandi forecasts are written to `artifacts/forecasts/forecast_outputs_7d.csv`.
-
-Build transport-aware recommendations and run the recommendation quality backtest:
-
-```powershell
-python scripts\build_recommendations_7d.py
-python scripts\run_recommendation_backtest_7d.py
-```
-
-The backtest evaluates ranking quality over the held-out test split using regret@K vs a nearest-mandi baseline. On the current test window, the ranking achieves mean regret@1 of 296.3 INR/qtl vs 370.1 INR/qtl for the nearest-mandi baseline, and beats the baseline on 78.8% of as-of dates. These are offline backtest results on historical data; past performance does not guarantee future results.
-
-The Recommendation page in the Streamlit app surfaces these metrics when the backtest artifact exists.
-
-Raw and processed CSVs are ignored by Git. Reproducible scripts and small reports are committed.
-
-## Project Docs
-
-- Product scope: `docs/PRD.md`
-- Architecture: `docs/ARCHITECTURE.md`
-- Data-source contract: `docs/DATA_SOURCES.md`
-- Data schema: `docs/DATA_SCHEMA.md`
-- Implementation plan: `docs/IMPLEMENTATION_PLAN.md`
-- Tracker: `docs/TRACKER.md`
-- Development rules: `docs/RULES.md`
+Requires a CEDA API token — create `.env` from `.env.example` and set `CEDA_API_TOKEN`.

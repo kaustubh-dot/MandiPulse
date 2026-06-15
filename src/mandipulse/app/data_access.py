@@ -8,6 +8,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+from mandipulse.config import PROJECT_ROOT  # noqa: E402
 from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
 from mandipulse.paths import (  # noqa: E402
     clean_panel_path,
@@ -18,6 +19,28 @@ from mandipulse.paths import (  # noqa: E402
     recommendation_outputs_path,
     reports_modeling_dir,
 )
+
+_SAMPLE_DIR = PROJECT_ROOT / "data" / "sample"
+
+# Set to True by _resolve_or_sample when the app is running on the bundled demo data.
+# Home reads this flag to show an honest "bundled demo" notice.
+RUNNING_ON_SAMPLE: bool = False
+
+
+def _resolve_or_sample(full_path: Path, sample_name: str) -> Path:
+    """Return full_path when it exists; fall back to the committed demo sample otherwise.
+
+    If neither exists, returns full_path so the caller's exists()-guard fires and
+    _missing_artifact_error stops the app — same contract as before this function existed.
+    """
+    global RUNNING_ON_SAMPLE
+    if full_path.exists():
+        return full_path
+    sample = _SAMPLE_DIR / sample_name
+    if sample.exists():
+        RUNNING_ON_SAMPLE = True
+        return sample
+    return full_path
 
 
 def _missing_artifact_error(path: Path) -> None:
@@ -38,7 +61,7 @@ def _missing_artifact_error(path: Path) -> None:
 
 @st.cache_data(show_spinner=False)
 def load_clean_panel() -> pd.DataFrame:
-    path = clean_panel_path()
+    path = _resolve_or_sample(clean_panel_path(), "clean_mandi_prices.csv")
     if not path.exists():
         _missing_artifact_error(path)
     return read_csv_via_duckdb(path, parse_dates=["date"])
@@ -46,7 +69,7 @@ def load_clean_panel() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_feature_table() -> pd.DataFrame:
-    path = feature_table_path()
+    path = _resolve_or_sample(feature_table_path(), "feature_table_7d.csv")
     if not path.exists():
         _missing_artifact_error(path)
     return read_csv_via_duckdb(path, parse_dates=["date"])
@@ -54,7 +77,7 @@ def load_feature_table() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_forecasts() -> pd.DataFrame:
-    path = forecast_outputs_path()
+    path = _resolve_or_sample(forecast_outputs_path(), "forecast_outputs_7d.csv")
     if not path.exists():
         _missing_artifact_error(path)
     return read_csv_via_duckdb(path)
@@ -79,8 +102,9 @@ def load_recommendation_backtest() -> pd.DataFrame | None:
 
     Unlike the mandatory artifacts, the backtest is optional context — a missing
     file must NOT stop the page. Return None and let the caller show guidance.
+    Falls back to the demo sample when the full artifact is absent.
     """
-    path = recommendation_backtest_path()
+    path = _resolve_or_sample(recommendation_backtest_path(), "recommendation_backtest_7d.csv")
     if not path.exists():
         return None
     return read_csv_via_duckdb(path)
