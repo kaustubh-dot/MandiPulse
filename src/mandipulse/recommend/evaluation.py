@@ -109,6 +109,53 @@ def nearest_mandi_regret(
     return best_realized - nearest_realized
 
 
+def summarize_backtest(backtest: pd.DataFrame, k_values: list[int]) -> dict:
+    """Return headline backtest metrics as a flat dict (no I/O, no formatting).
+
+    Keys per k in k_values: regret_at_{k}_mean, regret_at_{k}_median,
+    optimal_rate_{k} (fraction top-K captured the best mandi, i.e. regret<=0),
+    beats_nearest_{k} (fraction where regret_at_k < nearest_mandi_regret).
+    Plus: nearest_mandi_regret_mean, nearest_mandi_regret_median,
+    n_dates, date_min, date_max, n_dropped.
+    Returns {} for an empty frame.
+    """
+    if backtest.empty:
+        return {}
+
+    result: dict = {}
+
+    for k in k_values:
+        col = f"regret_at_{k}"
+        if col not in backtest.columns:
+            continue
+        valid = backtest[col].dropna()
+        result[f"regret_at_{k}_mean"] = float(valid.mean()) if not valid.empty else float("nan")
+        result[f"regret_at_{k}_median"] = float(valid.median()) if not valid.empty else float("nan")
+        result[f"optimal_rate_{k}"] = (
+            float((valid <= 0).mean()) if not valid.empty else float("nan")
+        )
+        both = backtest[[col, "nearest_mandi_regret"]].dropna()
+        result[f"beats_nearest_{k}"] = (
+            float((both[col] < both["nearest_mandi_regret"]).mean())
+            if not both.empty
+            else float("nan")
+        )
+
+    nm_regret = backtest["nearest_mandi_regret"].dropna()
+    result["nearest_mandi_regret_mean"] = (
+        float(nm_regret.mean()) if not nm_regret.empty else float("nan")
+    )
+    result["nearest_mandi_regret_median"] = (
+        float(nm_regret.median()) if not nm_regret.empty else float("nan")
+    )
+    result["n_dates"] = len(backtest)
+    result["date_min"] = str(backtest["as_of_date"].min())
+    result["date_max"] = str(backtest["as_of_date"].max())
+    result["n_dropped"] = int(backtest["n_dropped"].sum())
+
+    return result
+
+
 def backtest_recommendations(
     panel: pd.DataFrame,
     mandis: pd.DataFrame,

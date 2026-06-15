@@ -90,6 +90,17 @@ Current status:
 - The first LightGBM run underperformed the baseline at 187.75 test MAE, so the current story is "strong honest benchmark first" rather than "booster already won."
 - Residual uncertainty intervals are now available for the MVP baseline. The nominal 90% interval calibrated on validation achieved 86.63% empirical coverage on the held-out test split, and latest-per-mandi forecasts are written to `artifacts/forecasts/forecast_outputs_7d.csv`.
 
+Build transport-aware recommendations and run the recommendation quality backtest:
+
+```powershell
+python scripts\build_recommendations_7d.py
+python scripts\run_recommendation_backtest_7d.py
+```
+
+The backtest evaluates ranking quality over the held-out test split using regret@K vs a nearest-mandi baseline. On the current test window, the ranking achieves mean regret@1 of 296.3 INR/qtl vs 370.1 INR/qtl for the nearest-mandi baseline, and beats the baseline on 78.8% of as-of dates. These are offline backtest results on historical data; past performance does not guarantee future results.
+
+The Recommendation page in the Streamlit app surfaces these metrics when the backtest artifact exists.
+
 Raw and processed CSVs are ignored by Git. Reproducible scripts and small reports are committed.
 
 ## Project Docs

@@ -13,6 +13,7 @@ from mandipulse.paths import (  # noqa: E402
     feature_table_path,
     forecast_outputs_path,
     mvp_mandis_path,
+    recommendation_backtest_path,
     recommendation_outputs_path,
     reports_modeling_dir,
 )
@@ -73,6 +74,19 @@ def load_recommendations() -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def load_mandi_metadata() -> pd.DataFrame:
     return pd.read_csv(mvp_mandis_path())
+
+
+@st.cache_data(show_spinner=False)
+def load_recommendation_backtest() -> pd.DataFrame | None:
+    """Load the backtest artifact, or return None if it has not been generated yet.
+
+    Unlike the mandatory artifacts, the backtest is optional context — a missing
+    file must NOT stop the page. Return None and let the caller show guidance.
+    """
+    path = recommendation_backtest_path()
+    if not path.exists():
+        return None
+    return pd.read_csv(path)
 
 
 @st.cache_data(show_spinner=False)
