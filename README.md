@@ -21,6 +21,8 @@ python -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
+Processed data is queried through a DuckDB read-layer (`src/mandipulse/data/store.py`) — CSV files remain the on-disk source of truth; DuckDB is the query interface per RULES §Architecture. No `.duckdb` file is committed.
+
 For simple runtime-only installs, such as basic deployment environments:
 
 ```powershell

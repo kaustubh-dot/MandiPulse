@@ -8,6 +8,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
 from mandipulse.paths import (  # noqa: E402
     clean_panel_path,
     feature_table_path,
@@ -40,9 +41,7 @@ def load_clean_panel() -> pd.DataFrame:
     path = clean_panel_path()
     if not path.exists():
         _missing_artifact_error(path)
-    df = pd.read_csv(path)
-    df["date"] = pd.to_datetime(df["date"])
-    return df
+    return read_csv_via_duckdb(path, parse_dates=["date"])
 
 
 @st.cache_data(show_spinner=False)
@@ -50,9 +49,7 @@ def load_feature_table() -> pd.DataFrame:
     path = feature_table_path()
     if not path.exists():
         _missing_artifact_error(path)
-    df = pd.read_csv(path)
-    df["date"] = pd.to_datetime(df["date"])
-    return df
+    return read_csv_via_duckdb(path, parse_dates=["date"])
 
 
 @st.cache_data(show_spinner=False)
@@ -60,7 +57,7 @@ def load_forecasts() -> pd.DataFrame:
     path = forecast_outputs_path()
     if not path.exists():
         _missing_artifact_error(path)
-    return pd.read_csv(path)
+    return read_csv_via_duckdb(path)
 
 
 @st.cache_data(show_spinner=False)
@@ -68,12 +65,12 @@ def load_recommendations() -> pd.DataFrame:
     path = recommendation_outputs_path()
     if not path.exists():
         _missing_artifact_error(path)
-    return pd.read_csv(path)
+    return read_csv_via_duckdb(path)
 
 
 @st.cache_data(show_spinner=False)
 def load_mandi_metadata() -> pd.DataFrame:
-    return pd.read_csv(mvp_mandis_path())
+    return read_csv_via_duckdb(mvp_mandis_path())
 
 
 @st.cache_data(show_spinner=False)
@@ -86,7 +83,7 @@ def load_recommendation_backtest() -> pd.DataFrame | None:
     path = recommendation_backtest_path()
     if not path.exists():
         return None
-    return pd.read_csv(path)
+    return read_csv_via_duckdb(path)
 
 
 @st.cache_data(show_spinner=False)

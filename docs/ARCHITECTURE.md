@@ -50,6 +50,16 @@ flowchart TD
 
 The Recommendation page reads the backtest artifact (`artifacts/recommendations/recommendation_backtest_7d.csv`) as optional context. If absent, it shows a guidance message; the live ranking still renders.
 
+## Storage Decision
+
+**CSV = source of truth. DuckDB = query interface.**
+
+The `build_*` and `train_*` scripts write processed data as CSV files (reproducible, diff-friendly, git-trackable for small reports). The dashboard and evaluation scripts read those CSVs through a DuckDB query layer (`src/mandipulse/data/store.py::read_csv_via_duckdb`), satisfying RULES §Architecture ("Use DuckDB as the default local data store") without a storage rewrite.
+
+Rationale: at MVP scale (15 mandis, ~20k rows), persisting tables into a `.duckdb` file adds no query performance benefit and would make every processed artifact a binary generated file requiring regeneration before the app can run. The read-layer approach keeps artifacts reproducible from scripts alone, keeps reports text-diffable in git, and still routes all reads through DuckDB as the query interface.
+
+The `.duckdb` file (if ever persisted) is gitignored and never a required committed artifact. In-memory DuckDB connections are used per read — cheap at MVP scale and safe for Streamlit's `@st.cache_data` (connections are not cached, only the resulting DataFrames are).
+
 ## Local Artifacts
 
 | Artifact | Path | Status |
