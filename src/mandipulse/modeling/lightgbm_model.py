@@ -103,3 +103,59 @@ def predict_lightgbm(
         frame["prediction"] = model.predict(split_df[feature_columns])
         frames.append(frame)
     return pd.concat(frames, ignore_index=True)
+
+
+def predict_lightgbm_residual(
+    train: pd.DataFrame,
+    validation: pd.DataFrame,
+    test: pd.DataFrame,
+    n_estimators: int = 400,
+    learning_rate: float = 0.05,
+    num_leaves: int = 31,
+    min_child_samples: int = 20,
+    subsample: float = 0.9,
+    colsample_bytree: float = 0.9,
+    reg_alpha: float = 0.0,
+    reg_lambda: float = 0.0,
+    random_state: int = 42,
+) -> pd.DataFrame:
+    """Train on residual target (target - rolling_mean_7); reconstruct as rolling_mean_7 + residual.
+
+    Same hyperparameters as predict_lightgbm so the only variable is the target formulation.
+    rolling_mean_7 is past-only in the feature table (backward window, min_periods=window),
+    so residual target = target_price_t_plus_7 - rolling_mean_7 is leakage-free.
+    """
+    model = build_lightgbm_pipeline(
+        n_estimators=n_estimators,
+        learning_rate=learning_rate,
+        num_leaves=num_leaves,
+        min_child_samples=min_child_samples,
+        subsample=subsample,
+        colsample_bytree=colsample_bytree,
+        reg_alpha=reg_alpha,
+        reg_lambda=reg_lambda,
+        random_state=random_state,
+    )
+    feature_columns = NUMERIC_FEATURES + CATEGORICAL_FEATURES
+    y_residual = train[TARGET_COLUMN] - train["rolling_mean_7"]
+    model.fit(train[feature_columns], y_residual)
+
+    frames: list[pd.DataFrame] = []
+    for split_name, split_df in [("validation", validation), ("test", test)]:
+        frame = split_df[
+            [
+                DATE_COLUMN,
+                MARKET_ID_COLUMN,
+                MARKET_NAME_COLUMN,
+                "mandi_id",
+                "district",
+                TARGET_COLUMN,
+            ]
+        ].copy()
+        frame["split"] = split_name
+        frame["model"] = "lightgbm_residual"
+        frame["prediction"] = split_df["rolling_mean_7"].to_numpy() + model.predict(
+            split_df[feature_columns]
+        )
+        frames.append(frame)
+    return pd.concat(frames, ignore_index=True)

@@ -87,7 +87,8 @@ Current status:
 - Best test baseline remains `moving_average_7d` at 139.57 INR/quintal.
 - The observed-only sensitivity check did not change the ranking; `moving_average_7d` improved modestly to 133.61 MAE on the stricter subset, so the 3-day forward-fill policy is not the main reason the baseline wins.
 - Ridge still underperforms at 224.43 MAE on the full test split.
-- The first LightGBM run underperformed the baseline at 187.75 test MAE, so the current story is "strong honest benchmark first" rather than "booster already won."
+- The first LightGBM run underperformed the baseline at 188.2 test MAE.
+- **Residual-target reformulation (M3-04):** LightGBM retrained on the residual `target - rolling_mean_7` (prediction = `rolling_mean_7 + model(residual)`). Result: test MAE 195.63 — still worse than the baseline (139.57). No promotion. Moving-average remains the shipped forecaster. See `reports/modeling/lightgbm_metrics_7d.md` for the full comparison and Decision section.
 - Residual uncertainty intervals are now available for the MVP baseline. The nominal 90% interval calibrated on validation achieved 86.63% empirical coverage on the held-out test split, and latest-per-mandi forecasts are written to `artifacts/forecasts/forecast_outputs_7d.csv`.
 
 Build transport-aware recommendations and run the recommendation quality backtest:
