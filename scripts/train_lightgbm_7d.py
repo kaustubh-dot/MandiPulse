@@ -19,6 +19,7 @@ from mandipulse.modeling.columns import (  # noqa: E402
 from mandipulse.modeling.lightgbm_model import (
     build_lightgbm_pipeline,
     predict_lightgbm,
+    predict_lightgbm_residual,
 )  # noqa: E402
 from mandipulse.modeling.metrics import per_market_metrics, summarize_predictions  # noqa: E402
 from mandipulse.modeling.persistence import save_feature_schema, save_model  # noqa: E402
@@ -104,6 +105,10 @@ def write_report(
     lightgbm_test = test_summary[test_summary["model"] == "lightgbm"].iloc[0]
     moving_average_test = test_summary[test_summary["model"] == "moving_average_7d"].iloc[0]
     mae_delta = round(lightgbm_test["mae"] - moving_average_test["mae"], 2)
+
+    residual_rows = test_summary[test_summary["model"] == "lightgbm_residual"]
+    residual_test = residual_rows.iloc[0] if not residual_rows.empty else None
+
     best_market_table = (
         per_market[(per_market["split"] == "test") & (per_market["model"] == "lightgbm")]
         .sort_values("mae")
@@ -127,23 +132,71 @@ def write_report(
         f"- Test rows: {len(test):,}",
         f"- Markets: {train[MARKET_ID_COLUMN].nunique():,}",
         f"- Best test model by MAE: `{best_test['model']}` ({best_test['mae']} INR/quintal)",
-        f"- LightGBM test MAE: {lightgbm_test['mae']} INR/quintal",
+        f"- LightGBM (level) test MAE: {lightgbm_test['mae']} INR/quintal",
         f"- Moving-average 7d test MAE: {moving_average_test['mae']} INR/quintal",
-        f"- LightGBM MAE delta vs moving_average_7d: {mae_delta} INR/quintal",
+        f"- LightGBM (level) MAE delta vs moving_average_7d: {mae_delta} INR/quintal",
+    ]
+
+    if residual_test is not None:
+        residual_delta = round(residual_test["mae"] - moving_average_test["mae"], 2)
+        lines.append(
+            f"- LightGBM (residual) test MAE: {residual_test['mae']} INR/quintal"
+            f" (delta vs moving_average_7d: {residual_delta:+.2f} INR/quintal)"
+        )
+
+    lines += [
         "",
         "## Overall Metrics",
         "",
         dataframe_to_markdown(summary.sort_values(["split", "mae"]).reset_index(drop=True)),
         "",
-        "## LightGBM Test Metrics By Mandi",
+        "## LightGBM (Level) Test Metrics By Mandi",
         "",
         dataframe_to_markdown(best_market_table),
         "",
+        "## Decision: Residual-Target Reformulation (M3-04)",
+        "",
+    ]
+
+    if residual_test is not None:
+        residual_mae = float(residual_test["mae"])
+        ma_mae = float(moving_average_test["mae"])
+        residual_delta = round(residual_mae - ma_mae, 2)
+        beats = residual_mae < ma_mae
+        lines += [
+            f"- Residual-LightGBM test MAE: **{residual_mae:.2f} INR/quintal**",
+            f"- Moving-average baseline test MAE: **{ma_mae:.2f} INR/quintal**",
+            f"- Delta: **{residual_delta:+.2f} INR/quintal** ({'residual wins' if beats else 'baseline wins'})",
+            "",
+        ]
+        if beats:
+            lines += [
+                "**Promotion: YES.** The residual-target LightGBM beats the moving-average baseline "
+                "on the held-out test split. It becomes the shipped forecaster.",
+                "Downstream artifacts (forecast intervals, recommendations, backtest) are regenerated "
+                "with `lightgbm_residual` predictions.",
+            ]
+        else:
+            lines += [
+                "**Promotion: NO.** The residual-target LightGBM does not beat the moving-average "
+                "baseline on the held-out test split. The baseline remains the shipped forecaster.",
+                "This is an honest outcome: a smaller residual-target variance reduces overfitting "
+                "but the model has not found exploitable signal beyond the baseline.",
+                "Next lever: richer exogenous features (arrivals, weather) or a different model family.",
+            ]
+    else:
+        lines.append("*Residual model results not available in this run.*")
+
+    lines += [
+        "",
         "## Interview Note",
         "",
-        "- If LightGBM beats the moving average baseline, the nonlinear model earns its place in the MVP loop.",
-        "- If it does not, the honest story is still strong: the baseline is tough, and the next lever is target reformulation or richer exogenous features rather than pretending the booster won.",
+        "- Level-LightGBM (absolute target): overfits to training price levels; eats distribution shift on test.",
+        "- Residual-LightGBM (target - rolling_mean_7): isolates what the baseline misses; can only add value where real signal exists.",
+        "- See Decision section above for the promotion outcome of the residual experiment.",
+        "- If neither model beats the baseline, the honest story remains strong: the baseline is tough, and the project reports that transparently.",
     ]
+
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -183,7 +236,24 @@ def main() -> int:
         reg_lambda=args.reg_lambda,
         random_state=args.random_state,
     )
-    all_predictions = pd.concat([baseline_predictions, lightgbm_predictions], ignore_index=True)
+    lightgbm_residual_predictions = predict_lightgbm_residual(
+        train,
+        validation,
+        test,
+        n_estimators=args.n_estimators,
+        learning_rate=args.learning_rate,
+        num_leaves=args.num_leaves,
+        min_child_samples=args.min_child_samples,
+        subsample=args.subsample,
+        colsample_bytree=args.colsample_bytree,
+        reg_alpha=args.reg_alpha,
+        reg_lambda=args.reg_lambda,
+        random_state=args.random_state,
+    )
+    all_predictions = pd.concat(
+        [baseline_predictions, lightgbm_predictions, lightgbm_residual_predictions],
+        ignore_index=True,
+    )
     all_predictions = all_predictions.dropna(subset=["prediction", TARGET_COLUMN]).reset_index(
         drop=True
     )

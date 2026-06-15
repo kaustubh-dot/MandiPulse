@@ -18,17 +18,23 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
-### Next (Milestone I — beat the moving-average baseline honestly, M3-04)
+### Next (Milestone J — DuckDB + coverage gating)
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| I-01 | Next | Add residual-target LightGBM (`lightgbm_residual` = `rolling_mean_7` + model(residual)); keep level-LightGBM for comparison | D3-06 |
-| I-02 | Next | Report + Decision section: residual vs moving-average on test MAE; promotion call | I-01 |
-| I-03 | Next | Wire promotion **only if** residual beats moving-average on test; else change nothing downstream | I-02 |
-| I-04 | Next | Tests: reconstruction correctness + residual-target leakage guard | I-01 |
-| I-05 | Next | Docs: lightgbm report, README modeling status, TRACKER, ARCHITECTURE (if forecaster changed) | I-02 |
+| J-01 | Next | Adopt DuckDB as local store per RULES §Architecture (or document justification) + `pytest --cov` gating | - |
 
-Plan: `docs/MILESTONE_I_PLAN.md`. Modeling only — no dashboard or data-store changes. Promotion earned on **test**, not validation. A negative result (baseline stays) is an acceptable, honest outcome.
+### Done (Milestone I — residual-target reformulation, M3-04)
+
+| ID | Status | Task | Depends On |
+|---|---|---|---|
+| I-01 | Done | `predict_lightgbm_residual` in `lightgbm_model.py`; wired into `train_lightgbm_7d.py` alongside level model | D3-06 |
+| I-02 | Done | Report + Decision section: residual MAE 195.63 vs baseline 139.57; promotion = NO | I-01 |
+| I-03 | Done | No-op — baseline wins on test; moving-average remains shipped forecaster, nothing downstream changed | I-02 |
+| I-04 | Done | Tests: reconstruction correctness + leakage guard (106 tests total) | I-01 |
+| I-05 | Done | Docs: README modeling status, TRACKER; ARCHITECTURE unchanged (forecaster not promoted) | I-02 |
+
+Result: residual-LightGBM test MAE **195.63** vs moving-average **139.57** INR/quintal — baseline wins. Moving-average remains the shipped forecaster. Honest negative result documented in `reports/modeling/lightgbm_metrics_7d.md`.
 
 ### Done (Milestone H — surface the backtest in the dashboard, `1e34297`)
 
