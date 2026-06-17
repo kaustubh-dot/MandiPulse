@@ -18,6 +18,23 @@ Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`,
 
 ## Current Kanban
 
+### Done (Milestone M — FastAPI backend, post-MVP additive)
+
+| ID | Status | Task | Depends On |
+|---|---|---|---|
+| M-01 | Done | Scope promotion: RULES + TRACKER + reconcile API_SPEC.md; `requirements-api.txt` | - |
+| M-02 | Done | `src/mandipulse/data/loaders.py` (streamlit-free); `data_access.py` delegates | - |
+| M-03 | Done | `api/` package: `main.py`, `config.py`, `errors.py`, `schemas.py`, `routes.py` | M-01, M-02 |
+| M-04 | Done | `/health` + `/forecast` with mandi name resolution + typed errors | M-03 |
+| M-05 | Done | `/recommend` reusing `score_recommendations` verbatim | M-03 |
+| M-06 | Done | `tests/test_api.py` (22 tests) via TestClient over `data/sample/`; CI-safe | M-04, M-05 |
+| M-07 | Done | `docs/DEPLOY_API.md` (Render), README API section | M-04..M-06 |
+| M-08 | Done | ruff/black clean; 169 tests, 73% coverage | all |
+
+Promoted from Deferred: X-01 (FastAPI), X-02 (API tests). MVP data scope unchanged (onion/Maharashtra/7d).
+Endpoints: `/health`, `/forecast`, `/recommend`. `/regime` and `/metrics` remain deferred.
+Local run: `uvicorn api.main:app --reload` → `/docs` for Swagger UI.
+
 ### Done (Milestone L — clone-runnable demo + Streamlit Cloud deploy)
 
 | ID | Status | Task | Depends On |
@@ -146,8 +163,8 @@ Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
 
 | ID | Status | Task |
 |---|---|---|
-| X-01 | Deferred | FastAPI service |
-| X-02 | Deferred | API endpoint test suite |
+| X-01 | **Promoted → Milestone M** | FastAPI service |
+| X-02 | **Promoted → Milestone M** | API endpoint test suite |
 | X-03 | Deferred | Regime/anomaly detection |
 | X-04 | Deferred | Live monitoring/drift platform |
 | X-05 | Deferred | 14-day and 30-day forecasts |

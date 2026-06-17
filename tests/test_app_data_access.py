@@ -109,6 +109,7 @@ class TestMissingArtifactGuard:
         from pathlib import Path
         from unittest.mock import MagicMock, patch
 
+        import mandipulse.data.loaders as loaders
         from mandipulse.app import data_access
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -121,7 +122,7 @@ class TestMissingArtifactGuard:
 
             with (
                 patch.object(data_access, "forecast_outputs_path", return_value=missing_path),
-                patch.object(data_access, "_SAMPLE_DIR", empty_sample_dir),
+                patch.object(loaders, "SAMPLE_DIR", empty_sample_dir),
                 patch("streamlit.stop", mock_stop),
                 patch("streamlit.error", mock_error),
             ):
@@ -143,6 +144,7 @@ class TestLoadRecommendationBacktest:
         from pathlib import Path
         from unittest.mock import patch
 
+        import mandipulse.data.loaders as loaders
         from mandipulse.app import data_access
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -153,7 +155,7 @@ class TestLoadRecommendationBacktest:
                 patch.object(
                     data_access, "recommendation_backtest_path", return_value=missing_path
                 ),
-                patch.object(data_access, "_SAMPLE_DIR", empty_sample_dir),
+                patch.object(loaders, "SAMPLE_DIR", empty_sample_dir),
             ):
                 fn = getattr(
                     data_access.load_recommendation_backtest,

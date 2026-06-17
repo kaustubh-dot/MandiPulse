@@ -47,6 +47,7 @@ where = ["src"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "--cov=mandipulse --cov-report=term-missing --cov-fail-under=70"
+filterwarnings = ["ignore::DeprecationWarning:starlette"]
 
 [tool.ruff]
 line-length = 100

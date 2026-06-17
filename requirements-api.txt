@@ -1,0 +1,11 @@
+# Slim runtime dependencies for the FastAPI backend (Render deployment).
+# No lightgbm/shap/mlflow/sklearn/streamlit — forecasts are precomputed CSVs.
+# Keep aligned with [project.optional-dependencies.post-mvp] in pyproject.toml.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+duckdb>=1.0
+pandas>=2.2
+numpy>=1.26
+pydantic>=2.8
+pyyaml>=6.0
+python-dateutil>=2.9
