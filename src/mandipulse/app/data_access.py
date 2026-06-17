@@ -8,16 +8,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from mandipulse.data import loaders as _loaders  # noqa: E402
-from mandipulse.data.loaders import (  # noqa: E402
-    read_clean_panel,
-    read_feature_table,
-    read_forecasts,
-    read_mandi_metadata,
-    read_recommendation_backtest,
-    resolve_or_sample,
-    running_on_sample,
-)
+from mandipulse.data.loaders import resolve_or_sample, running_on_sample  # noqa: E402
 from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
 from mandipulse.paths import (  # noqa: E402
     clean_panel_path,
@@ -27,9 +18,6 @@ from mandipulse.paths import (  # noqa: E402
     recommendation_outputs_path,
     reports_modeling_dir,
 )
-
-# Patch target used by tests that patch _SAMPLE_DIR / _loaders.SAMPLE_DIR.
-_SAMPLE_DIR = _loaders.SAMPLE_DIR
 
 # Re-export running_on_sample() so Home can call RUNNING_ON_SAMPLE() from this module.
 # The flag lives in loaders.py (shared with the API); data_access just re-exports it.
@@ -62,7 +50,7 @@ def load_clean_panel() -> pd.DataFrame:
     path = _resolve_or_sample(clean_panel_path(), "clean_mandi_prices.csv")
     if not path.exists():
         _missing_artifact_error(path)
-    return read_clean_panel()
+    return read_csv_via_duckdb(path, parse_dates=["date"])
 
 
 @st.cache_data(show_spinner=False)
@@ -70,7 +58,7 @@ def load_feature_table() -> pd.DataFrame:
     path = _resolve_or_sample(feature_table_path(), "feature_table_7d.csv")
     if not path.exists():
         _missing_artifact_error(path)
-    return read_feature_table()
+    return read_csv_via_duckdb(path, parse_dates=["date"])
 
 
 @st.cache_data(show_spinner=False)
@@ -78,7 +66,7 @@ def load_forecasts() -> pd.DataFrame:
     path = _resolve_or_sample(forecast_outputs_path(), "forecast_outputs_7d.csv")
     if not path.exists():
         _missing_artifact_error(path)
-    return read_forecasts()
+    return read_csv_via_duckdb(path)
 
 
 @st.cache_data(show_spinner=False)
@@ -91,7 +79,9 @@ def load_recommendations() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_mandi_metadata() -> pd.DataFrame:
-    return read_mandi_metadata()
+    from mandipulse.paths import mvp_mandis_path
+
+    return read_csv_via_duckdb(mvp_mandis_path())
 
 
 @st.cache_data(show_spinner=False)
@@ -105,7 +95,7 @@ def load_recommendation_backtest() -> pd.DataFrame | None:
     path = _resolve_or_sample(recommendation_backtest_path(), "recommendation_backtest_7d.csv")
     if not path.exists():
         return None
-    return read_recommendation_backtest()
+    return read_csv_via_duckdb(path)
 
 
 @st.cache_data(show_spinner=False)

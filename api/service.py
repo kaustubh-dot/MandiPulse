@@ -119,8 +119,8 @@ def get_forecast(crop: str, state: str, mandi: str, horizon_days: int) -> Foreca
     rl = _risk_level(relative_width, LOW_MAX_PCT, HIGH_MIN_PCT)
 
     return ForecastResponse(
-        crop=crop,
-        state=state,
+        crop=crop.lower(),
+        state=state.lower(),
         mandi=str(row["mandi"]),
         mandi_id=str(row["mandi_id"]),
         market_id=int(row["market_id"]),
@@ -201,7 +201,7 @@ def get_recommendations(
     ]
 
     return RecommendationResponse(
-        crop=crop,
+        crop=crop.lower(),
         horizon_days=horizon_days,
         quantity_quintal=quantity_quintal,
         recommended_mandi=str(top["mandi"]),
