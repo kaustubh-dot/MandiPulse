@@ -88,6 +88,10 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 
 - Keep functions modular and tested.
 - In the narrowed MVP, use a single Streamlit app over a separate FastAPI service.
+- **Post-MVP promotion (Milestone M):** FastAPI is now active as an additive delivery surface.
+  The Streamlit app remains the offline/data-science showcase. The FastAPI service exposes
+  `/health`, `/forecast`, and `/recommend` over the same precomputed artifacts. MVP data scope
+  (1 crop, 1 state, 7-day horizon) does not widen. Keep it simple and monolithic.
 - If FastAPI is added after MVP, keep it simple and monolithic.
 - Do not add heavy frameworks without justification.
 - Use DuckDB as the default local data store. Do not substitute with raw CSV-only or Parquet-only workflows without documented justification. PostgreSQL is allowed only for deployment if documented and approved.

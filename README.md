@@ -95,6 +95,27 @@ no full pipeline run. A banner in the app shows which data source is active.
 
 ---
 
+## API (FastAPI)
+
+A REST API exposes the same forecasts and recommendations for the Next.js frontend (Milestone N).
+
+```powershell
+# Local run
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+# Swagger UI at http://localhost:8000/docs
+```
+
+| Endpoint | Description |
+|---|---|
+| `GET /health` | Data and API readiness |
+| `POST /forecast` | 7-day price + uncertainty interval for a mandi |
+| `POST /recommend` | Transport-adjusted mandi ranking |
+
+All three endpoints run over the same committed `data/sample/` bundle — no pipeline run required.
+See [docs/DEPLOY_API.md](docs/DEPLOY_API.md) for Render deployment instructions.
+
+---
+
 ## Deploy in 3 steps
 
 1. Fork this repo (or push to your GitHub account).

@@ -8,39 +8,37 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from mandipulse.config import PROJECT_ROOT  # noqa: E402
+from mandipulse.data import loaders as _loaders  # noqa: E402
+from mandipulse.data.loaders import (  # noqa: E402
+    read_clean_panel,
+    read_feature_table,
+    read_forecasts,
+    read_mandi_metadata,
+    read_recommendation_backtest,
+    resolve_or_sample,
+    running_on_sample,
+)
 from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
 from mandipulse.paths import (  # noqa: E402
     clean_panel_path,
     feature_table_path,
     forecast_outputs_path,
-    mvp_mandis_path,
     recommendation_backtest_path,
     recommendation_outputs_path,
     reports_modeling_dir,
 )
 
-_SAMPLE_DIR = PROJECT_ROOT / "data" / "sample"
+# Patch target used by tests that patch _SAMPLE_DIR / _loaders.SAMPLE_DIR.
+_SAMPLE_DIR = _loaders.SAMPLE_DIR
 
-# Set to True by _resolve_or_sample when the app is running on the bundled demo data.
-# Home reads this flag to show an honest "bundled demo" notice.
-RUNNING_ON_SAMPLE: bool = False
+# Re-export running_on_sample() so Home can call RUNNING_ON_SAMPLE() from this module.
+# The flag lives in loaders.py (shared with the API); data_access just re-exports it.
+RUNNING_ON_SAMPLE = running_on_sample
 
 
 def _resolve_or_sample(full_path: Path, sample_name: str) -> Path:
-    """Return full_path when it exists; fall back to the committed demo sample otherwise.
-
-    If neither exists, returns full_path so the caller's exists()-guard fires and
-    _missing_artifact_error stops the app — same contract as before this function existed.
-    """
-    global RUNNING_ON_SAMPLE
-    if full_path.exists():
-        return full_path
-    sample = _SAMPLE_DIR / sample_name
-    if sample.exists():
-        RUNNING_ON_SAMPLE = True
-        return sample
-    return full_path
+    path, _ = resolve_or_sample(full_path, sample_name)
+    return path
 
 
 def _missing_artifact_error(path: Path) -> None:
@@ -64,7 +62,7 @@ def load_clean_panel() -> pd.DataFrame:
     path = _resolve_or_sample(clean_panel_path(), "clean_mandi_prices.csv")
     if not path.exists():
         _missing_artifact_error(path)
-    return read_csv_via_duckdb(path, parse_dates=["date"])
+    return read_clean_panel()
 
 
 @st.cache_data(show_spinner=False)
@@ -72,7 +70,7 @@ def load_feature_table() -> pd.DataFrame:
     path = _resolve_or_sample(feature_table_path(), "feature_table_7d.csv")
     if not path.exists():
         _missing_artifact_error(path)
-    return read_csv_via_duckdb(path, parse_dates=["date"])
+    return read_feature_table()
 
 
 @st.cache_data(show_spinner=False)
@@ -80,7 +78,7 @@ def load_forecasts() -> pd.DataFrame:
     path = _resolve_or_sample(forecast_outputs_path(), "forecast_outputs_7d.csv")
     if not path.exists():
         _missing_artifact_error(path)
-    return read_csv_via_duckdb(path)
+    return read_forecasts()
 
 
 @st.cache_data(show_spinner=False)
@@ -93,7 +91,7 @@ def load_recommendations() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_mandi_metadata() -> pd.DataFrame:
-    return read_csv_via_duckdb(mvp_mandis_path())
+    return read_mandi_metadata()
 
 
 @st.cache_data(show_spinner=False)
@@ -107,7 +105,7 @@ def load_recommendation_backtest() -> pd.DataFrame | None:
     path = _resolve_or_sample(recommendation_backtest_path(), "recommendation_backtest_7d.csv")
     if not path.exists():
         return None
-    return read_csv_via_duckdb(path)
+    return read_recommendation_backtest()
 
 
 @st.cache_data(show_spinner=False)

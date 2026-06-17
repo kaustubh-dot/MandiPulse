@@ -1,6 +1,25 @@
 # MandiPulse India API Spec
 
-FastAPI is deferred from the narrowed MVP. The current MVP should ship as an offline Streamlit app using saved local CEDA data and model artifacts. This API spec is retained as a post-MVP contract only.
+**Status (Milestone M):** FastAPI is now active as a post-MVP additive surface. The Streamlit app
+remains the offline/data-science showcase. See `docs/MILESTONE_M_PLAN.md` for scope details.
+
+## MVP Implementation Notes (Milestone M)
+
+The spec below was written speculatively. Milestone M implements it with these deliberate
+deviations — each documented rather than silently deviated:
+
+| Spec says | Milestone M actual | Reason |
+|---|---|---|
+| Horizons 7 / 14 / 30 | **7 only** | RULES §Forecasting — only 7-day horizon is evaluated |
+| States MH / KA / UP | **maharashtra only** | RULES §Scope — single-state MVP |
+| `market_regime` field | **`null`** | Regime detection deferred (RULES line 66); never fabricate |
+| `top_drivers` via SHAP | **`[]`** | Shipped model is moving-average; no SHAP applicable |
+| `/regime` endpoint | **Not implemented in M** | Deferred |
+| `/metrics` endpoint | **Not implemented in M** | Deferred |
+| `/health` `model_status: "loaded"` | **`"available"` from artifact presence** | No model loaded at runtime; forecasts are precomputed |
+
+Out-of-scope requests return typed errors (`UNSUPPORTED_HORIZON`, `UNSUPPORTED_CROP`,
+`UNSUPPORTED_STATE`), not silent fallback — consistent with RULES line 133.
 
 ## API Overview
 

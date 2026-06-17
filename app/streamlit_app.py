@@ -37,7 +37,7 @@ st.caption(
 _data_source_note = (
     "Running on **bundled demo data** (Oct 2025 snapshot, column-trimmed). "
     "Clone the repo and run the full pipeline to load all columns."
-    if RUNNING_ON_SAMPLE
+    if RUNNING_ON_SAMPLE()
     else "Running on **local pipeline artifacts** (full data)."
 )
 st.info(
