@@ -9,7 +9,8 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
 - Keep the MVP forecast horizon limited to 7 days.
 - Keep the project framed as a mandi decision intelligence system.
 - Do not turn the project into generic crop price prediction.
-- Do not add Kubernetes, React frontend, mobile app, WhatsApp bot, deep learning forecasting, Temporal Fusion Transformers, large-scale 500+ mandi networks, or unnecessary microservices.
+- Do not add Kubernetes, mobile app, WhatsApp bot, deep learning forecasting, Temporal Fusion Transformers, large-scale 500+ mandi networks, or unnecessary microservices.
+- React frontend: promoted post-MVP as Milestone N (static Next.js export only — see below).
 - Treat FastAPI, regime/anomaly detection, live monitoring, causal inference, arbitrage detection, and price propagation graph as optional/future modules unless explicitly scoped and documented.
 
 ## Data Rules
@@ -93,6 +94,10 @@ This file is for future AI coding agents and maintainers. Follow these rules unl
   `/health`, `/forecast`, and `/recommend` over the same precomputed artifacts. MVP data scope
   (1 crop, 1 state, 7-day horizon) does not widen. Keep it simple and monolithic.
 - If FastAPI is added after MVP, keep it simple and monolithic.
+- **Post-MVP promotion (Milestone N):** A Next.js static frontend is active as an additive
+  delivery surface. It reads pre-exported JSON from `web/public/data/` — no backend required.
+  The Streamlit app remains the offline/data-science showcase. MVP data scope (1 crop, 1 state,
+  7-day horizon) does not widen.
 - Do not add heavy frameworks without justification.
 - Use DuckDB as the default local data store. Do not substitute with raw CSV-only or Parquet-only workflows without documented justification. PostgreSQL is allowed only for deployment if documented and approved.
 - Use MLflow for experiment tracking and model artifact metadata.
