@@ -1,8 +1,9 @@
 # MandiPulse Architecture
 
-## Current MVP Shape
+## Current Shape
 
-MandiPulse is now an offline decision-intelligence MVP, not a live data platform.
+MandiPulse is an offline-first, transport-cost-aware mandi decision-intelligence system. It uses a
+committed demo bundle for public demos and a reproducible local pipeline for regeneration.
 
 Scope:
 
@@ -10,120 +11,95 @@ Scope:
 - State: Maharashtra only.
 - Markets: 15 selected mandis.
 - Forecast horizon: 7 days only.
-- Interface: Streamlit app reading local artifacts.
-- Data source: cached CEDA/AGMARKNET extract.
-
-The project should first prove one useful loop:
-
-```text
-cached CEDA data -> clean daily mandi panel -> leakage-safe features -> baselines -> 7-day model -> uncertainty -> transport-aware recommendation -> Streamlit demo
-```
-
-FastAPI, live monitoring, regime/anomaly detection, extra crops, extra states, and 14/30-day horizons are post-MVP.
+- Shipped forecaster: `moving_average_7d`.
+- Public surfaces: Streamlit dashboard, FastAPI API, and static Next.js frontend.
 
 ## Data Flow
 
 ```mermaid
 flowchart TD
-    A["CEDA AGMARKNET API"] --> B["Raw cached CSV"]
-    B --> C["Coverage profile"]
-    C --> D["Top-15 mandi selection"]
-    B --> E["Clean daily panel"]
-    D --> E
-    E --> F["7-day feature table"]
-    F --> G["Temporal split"]
-    G --> H["Baseline metrics"]
-    G --> I["LightGBM model"]
-    H --> J["Model comparison"]
+    A["CEDA AGMARKNET cached extract"] --> B["Clean daily panel"]
+    B --> C["Leakage-safe 7-day feature table"]
+    C --> D["Temporal train/validation/test split"]
+    D --> E["Baselines and LightGBM comparison"]
+    E --> F["Moving-average shipped forecast"]
+    F --> G["Residual uncertainty intervals"]
+    G --> H["Transport-aware recommendation engine"]
+    H --> I["Recommendation backtest"]
+    B --> J["Demo sample bundle"]
+    G --> J
     I --> J
-    I --> K["Forecast artifact"]
-    K --> L["Recommendation engine"]
-    M["Mandi coordinates and transport assumptions"] --> L
-    E --> N["Data coverage report"]
-    J --> O["Model report"]
-    L --> P["Streamlit app"]
-    L --> Q["Recommendation backtest"]
-    Q --> P
-    N --> P
-    O --> P
+    J --> K["Streamlit dashboard"]
+    J --> L["FastAPI service"]
+    J --> M["Web JSON export"]
+    M --> N["Static Next.js frontend"]
 ```
 
-The Recommendation page reads the backtest artifact (`artifacts/recommendations/recommendation_backtest_7d.csv`) as optional context. If absent, it shows a guidance message; the live ranking still renders.
+The model story is intentionally honest: LightGBM and residual-LightGBM were evaluated and did not
+beat the 7-day moving-average baseline on the held-out test split, so the baseline remains shipped.
 
-## Storage Decision
+## Storage And Artifact Policy
 
-**CSV = source of truth. DuckDB = query interface.**
+**CSV is the source of truth; DuckDB is the read interface.**
 
-The `build_*` and `train_*` scripts write processed data as CSV files (reproducible, diff-friendly, git-trackable for small reports). The dashboard and evaluation scripts read those CSVs through a DuckDB query layer (`src/mandipulse/data/store.py::read_csv_via_duckdb`), satisfying RULES §Architecture ("Use DuckDB as the default local data store") without a storage rewrite.
+Pipeline scripts write reproducible CSV outputs. Dashboard, API, and evaluation loaders read CSVs
+through `src/mandipulse/data/store.py::read_csv_via_duckdb`, satisfying the DuckDB architecture rule
+without requiring a persisted binary database.
 
-Rationale: at MVP scale (15 mandis, ~20k rows), persisting tables into a `.duckdb` file adds no query performance benefit and would make every processed artifact a binary generated file requiring regeneration before the app can run. The read-layer approach keeps artifacts reproducible from scripts alone, keeps reports text-diffable in git, and still routes all reads through DuckDB as the query interface.
+Committed artifacts:
 
-The `.duckdb` file (if ever persisted) is gitignored and never a required committed artifact. In-memory DuckDB connections are used per read — cheap at MVP scale and safe for Streamlit's `@st.cache_data` (connections are not cached, only the resulting DataFrames are).
+- `data/sample/*.csv`: slim clone-runnable demo bundle.
+- `web/public/data/*.json`: static frontend data generated from the sample bundle.
+- `reports/**/*.md`: human-readable evaluation and data-quality reports.
 
-## Local Artifacts
+Ignored local artifacts:
 
-| Artifact | Path | Status |
+- `data/raw/`, `data/interim/`, `data/processed/`.
+- `artifacts/forecasts/`, `artifacts/metrics/`, `artifacts/recommendations/`, `artifacts/models/`.
+- `mlruns/` and local build/cache directories.
+
+This keeps the repo small while preserving a no-secrets demo path.
+
+## Runtime Surfaces
+
+| Surface | Role | Data source |
 |---|---|---|
-| Raw Onion/Maharashtra extract | `data/raw/ceda/onion_maharashtra/onion_maharashtra_prices_raw.csv` | Generated locally, ignored |
-| Coverage profile | `reports/data_quality/onion_maharashtra_profile.md` | Tracked |
-| Selected mandi list | `data/external/mvp_mandis.csv` | Tracked |
-| Clean daily panel | `data/processed/onion_maharashtra/clean_mandi_prices.csv` | Generated locally, ignored |
-| Clean panel report | `reports/data_quality/onion_maharashtra_clean_panel.md` | Tracked |
-| Feature table | `data/processed/onion_maharashtra/feature_table_7d.csv` | Generated locally, ignored |
-| Feature table report | `reports/data_quality/onion_maharashtra_feature_table.md` | Tracked |
+| Streamlit | Offline data-science showcase with coverage, forecast, and recommendation pages | `data/sample/` fallback or local full artifacts |
+| FastAPI | Additive API for `/health`, `/forecast`, and `/recommend` | Shared streamlit-free loaders over `data/sample/` |
+| Next.js | Static Vercel frontend with client-side transport-cost re-ranking | `web/public/data/*.json` |
 
-Generated raw and processed data are intentionally not committed. Scripts and reports must make them reproducible.
-
-## Current Modules
-
-| Layer | Current responsibility |
-|---|---|
-| Ingestion | Fetch and cache CEDA Onion/Maharashtra prices. |
-| Profiling | Measure coverage, market activity, date range, and candidate mandis. |
-| Cleaning | Normalize records into a daily crop-mandi panel with quality flags. |
-| Features | Build 7-day target and past-only lag/rolling/calendar features. |
-| Modeling | Next: temporal split and baseline metrics. |
-| Recommendation | Later in MVP: rank mandis by forecast, transport cost, and uncertainty. |
-| Dashboard | Later in MVP: Streamlit app over local artifacts. |
+The Next.js ranking code is a TypeScript port of `src/mandipulse/recommend/engine.py`. The parity
+test compares TypeScript output against Python-generated `recommendations.json` within 0.01 INR/qtl.
 
 ## Modeling Boundary
 
-Required before any advanced model:
+Every forecasting change must preserve:
 
-- Fixed temporal train/validation/test split.
-- Seasonal naive baseline.
-- Moving-average baseline.
-- Ridge or linear baseline.
-- MAE, RMSE, sMAPE, and MASE.
-- Per-mandi and overall reporting.
+- Temporal train/validation/test split.
+- No future leakage in lag or rolling features.
+- Comparison against seasonal naive, moving-average, and Ridge baselines.
+- MAE, RMSE, sMAPE, MASE, split dates, and per-mandi reporting.
 
-LightGBM becomes meaningful only after these baselines exist. If it fails to beat baselines, the project should report that honestly and use the result as an analysis story.
+The shipped model can change only if a candidate beats `moving_average_7d` on held-out test MAE.
 
 ## Recommendation Boundary
 
-The MVP recommendation is a ranking, not a guarantee of profit.
+The recommendation is a decision-support ranking, not a profit guarantee.
 
 ```text
 expected_net_price = forecast_price - estimated_transport_cost
 risk_adjusted_score = expected_net_price - uncertainty_penalty
 ```
 
-Transport cost should use a simple haversine-distance approximation until the forecast loop works. Coordinates in `data/external/mvp_mandis.csv` must be filled before recommendation work starts.
+Transport cost uses haversine distance, a road-distance factor, and cost-per-km assumptions from
+`configs/recommendation.yaml`. Recommendation quality is evaluated with regret@K against a nearest
+mandi baseline.
 
-## Post-MVP Parking Lot
+## Optional Stretch Work
 
-These are deliberately out of the active implementation path:
+The portfolio demo should remain stable before adding research scope. Current optional tracks:
 
-| Item | Status |
-|---|---|
-| FastAPI service | Post-MVP |
-| `/forecast`, `/recommend`, `/regime`, `/metrics` endpoints | Post-MVP |
-| Regime/anomaly detection | Post-MVP |
-| Live drift/monitoring stack | Post-MVP |
-| Tomato or other crops | Post-MVP |
-| Karnataka or Uttar Pradesh | Post-MVP |
-| 14-day and 30-day horizons | Post-MVP |
-| React frontend | Rejected for MVP |
-| Kubernetes or microservices | Rejected for MVP |
-
-Keep post-MVP ideas in docs only. Do not add them to active navigation, scripts, or P0 tracker tasks until the Onion/Maharashtra 7-day decision loop works end to end.
+- Milestone O: offline calendar/exogenous features, with arrivals gated on a valid data refresh.
+- Milestone P: conformal intervals, compared honestly against current residual intervals.
+- Deferred: additional crops/states, 14/30-day horizons, regime/anomaly detection, monitoring, and
+  causal claims.

@@ -1,9 +1,0 @@
-model,split,rows,mae,rmse,smape_pct,mase
-moving_average_7d,validation,1272,126.07,329.37,10.73,0.48
-ridge,validation,1272,135.98,329.69,11.47,0.517
-seasonal_naive_7d,validation,1272,138.54,428.24,11.59,0.527
-moving_average_30d,validation,1272,159.54,336.88,13.73,0.607
-moving_average_7d,test,1204,139.57,332.41,11.94,0.531
-moving_average_30d,test,1204,142.85,319.9,12.27,0.544
-seasonal_naive_7d,test,1204,146.26,424.18,12.2,0.557
-ridge,test,1204,224.43,369.08,18.72,0.854

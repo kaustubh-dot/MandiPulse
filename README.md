@@ -11,6 +11,7 @@
 | Surface | URL | Stack |
 |---|---|---|
 | Streamlit dashboard | [mandipulse.streamlit.app](https://mandipulse.streamlit.app/) | Python + Streamlit |
+| FastAPI service | _optional Render deploy - see [docs/DEPLOY_API.md](docs/DEPLOY_API.md)_ | FastAPI + Render |
 | Next.js frontend | _deploy to get URL — see [docs/DEPLOY_FRONTEND.md](docs/DEPLOY_FRONTEND.md)_ | Next.js + Vercel |
 
 ---
@@ -49,6 +50,17 @@ Recommendation backtest (regret@K vs nearest-mandi baseline, held-out test windo
 | Mean regret@1 | 296.3 INR/qtl |
 | Nearest-mandi baseline regret | 370.1 INR/qtl |
 | Beats nearest-mandi | 78.8% of dates |
+
+---
+
+## What makes this credible
+
+- Temporal train/validation/test splits only; no random split on time-series data.
+- Baseline honesty: LightGBM and residual-LightGBM are reported even though they lose.
+- Forecasts include uncertainty intervals with measured empirical coverage.
+- Recommendations are evaluated with regret@K against a nearest-mandi baseline.
+- The demo is clone-runnable from committed `data/sample/` artifacts; no secrets required.
+- The Next.js transport-cost ranking is parity-tested against the Python engine within 0.01 INR/qtl.
 
 ---
 
@@ -100,13 +112,13 @@ Open `http://localhost:8501`. All three pages load on the bundled Oct 2025 snaps
 no full pipeline run. A banner in the app shows which data source is active.
 
 > **Run the full pipeline** to replace the demo bundle with your own freshly-generated artifacts.
-> See [RELEASE.md](RELEASE.md) for the 7-stage pipeline runbook.
+> See [RELEASE.md](RELEASE.md) for the full pipeline runbook.
 
 ---
 
 ## API (FastAPI)
 
-A REST API exposes the same forecasts and recommendations for the Next.js frontend (Milestone N).
+A REST API exposes the same forecasts and recommendations as a separate demo surface.
 
 ```powershell
 # Local run
@@ -122,6 +134,24 @@ uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 
 All three endpoints run over the same committed `data/sample/` bundle — no pipeline run required.
 See [docs/DEPLOY_API.md](docs/DEPLOY_API.md) for Render deployment instructions.
+
+---
+
+## Frontend (Next.js)
+
+The static frontend reads committed JSON from `web/public/data/` and re-ranks recommendations in
+the browser as transport cost changes.
+
+```powershell
+python scripts\build_web_export.py
+cd web
+npm install
+npm test
+npm run build
+npm run dev
+```
+
+Deploy it on Vercel with **Root Directory** set to `web`. No environment variables are required.
 
 ---
 
@@ -150,6 +180,8 @@ python scripts\train_lightgbm_7d.py
 python scripts\build_forecast_intervals_7d.py
 python scripts\build_recommendations_7d.py
 python scripts\run_recommendation_backtest_7d.py
+python scripts\build_demo_sample.py
+python scripts\build_web_export.py
 ```
 
 See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
@@ -164,6 +196,16 @@ pytest
 
 169 tests, 73% coverage, `--cov-fail-under=70`. Includes pipeline smoke tests, leakage guards,
 temporal-split validation, recommendation scoring, and data-store parity tests.
+
+Web gates:
+
+```powershell
+cd web
+npm test
+npm run build
+```
+
+GitHub Actions runs the Python lint/format/test gate and the web parity/build gate on `main`.
 
 ---
 

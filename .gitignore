@@ -163,6 +163,9 @@ data/external/private/
 *.sqlite
 mlruns/
 artifacts/models/
+artifacts/forecasts/
+artifacts/metrics/
+artifacts/recommendations/
 artifacts/predictions/
 artifacts/monitoring/
 outputs/

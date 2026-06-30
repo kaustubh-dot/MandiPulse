@@ -2,183 +2,90 @@
 
 ## Scope
 
-Active MVP scope is Onion/Maharashtra, 15 mandis, 7-day horizon, offline Streamlit dashboard.
+Active product scope remains Onion/Maharashtra, 15 mandis, 7-day horizon. The portfolio demo now has
+three public surfaces: Streamlit, FastAPI, and static Next.js. Future modeling work must be promoted
+here before implementation.
 
-Anything outside that scope is post-MVP unless explicitly promoted in `TODO.md`, `docs/IMPLEMENTATION_PLAN.md`, and this tracker.
+## Current Status
 
-## Status Labels
+| Area | Status | Notes |
+|---|---|---|
+| Python MVP pipeline | Done | Clean panel, feature table, baselines, LightGBM comparison, intervals, recommendations, backtest |
+| Streamlit dashboard | Done | Clone-runnable from `data/sample/` |
+| FastAPI additive surface | Done | `/health`, `/forecast`, `/recommend`; tested via TestClient |
+| Next.js static frontend | Done locally | Static export, committed JSON, client-side re-ranking, parity test |
+| Vercel frontend deploy | Pending | External account step; update README once URL exists |
+| GitHub Actions CI | Added | Runs Python lint/format/tests and web parity/build gates |
 
-| Label | Meaning |
-|---|---|
-| Done | Completed and checked |
-| Next | Next implementation target |
-| Pending | Not started |
-| Deferred | Post-MVP or intentionally out of scope |
-| Blocked | Cannot proceed without dependency or decision |
+## Local Verification
 
-## Current Kanban
+Last local gate for this finish pass:
 
-### Done (Milestone M — FastAPI backend, post-MVP additive)
+```powershell
+python scripts\build_web_export.py
+ruff check api app src scripts tests
+black --check api app src scripts tests
+pytest -q
+cd web
+npm test
+npm run build
+```
 
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| M-01 | Done | Scope promotion: RULES + TRACKER + reconcile API_SPEC.md; `requirements-api.txt` | - |
-| M-02 | Done | `src/mandipulse/data/loaders.py` (streamlit-free); `data_access.py` delegates | - |
-| M-03 | Done | `api/` package: `main.py`, `config.py`, `errors.py`, `schemas.py`, `routes.py` | M-01, M-02 |
-| M-04 | Done | `/health` + `/forecast` with mandi name resolution + typed errors | M-03 |
-| M-05 | Done | `/recommend` reusing `score_recommendations` verbatim | M-03 |
-| M-06 | Done | `tests/test_api.py` (22 tests) via TestClient over `data/sample/`; CI-safe | M-04, M-05 |
-| M-07 | Done | `docs/DEPLOY_API.md` (Render), README API section | M-04..M-06 |
-| M-08 | Done | ruff/black clean; 169 tests, 73% coverage | all |
+Expected current results: 169 Python tests, coverage floor 70%, 76 web parity assertions, and a
+successful Next.js static export.
 
-Promoted from Deferred: X-01 (FastAPI), X-02 (API tests). MVP data scope unchanged (onion/Maharashtra/7d).
-Endpoints: `/health`, `/forecast`, `/recommend`. `/regime` and `/metrics` remain deferred.
-Local run: `uvicorn api.main:app --reload` → `/docs` for Swagger UI.
-
-### Done (Milestone L — clone-runnable demo + Streamlit Cloud deploy)
-
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| L-01 | Done | `build_demo_sample.py`: slim committed bundle in `data/sample/` (2.4 MB, parity-verified) | - |
-| L-02 | Done | Read-layer fallback in `data_access.py`: full artifact → demo sample → stop; `RUNNING_ON_SAMPLE` flag | L-01 |
-| L-03 | Done | Commit bundle; allow `data/sample/` in `.gitignore` | L-01 |
-| L-04 | Done | `requirements.txt` already present; Streamlit Cloud deploy instructions in README | L-02, L-03 |
-| L-05 | Done | README overhaul: 2-min quickstart, honest results table, architecture diagram, deploy steps | L-04 |
-| L-06 | Done | `test_demo_fallback.py` (8 tests); fix 2 broken existing tests; coverage floor 69→70; 147 tests | all |
-
-**Dashboard runs from a fresh clone on the bundled Oct 2025 snapshot.** No pipeline run required.
-To deploy: connect repo on share.streamlit.io, set entrypoint to `app/streamlit_app.py`, no secrets needed.
-
-### Done (Milestone K — release hardening + freeze, v0.1-mvp)
-
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| K-01 | Done | End-to-end pipeline smoke test: 4 tests guard clean-panel→features→predictions→recommendations wiring | - |
-| K-02 | Done | Cover `modeling/tracking.py` (MLflow glue): URI resolution + absent-degradation tests; tracking.py 73% | - |
-| K-03 | Done | Raise `--cov-fail-under` to 69; post-K coverage 70% | K-01, K-02 |
-| K-04 | Done | `RELEASE.md` runbook, TRACKER freeze note, README status line | K-01..K-03 |
-
-**MVP is FROZEN at v0.1-mvp.** 139 tests, 70% coverage. Post-MVP work requires RULES.md + TRACKER scope promotion.
-
-### Done (Milestone J — DuckDB read-layer + coverage gating)
-
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| J-01 | Done | `read_csv_via_duckdb` in `data/store.py` (in-memory DuckDB over CSV; CSV stays source of truth) | - |
-| J-02 | Done | Route `data_access.py` reads through the store; preserve stop-vs-degrade guards | J-01 |
-| J-03 | Done | Route backtest/build_recommendations input reads through the store | J-01 |
-| J-04 | Done | `pytest --cov-fail-under=60` in `pyproject.toml`; post-J coverage 61%; floor set at 60 | - |
-| J-05 | Done | Store tests (parity, date, missing-file) + util tests (formatting, slugify, make_mandi_id); 127 tests | J-01 |
-| J-06 | Done | Docs: ARCHITECTURE storage decision + rationale, TRACKER, README; MVP loop RULES-complete | J-02 |
-
-Plan: `docs/MILESTONE_J_PLAN.md`. Decision: DuckDB is a **read-layer over CSV**, not a storage rewrite —
-CSV stays on-disk source of truth. Data-access + tests + docs only; no modeling/forecaster/number changes.
-
-**The MVP loop is now RULES-complete.** No Milestone K is queued. Post-MVP levers are in TRACKER §Deferred.
-
-### Done (Milestone I — residual-target reformulation, M3-04)
-
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| I-01 | Done | `predict_lightgbm_residual` in `lightgbm_model.py`; wired into `train_lightgbm_7d.py` alongside level model | D3-06 |
-| I-02 | Done | Report + Decision section: residual MAE 195.63 vs baseline 139.57; promotion = NO | I-01 |
-| I-03 | Done | No-op — baseline wins on test; moving-average remains shipped forecaster, nothing downstream changed | I-02 |
-| I-04 | Done | Tests: reconstruction correctness + leakage guard (106 tests total) | I-01 |
-| I-05 | Done | Docs: README modeling status, TRACKER; ARCHITECTURE unchanged (forecaster not promoted) | I-02 |
-
-Result: residual-LightGBM test MAE **195.63** vs moving-average **139.57** INR/quintal — baseline wins. Moving-average remains the shipped forecaster. Honest negative result documented in `reports/modeling/lightgbm_metrics_7d.md`.
-
-### Done (Milestone H — surface the backtest in the dashboard, `1e34297`)
-
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| H-01 | Done | Extract tested `summarize_backtest()` into `evaluation.py`; rewrite `write_report` to use it | G-01 |
-| H-02 | Done | Add optional `load_recommendation_backtest()` loader (returns None when absent) | G-01 |
-| H-03 | Done | Add "Historical performance" section to Recommendation page; graceful degrade | H-01, H-02 |
-| H-04 | Done | Tests: `summarize_backtest` + None-returning loader | H-01, H-02 |
-| H-05 | Done | Docs refresh: README, TRACKER, ARCHITECTURE | H-03 |
-
-Plan: `docs/MILESTONE_H_PLAN.md`. Dashboard + docs only — no modeling or data-store changes.
-
-### Done (Milestone G — recommendation eval + F-review cleanups, `4437ed9` + fix `b53de0f`)
+## Milestone N - Static Frontend And Portfolio Closeout
 
 | ID | Status | Task |
 |---|---|---|
-| G-01 | Done | Recommendation backtest: regret@K + nearest-mandi baseline (`recommend/evaluation.py` + `run_recommendation_backtest_7d.py`); regret@1 296.3 vs nearest 370.1, beats nearest 78.8% |
-| G-02 | Done | Extract + test `add_staleness_days` helper; remove cached-frame mutation |
-| G-03 | Done | Test missing-artifact and duplicate-market_id guards |
-| G-04 | Done | Review fix: drop market_name merge collision (was silently 0 rows); raise on scoring failure; correct win-rate labels; 87 tests |
+| N-01 | Done | Scope promotion: RULES + PRD + TRACKER; promote X-12 |
+| N-02 | Done | `scripts/build_web_export.py` exports sample data to `web/public/data/*.json` |
+| N-03 | Done | Next.js + Tailwind scaffold in `web/`; static export config |
+| N-04 | Done | Typed frontend data loaders |
+| N-05 | Done | TypeScript port of recommendation engine |
+| N-06 | Done | Shared frontend components |
+| N-07 | Done | Data Coverage page |
+| N-08 | Done | Forecast page |
+| N-09 | Done | Recommendation page with live transport-cost re-ranking |
+| N-10 | Done | TS/Python ranking parity test |
+| N-11 | Pending | Vercel deploy; update README with final URL |
+| N-12 | Done | `.gitignore`, `.nvmrc`, local Python/web gates |
 
-Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
+## Completed Milestones
 
-### Done (Milestone F — tests + reliability hardening, `6d5f192`)
+| Milestone | Status | Result |
+|---|---|---|
+| M | Done | FastAPI backend over precomputed demo artifacts |
+| L | Done | Clone-runnable demo sample bundle |
+| K | Done | MVP release hardening and coverage gate |
+| J | Done | DuckDB read-layer over CSV artifacts |
+| I | Done | Residual LightGBM evaluated; not promoted |
+| H | Done | Recommendation backtest surfaced in dashboard |
+| G | Done | Regret@K vs nearest-mandi recommendation evaluation |
+| F | Done | Tests and dashboard reliability hardening |
+| D0-D5 | Done | Data ingestion, cleaning, features, baselines, intervals, recommendations |
+
+## Current Data Artifacts
+
+| Artifact | Status | Notes |
+|---|---|---|
+| Raw CEDA CSV | Local only, ignored | `data/raw/` |
+| Clean panel CSV | Local only, ignored | `data/processed/onion_maharashtra/clean_mandi_prices.csv` |
+| Feature table CSV | Local only, ignored | `data/processed/onion_maharashtra/feature_table_7d.csv` |
+| Mandi list | Tracked | `data/external/mvp_mandis.csv` |
+| Demo sample bundle | Tracked | `data/sample/*.csv`; clone-runnable demo data |
+| Web JSON bundle | Tracked | `web/public/data/*.json`; generated by `scripts/build_web_export.py` |
+| Full generated artifacts | Local only, ignored | `artifacts/forecasts/`, `artifacts/metrics/`, `artifacts/recommendations/` |
+| Data-quality reports | Tracked | `reports/data_quality/*.md` |
+| Modeling reports | Tracked | `reports/modeling/*.md` |
+| MLflow runs | Local only, ignored | `mlruns/` |
+
+## Deferred Work
 
 | ID | Status | Task |
 |---|---|---|
-| F-01 | Done | RULES-required pytest suite: 58 tests, 6 test files, golden fixtures |
-| F-02 | Done | Per-mandi forecast staleness warning on Recommendation + Forecast pages (warn, keep ranking) |
-| F-03 | Done | Data-driven confidence-level label on forecast chart (`confidence_level` from artifact) |
-| F-04 | Done | Surface shipped forecaster (moving-average) vs benched LightGBM on Forecast page |
-| F-05 | Done | Map center computed from centroid of all plotted points + farmer location |
-
-### In Progress (Milestone N — Next.js static frontend, Vercel deploy)
-
-| ID | Status | Task | Depends On |
-|---|---|---|---|
-| N-01 | Done | Scope promotion: RULES + PRD + TRACKER; promote X-12 | - |
-| N-02 | Pending | `scripts/build_web_export.py`: exports `data/sample/*.csv` → `web/public/data/*.json` | N-01 |
-| N-03 | Pending | Next.js + Tailwind scaffold in `web/`; static export config | N-02 |
-| N-04 | Pending | `lib/types.ts`, `lib/data.ts` — typed loaders for each JSON file | N-03 |
-| N-05 | Pending | `lib/transport.ts` — exact port of `engine.py` (haversine + rankMandis) | N-03 |
-| N-06 | Pending | Shared components: NavBar, SampleBanner, MandiMap, ForecastChart, RecommendTable, BacktestSummary, HonestResultsTable | N-04, N-05 |
-| N-07 | Pending | Data Coverage page | N-06 |
-| N-08 | Pending | Forecast page (chart + uncertainty band + honest-results table) | N-06 |
-| N-09 | Pending | Recommendation page (transport-cost slider, live re-rank, backtest summary) | N-05, N-06 |
-| N-10 | Pending | TS↔Python ranking parity test | N-05, N-02 |
-| N-11 | Pending | Vercel deploy; `docs/DEPLOY_FRONTEND.md`; README badge + Frontend section | N-03..N-10 |
-| N-12 | Pending | `.gitignore` + `.nvmrc`; ruff/black/pytest gates; `npm run build` clean | all |
-
-Promoted from Deferred: X-12 (React frontend). MVP data scope unchanged (onion/maharashtra/7d).
-Static export only — no backend. Data: pre-exported JSON from the same `data/sample/` bundle.
-
-### Done
-
-| ID | Status | Task |
-|---|---|---|
-| D0-01 | Done | CEDA selected as primary AGMARKNET data path |
-| D0-02 | Done | CEDA token validated |
-| D0-03 | Done | Project config and dependency files added |
-| D1-01 | Done | Raw Onion/Maharashtra CEDA fetch script added |
-| D1-02 | Done | Full raw extract saved locally |
-| D1-03 | Done | Coverage profile report generated |
-| D1-04 | Done | Top-15 Maharashtra onion mandis selected |
-| D2-01 | Done | Clean daily panel built |
-| D2-02 | Done | Clean panel report generated |
-| D2-03 | Done | Leakage-safe 7-day feature table built |
-| D2-04 | Done | Feature table report generated |
-| D3-01 | Done | Temporal train/validation/test split utility added |
-| D3-02 | Done | Seasonal naive, moving-average, and Ridge baselines evaluated |
-| D3-03 | Done | Baseline metrics report generated |
-| D3-04 | Done | Observed-only baseline sensitivity report generated |
-| D3-05 | Done | Ridge underperformance diagnosed as a global linear-model limitation |
-| D3-06 | Done | First LightGBM 7-day model trained and compared against baselines |
-| D4-01 | Done | Residual interval calibration script added for the MVP baseline |
-| D4-02 | Done | Empirical interval coverage measured on held-out test data |
-| D4-03 | Done | Forecast output artifact with lower and upper bounds generated |
-| D5-01 | Done | Mandi latitude/longitude metadata filled |
-| D5-02 | Done | Transport cost estimator implemented |
-| D5-03 | Done | Risk-adjusted recommendation ranking artifact generated |
-| M3-03 | Done | Save model artifact and feature schema (`train_lightgbm_7d.py` → `persistence.py`) |
-| M6-01 | Done | Build Streamlit data coverage page (`75d6515`) |
-| M6-02 | Done | Build Streamlit forecast page (`75d6515`) |
-| M6-03 | Done | Build Streamlit recommendation page (`75d6515`) |
-
-### Deferred
-
-| ID | Status | Task |
-|---|---|---|
-| X-01 | **Promoted → Milestone M** | FastAPI service |
-| X-02 | **Promoted → Milestone M** | API endpoint test suite |
+| O | Deferred | Offline calendar/exogenous features; arrivals gated on valid refresh |
+| P | Deferred | Conformal intervals compared against residual intervals |
 | X-03 | Deferred | Regime/anomaly detection |
 | X-04 | Deferred | Live monitoring/drift platform |
 | X-05 | Deferred | 14-day and 30-day forecasts |
@@ -188,37 +95,11 @@ Static export only — no backend. Data: pre-exported JSON from the same `data/s
 | X-09 | Deferred | Similar historical days module |
 | X-10 | Deferred | Price propagation graph |
 | X-11 | Deferred | Causal weather shock module |
-| X-12 | **Promoted → Milestone N** | Next.js static frontend |
 | X-13 | Deferred | Kubernetes/microservices |
-
-### Blocked
-
-| ID | Status | Task | Blocker |
-|---|---|---|---|
-| - | - | No blocked tasks | - |
-
-## Current Data Artifacts
-
-| Artifact | Status | Notes |
-|---|---|---|
-| Raw CEDA CSV | Local only | Ignored under `data/raw/` |
-| Clean panel CSV | Local only | Ignored under `data/processed/` |
-| Feature table CSV | Local only | Ignored under `data/processed/` |
-| Mandi list | Tracked | `data/external/mvp_mandis.csv` now includes latitude/longitude |
-| Quality reports | Tracked | Keep updated when data scripts change |
-| Baseline report | Tracked | `reports/modeling/baseline_metrics_7d.md` |
-| Baseline sensitivity report | Tracked | `reports/modeling/baseline_sensitivity_7d.md` |
-| LightGBM report | Tracked | `reports/modeling/lightgbm_metrics_7d.md` |
-| Forecast interval report | Tracked | `reports/modeling/forecast_intervals_7d.md` |
-| Forecast output artifact | Local only | `artifacts/forecasts/forecast_outputs_7d.csv` |
-| Recommendation report | Tracked | `reports/modeling/recommendation_report_7d.md` |
-| Recommendation artifact | Local only | `artifacts/recommendations/recommendation_outputs_7d.csv` |
-| Recommendation backtest artifact | Local only | `artifacts/recommendations/recommendation_backtest_7d.csv` |
-| Recommendation backtest report | Tracked | `reports/modeling/recommendation_backtest_7d.md` |
 
 ## Guardrails
 
-- Do not add deferred work to P0/P1 tasks until the active MVP works.
-- Do not require a live API key for modeling or dashboard work.
+- Do not require a live API key for public demos.
 - Do not use random train/test splits.
-- Do not commit `.env`, `.venv`, raw data, processed data, MLflow runs, or generated caches.
+- Do not commit `.env`, `.venv`, raw data, processed data, MLflow runs, or full generated artifacts.
+- Keep the project framed as mandi decision intelligence, not generic crop-price prediction.
