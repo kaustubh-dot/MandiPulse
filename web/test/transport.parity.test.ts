@@ -8,8 +8,8 @@ import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { rankMandis } from "../src/lib/transport.js";
-import type { ForecastRow, MandiMeta, MetaRanking, RankedMandi } from "../src/lib/types.js";
+import { rankMandis } from "../src/lib/transport";
+import type { ForecastRow, MandiMeta, MetaRanking, RankedMandi } from "../src/lib/types";
 
 const DATA = resolve(__dirname, "../public/data");
 
