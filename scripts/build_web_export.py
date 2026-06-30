@@ -62,11 +62,7 @@ def main() -> int:
     mandis_raw["district_name"] = mandis_raw["district_name"].fillna("")
 
     # Latest forecast per market_id (most recent as_of_date)
-    latest = (
-        forecasts.sort_values("as_of_date")
-        .groupby("market_id", as_index=False)
-        .tail(1)
-    )
+    latest = forecasts.sort_values("as_of_date").groupby("market_id", as_index=False).tail(1)
 
     # Default-location ranking via the same engine used by Streamlit/API
     ranked = score_recommendations(
@@ -106,7 +102,15 @@ def main() -> int:
     )
 
     # --------------------------------------------------------------- mandis.json
-    mcols = ["market_id", "mandi_id", "market_name", "district_name", "latitude", "longitude", "active_days"]
+    mcols = [
+        "market_id",
+        "mandi_id",
+        "market_name",
+        "district_name",
+        "latitude",
+        "longitude",
+        "active_days",
+    ]
     _dump("mandis.json", mandis_raw[mcols].to_dict("records"))
 
     # ------------------------------------------------------------- forecasts.json
@@ -115,19 +119,36 @@ def main() -> int:
     flat = latest.copy()
     flat["risk_level"] = flat["market_id"].map(risk_map)
     fcols = [
-        "market_id", "mandi_id", "mandi", "as_of_date",
-        "forecast_price_inr_qtl", "lower_bound_inr_qtl", "upper_bound_inr_qtl",
-        "confidence_level", "risk_level",
+        "market_id",
+        "mandi_id",
+        "mandi",
+        "as_of_date",
+        "forecast_price_inr_qtl",
+        "lower_bound_inr_qtl",
+        "upper_bound_inr_qtl",
+        "confidence_level",
+        "risk_level",
     ]
     _dump("forecasts.json", flat[fcols].round(4).to_dict("records"))
 
     # --------------------------------------------------------- recommendations.json
     rcols = [
-        "rank", "market_id", "mandi_id", "mandi", "district_name",
-        "forecast_price_inr_qtl", "lower_bound_inr_qtl", "upper_bound_inr_qtl",
-        "estimated_transport_cost_inr_qtl", "expected_net_price_inr_qtl",
-        "uncertainty_penalty_inr_qtl", "risk_adjusted_score", "risk_level",
-        "air_distance_km", "road_distance_km", "reason",
+        "rank",
+        "market_id",
+        "mandi_id",
+        "mandi",
+        "district_name",
+        "forecast_price_inr_qtl",
+        "lower_bound_inr_qtl",
+        "upper_bound_inr_qtl",
+        "estimated_transport_cost_inr_qtl",
+        "expected_net_price_inr_qtl",
+        "uncertainty_penalty_inr_qtl",
+        "risk_adjusted_score",
+        "risk_level",
+        "air_distance_km",
+        "road_distance_km",
+        "reason",
     ]
     _dump("recommendations.json", ranked[rcols].round(4).to_dict("records"))
 

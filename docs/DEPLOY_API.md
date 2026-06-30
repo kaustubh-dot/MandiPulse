@@ -50,13 +50,6 @@ No lightgbm, shap, mlflow, sklearn, streamlit, or plotly — forecasts are preco
 
 ## CORS
 
-Set `MANDIPULSE_ALLOWED_ORIGINS` to a comma-separated list of allowed origins before wiring
-the Next.js frontend (Milestone N). Until then, `*` is fine for a demo with no auth or secrets.
-
-## Linking the Next.js frontend (Milestone N)
-
-Once the Render URL is known (e.g. `https://mandipulse-api.onrender.com`):
-
-1. Set it as an env var in the Vercel project: `NEXT_PUBLIC_API_URL=https://mandipulse-api.onrender.com`
-2. Set `MANDIPULSE_ALLOWED_ORIGINS=https://mandipulse.vercel.app` in the Render service env.
-3. Redeploy both services.
+The Next.js frontend is a static export that reads committed JSON, so it does not require the API at
+runtime. Keep `MANDIPULSE_ALLOWED_ORIGINS=*` for a public, no-auth demo, or set it to the final Vercel
+origin if you later add browser calls to the API.

@@ -1,2 +1,0 @@
-model_name,row_filter,confidence_level,lower_residual,upper_residual,validation_rows,test_rows
-moving_average_7d,all,0.9,-210.357143,292.857143,1272,1204

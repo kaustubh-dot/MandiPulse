@@ -7,7 +7,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import streamlit as st  # noqa: E402
 
-from mandipulse.app.data_access import RUNNING_ON_SAMPLE, add_staleness_days, load_forecasts  # noqa: E402
+from mandipulse.app.data_access import (
+    RUNNING_ON_SAMPLE,
+    add_staleness_days,
+    load_forecasts,
+)  # noqa: E402
 
 st.set_page_config(
     page_title="MandiPulse India",

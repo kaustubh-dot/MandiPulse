@@ -1,76 +1,85 @@
-# MandiPulse v0.1-mvp Release Runbook
+# MandiPulse Portfolio Release Runbook
 
 ## Scope
 
-v0.1-mvp is the frozen Onion/Maharashtra MVP:
+MandiPulse is a portfolio-ready mandi decision-intelligence demo:
 
 - Crop: Onion
 - State: Maharashtra
-- Markets: 15 mandis
+- Markets: 15 selected mandis
 - Forecast horizon: 7 days
-- Interface: offline Streamlit dashboard reading local artifacts
+- Public surfaces: Streamlit dashboard, FastAPI service, and static Next.js frontend
+- Data mode: clone-runnable committed demo bundle; live CEDA refresh is optional
 
-This release is feature-frozen. Post-MVP work (FastAPI, extra crops/states, live CEDA, 14/30-day
-horizons) requires RULES.md and TRACKER scope promotion before implementation.
+The modeling scope remains intentionally narrow. Future research work such as calendar features,
+conformal intervals, additional crops/states, and 14/30-day horizons must be promoted in the
+tracker before implementation.
 
 ## Install
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,post-mvp]"
 ```
 
-Copy `.env.example` to `.env` and set `CEDA_API_TOKEN` (needed only for re-fetching raw data).
+Copy `.env.example` to `.env` and set `CEDA_API_TOKEN` only if you intend to re-fetch raw CEDA data.
+The shipped demo does not require secrets.
 
-## Run the Full Pipeline
+## Run The Full Pipeline
 
-Run scripts in this order. Each stage reads from the previous stage's output artifact.
+Run scripts in this order when regenerating local artifacts from the cached raw extract:
 
 ```powershell
-# Stage 1 — clean daily panel
 python scripts\build_clean_onion_panel.py
-
-# Stage 2 — 7-day feature table
 python scripts\build_feature_table.py
-
-# Stage 3 — temporal baseline models (moving-average, ridge, seasonal-naive)
 python scripts\train_baselines_7d.py
-
-# Stage 4 — LightGBM (comparison only; moving-average remains the shipped forecaster)
 python scripts\run_baseline_sensitivity_7d.py
 python scripts\train_lightgbm_7d.py
-
-# Stage 5 — residual uncertainty intervals for the MVP baseline
 python scripts\build_forecast_intervals_7d.py
-
-# Stage 6 — transport-aware recommendation ranking
 python scripts\build_recommendations_7d.py
-
-# Stage 7 — recommendation quality backtest (regret@K)
 python scripts\run_recommendation_backtest_7d.py
+python scripts\build_demo_sample.py
+python scripts\build_web_export.py
 ```
 
-Artifacts land in `artifacts/` and reports in `reports/`. Both are git-ignored.
+Full generated CSVs under `artifacts/`, `data/raw/`, and `data/processed/` are local and ignored.
+The intentionally committed demo artifacts are `data/sample/` and `web/public/data/*.json`.
 
-## Launch the Dashboard
+## Run The Surfaces
 
 ```powershell
+# Streamlit dashboard
 streamlit run app\streamlit_app.py
+
+# FastAPI service
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Next.js frontend
+cd web
+npm install
+npm run dev
 ```
 
-Open `http://localhost:8501` in a browser. The dashboard reads artifacts from the pipeline output;
-run the full pipeline first.
+Streamlit opens at `http://localhost:8501`, FastAPI docs at `http://localhost:8000/docs`, and the
+Next.js frontend at `http://localhost:3000`.
 
-## Run Tests
+## Quality Gates
 
 ```powershell
-pytest
+ruff check api app src scripts tests
+black --check api app src scripts tests
+pytest -q
+
+cd web
+npm test
+npm run build
 ```
 
-Coverage floor: 69%. 139 tests across 12 test files.
+Current local gate: 169 Python tests, 72-73% coverage depending on platform, and 76 web parity
+assertions. Coverage floor is 70%.
 
-## Key Metrics (v0.1-mvp)
+## Key Metrics
 
 | Metric | Value |
 |---|---|
@@ -80,7 +89,11 @@ Coverage floor: 69%. 139 tests across 12 test files.
 | Recommendation regret@1 | 296.3 INR/qtl vs 370.1 nearest-mandi baseline |
 | Beats nearest-mandi baseline | 78.8% of as-of dates |
 
-## What Is Not in Scope
+## Deployment
 
-FastAPI service, live CEDA fetch, 14/30-day horizons, additional crops or states, React frontend,
-Kubernetes, regime/anomaly detection. See `docs/TRACKER.md` for the full deferred list.
+- Streamlit Cloud: deploy `app/streamlit_app.py`.
+- Vercel: deploy with root directory `web`; no environment variables are required.
+- Render API: deploy with `requirements-api.txt` and start command
+  `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
+
+After deployment, update the README live-demo table with the final URLs.
