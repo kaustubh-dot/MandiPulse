@@ -1,0 +1,137 @@
+[
+  {
+    "market_id": 2494,
+    "mandi_id": "maharashtra__punepimpri",
+    "market_name": "Pune(Pimpri)",
+    "district_name": "Pune",
+    "latitude": 18.61333,
+    "longitude": 73.80278,
+    "active_days": 1656
+  },
+  {
+    "market_id": 2495,
+    "mandi_id": "maharashtra__punekhadiki",
+    "market_name": "Pune(Khadiki)",
+    "district_name": "Pune",
+    "latitude": 18.564,
+    "longitude": 73.851,
+    "active_days": 1620
+  },
+  {
+    "market_id": 172,
+    "mandi_id": "maharashtra__pune",
+    "market_name": "Pune",
+    "district_name": "Pune",
+    "latitude": 18.52111,
+    "longitude": 73.85528,
+    "active_days": 1587
+  },
+  {
+    "market_id": 581,
+    "mandi_id": "maharashtra__chattrapati_sambhajinagar",
+    "market_name": "Chattrapati Sambhajinagar",
+    "district_name": "Aurangabad",
+    "latitude": 19.88,
+    "longitude": 75.32,
+    "active_days": 1554
+  },
+  {
+    "market_id": 4752,
+    "mandi_id": "maharashtra__punemoshi",
+    "market_name": "Pune(Moshi)",
+    "district_name": "Pune",
+    "latitude": 18.6801,
+    "longitude": 73.8502,
+    "active_days": 1529
+  },
+  {
+    "market_id": 160,
+    "mandi_id": "maharashtra__kolhapur",
+    "market_name": "Kolhapur",
+    "district_name": "Kolhapur",
+    "latitude": 16.69167,
+    "longitude": 74.23333,
+    "active_days": 1527
+  },
+  {
+    "market_id": 4751,
+    "mandi_id": "maharashtra__punemanjri",
+    "market_name": "Pune(Manjri)",
+    "district_name": "Pune",
+    "latitude": 18.517,
+    "longitude": 73.983,
+    "active_days": 1527
+  },
+  {
+    "market_id": 170,
+    "mandi_id": "maharashtra__pimpalgaon",
+    "market_name": "Pimpalgaon",
+    "district_name": "Nashik",
+    "latitude": 20.16667,
+    "longitude": 73.98333,
+    "active_days": 1521
+  },
+  {
+    "market_id": 3108,
+    "mandi_id": "maharashtra__vashi_new_mumbai",
+    "market_name": "Vashi New Mumbai",
+    "district_name": "Mumbai",
+    "latitude": 19.08,
+    "longitude": 73.01,
+    "active_days": 1516
+  },
+  {
+    "market_id": 169,
+    "mandi_id": "maharashtra__lasalgaon",
+    "market_name": "Lasalgaon",
+    "district_name": "Nashik",
+    "latitude": 20.15,
+    "longitude": 74.24,
+    "active_days": 1454
+  },
+  {
+    "market_id": 575,
+    "mandi_id": "maharashtra__manmad",
+    "market_name": "Manmad",
+    "district_name": "Nashik",
+    "latitude": 20.251,
+    "longitude": 74.439,
+    "active_days": 1444
+  },
+  {
+    "market_id": 1462,
+    "mandi_id": "maharashtra__satara",
+    "market_name": "Satara",
+    "district_name": "Satara",
+    "latitude": 17.688,
+    "longitude": 74.006,
+    "active_days": 1440
+  },
+  {
+    "market_id": 176,
+    "mandi_id": "maharashtra__solapur",
+    "market_name": "Solapur",
+    "district_name": "Solapur",
+    "latitude": 17.6703,
+    "longitude": 75.9011,
+    "active_days": 1420
+  },
+  {
+    "market_id": 2484,
+    "mandi_id": "maharashtra__lasalgaonniphad",
+    "market_name": "Lasalgaon(Niphad)",
+    "district_name": "Nashik",
+    "latitude": 20.0833,
+    "longitude": 73.8,
+    "active_days": 1416
+  },
+  {
+    "market_id": 168,
+    "mandi_id": "maharashtra__nasik",
+    "market_name": "Nasik",
+    "district_name": "Nashik",
+    "latitude": 19.9975,
+    "longitude": 73.78981,
+    "active_days": 1416
+  }
+]

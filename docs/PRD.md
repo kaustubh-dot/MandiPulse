@@ -62,7 +62,7 @@ A single crop price prediction is not enough. The useful decision is:
 ## Non-Goals
 
 - No Kubernetes in MVP.
-- No React frontend in MVP.
+- No React frontend in the narrowed MVP (promoted post-MVP as Milestone N — static export only).
 - No mobile app or WhatsApp bot in MVP.
 - No deep learning forecasting models in MVP.
 - No Temporal Fusion Transformer or large neural forecasting stack.

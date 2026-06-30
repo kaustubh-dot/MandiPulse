@@ -183,17 +183,16 @@ Keep RULES Dashboard tone (line 140): credible, data-heavy, not flashy.
   `test_pipeline_smoke.py`), so CI on a clean checkout stays green while local runs verify parity.
 - Coverage: adding `data_access.py` fallback lines + a new test should *raise* coverage; re-measure
   and bump `--cov-fail-under` to `(measured - 1)` per the project convention. Never lower it.
-- `ruff check src/ scripts/ tests/` and `black --check` (the `.claude/skills/` lint errors are
-  third-party and out of scope — check project dirs explicitly, as in K).
+- `ruff check src/ scripts/ tests/` and `black --check`.
 - Update `docs/TRACKER.md`: Milestone L Done, note the live URL, keep MVP frozen.
-- Full `pytest` green, then commit. **Push only when the user asks.** STOP for Opus review.
+- Full `pytest` green, then commit. **Push only when the user asks.**
 
 ## Unicode / Windows constraints (carried from prior milestones)
 
 - No `→ … ± × —` or emoji in any `print()` path in `build_demo_sample.py` (cp1252 stdout). UTF-8
   file writes and README emoji are fine.
 - Always `tempfile.TemporaryDirectory()`, never the `tmp_path` fixture.
-- No `Co-Authored-By: Claude` / "Generated with Claude Code" in commits or PRs.
+- No generated-code attribution trailers in commits or PRs.
 
 ## Out of scope for L (still deferred, needs separate promotion)
 

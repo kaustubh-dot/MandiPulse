@@ -19,7 +19,7 @@ test surface, docs, and release metadata only.
 | K-02 | Cover `modeling/tracking.py` (MLflow glue) | - |
 | K-03 | Raise `--cov-fail-under` to match post-K coverage | K-01, K-02 |
 | K-04 | Release: `RELEASE.md` runbook, TRACKER freeze note, README freeze badge | K-01..K-03 |
-| K-05 | ruff/black, commit, push, STOP for Opus review | all |
+| K-05 | ruff/black, commit, push | all |
 
 ### K-01 — Pipeline smoke test
 
@@ -63,8 +63,8 @@ commit body. Floor only ratchets up, never down.
 
 ### K-04 — Release + freeze
 
-- `RELEASE.md`: one-screen runbook — install (`pip install -e ".[dev]"`), pipeline order
-  (copy the CLAUDE.md 8-stage order), `streamlit run`, and the v0.1-mvp scope statement
+- `RELEASE.md`: one-screen runbook — install (`pip install -e ".[dev]"`), pipeline order,
+  `streamlit run`, and the v0.1-mvp scope statement
   (1 crop / 1 state / 15 mandis / 7-day). No Unicode `→ … ± × —` in any code path; prose is fine.
 - TRACKER: add a "Frozen" status line — MVP shipped at v0.1-mvp, K Done, post-MVP requires
   scope promotion.
@@ -74,9 +74,8 @@ commit body. Floor only ratchets up, never down.
 
 ### K-05 — Land it
 
-`ruff check src/ scripts/ tests/` + `black --check` (skip `.claude/skills/` — not project code),
-full `pytest`, commit with imperative subject and **no Claude attribution**, push **only when
-asked**, then STOP for Opus review.
+`ruff check src/ scripts/ tests/` + `black --check`, full `pytest`, commit with imperative subject
+and no generated-code attribution trailer, then push when asked.
 
 ## Acceptance
 
@@ -89,4 +88,4 @@ asked**, then STOP for Opus review.
 
 ## Hand-off
 
-Implementer: Sonnet. Reviewer: Opus. Commit + push (when asked) + stop per the milestone loop.
+Commit + push when asked, then stop per the milestone loop.

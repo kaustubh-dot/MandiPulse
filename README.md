@@ -2,11 +2,16 @@
 
 **Transport-cost-aware mandi decision intelligence for Maharashtra onion farmers.**
 
-[![Tests](https://img.shields.io/badge/tests-139%20passed-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-green)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-169%20passed-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-73%25-green)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
-> **[Live Demo → mandipulse.streamlit.app](https://mandipulse.streamlit.app/)**
+## Live demos
+
+| Surface | URL | Stack |
+|---|---|---|
+| Streamlit dashboard | [mandipulse.streamlit.app](https://mandipulse.streamlit.app/) | Python + Streamlit |
+| Next.js frontend | _deploy to get URL — see [docs/DEPLOY_FRONTEND.md](docs/DEPLOY_FRONTEND.md)_ | Next.js + Vercel |
 
 ---
 
@@ -67,6 +72,10 @@ CEDA/AGMARKNET cache
  regret@K backtest  (vs nearest-mandi baseline)
        |
  Streamlit dashboard  (Data Coverage · Forecast · Recommendation)
+       |
+ build_web_export.py  (→ web/public/data/*.json)
+       |
+ Next.js frontend  (Vercel static export — transport-cost slider re-ranks in TS)
 ```
 
 Data reads go through a DuckDB query layer (`src/mandipulse/data/store.py`). CSV files remain the
@@ -153,7 +162,7 @@ See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
 pytest
 ```
 
-139 tests, 70% coverage, `--cov-fail-under=69`. Includes pipeline smoke tests, leakage guards,
+169 tests, 73% coverage, `--cov-fail-under=70`. Includes pipeline smoke tests, leakage guards,
 temporal-split validation, recommendation scoring, and data-store parity tests.
 
 ---

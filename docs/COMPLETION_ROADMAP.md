@@ -1,6 +1,6 @@
 # MandiPulse India — End-to-End Completion Roadmap
 
-> Execution plan for finishing the MVP. Written to be followed step-by-step by Claude Sonnet.
+> Execution plan for finishing the MVP.
 > Each milestone is independently runnable and ends with a concrete verification command.
 
 ## Context
@@ -185,7 +185,7 @@ Update, don't rewrite:
 - **`TODO.md`** — replace with live checklist; check off completed items.
 - **`README.md`** — add "Run the dashboard", "Experiment tracking", and "Run tests" sections; update pipeline command list.
 - **`docs/ARCHITECTURE.md`** — update data-flow diagram to include package layer, MLflow, and dashboard.
-- **`CLAUDE.md`** — add new pipeline order and `pytest`/`streamlit` commands.
+- Project docs — add new pipeline order and `pytest`/`streamlit` commands.
 
 Acceptance: a new contributor can go README → install → run pipeline → `streamlit run` → `pytest` with no missing step.
 
@@ -230,7 +230,7 @@ mlflow ui      # optional, inspect tracked runs
 - [ ] **E3** Forecast page
 - [ ] **E4** Recommendation page (live re-ranking)
 - [ ] **F1** pytest suite (text, splits, leakage, metrics, intervals, recommend, persistence, smoke)
-- [ ] **G1** Docs: TRACKER, IMPLEMENTATION_PLAN, TODO, README, ARCHITECTURE, CLAUDE.md
+- [ ] **G1** Docs: TRACKER, IMPLEMENTATION_PLAN, TODO, README, ARCHITECTURE
 
 ## Out of scope (deferred, per RULES.md)
 

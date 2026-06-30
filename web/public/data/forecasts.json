@@ -1,0 +1,167 @@
+[
+  {
+    "market_id": 575,
+    "mandi_id": "maharashtra__manmad",
+    "mandi": "Manmad",
+    "as_of_date": "2025-10-17",
+    "forecast_price_inr_qtl": 964.2857,
+    "lower_bound_inr_qtl": 753.9286,
+    "upper_bound_inr_qtl": 1257.1429,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 2484,
+    "mandi_id": "maharashtra__lasalgaonniphad",
+    "mandi": "Lasalgaon(Niphad)",
+    "as_of_date": "2025-10-18",
+    "forecast_price_inr_qtl": 1045.7143,
+    "lower_bound_inr_qtl": 835.3571,
+    "upper_bound_inr_qtl": 1338.5714,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 168,
+    "mandi_id": "maharashtra__nasik",
+    "mandi": "Nasik",
+    "as_of_date": "2025-10-18",
+    "forecast_price_inr_qtl": 794.4286,
+    "lower_bound_inr_qtl": 584.0714,
+    "upper_bound_inr_qtl": 1087.2857,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 176,
+    "mandi_id": "maharashtra__solapur",
+    "mandi": "Solapur",
+    "as_of_date": "2025-10-18",
+    "forecast_price_inr_qtl": 992.8571,
+    "lower_bound_inr_qtl": 782.5,
+    "upper_bound_inr_qtl": 1285.7143,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 1462,
+    "mandi_id": "maharashtra__satara",
+    "mandi": "Satara",
+    "as_of_date": "2025-10-19",
+    "forecast_price_inr_qtl": 1407.1429,
+    "lower_bound_inr_qtl": 1196.7857,
+    "upper_bound_inr_qtl": 1700.0,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 581,
+    "mandi_id": "maharashtra__chattrapati_sambhajinagar",
+    "mandi": "Chattrapati Sambhajinagar",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 950.0,
+    "lower_bound_inr_qtl": 739.6429,
+    "upper_bound_inr_qtl": 1242.8571,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 160,
+    "mandi_id": "maharashtra__kolhapur",
+    "mandi": "Kolhapur",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 928.5714,
+    "lower_bound_inr_qtl": 718.2143,
+    "upper_bound_inr_qtl": 1221.4286,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 169,
+    "mandi_id": "maharashtra__lasalgaon",
+    "mandi": "Lasalgaon",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 1275.8571,
+    "lower_bound_inr_qtl": 1065.5,
+    "upper_bound_inr_qtl": 1568.7143,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 170,
+    "mandi_id": "maharashtra__pimpalgaon",
+    "mandi": "Pimpalgaon",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 1439.2857,
+    "lower_bound_inr_qtl": 1228.9286,
+    "upper_bound_inr_qtl": 1732.1429,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 172,
+    "mandi_id": "maharashtra__pune",
+    "mandi": "Pune",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 1128.5714,
+    "lower_bound_inr_qtl": 918.2143,
+    "upper_bound_inr_qtl": 1421.4286,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 2495,
+    "mandi_id": "maharashtra__punekhadiki",
+    "mandi": "Pune(Khadiki)",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 842.8571,
+    "lower_bound_inr_qtl": 632.5,
+    "upper_bound_inr_qtl": 1135.7143,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 4751,
+    "mandi_id": "maharashtra__punemanjri",
+    "mandi": "Pune(Manjri)",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 1142.8571,
+    "lower_bound_inr_qtl": 932.5,
+    "upper_bound_inr_qtl": 1435.7143,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 4752,
+    "mandi_id": "maharashtra__punemoshi",
+    "mandi": "Pune(Moshi)",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 992.8571,
+    "lower_bound_inr_qtl": 782.5,
+    "upper_bound_inr_qtl": 1285.7143,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 2494,
+    "mandi_id": "maharashtra__punepimpri",
+    "mandi": "Pune(Pimpri)",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 1392.8571,
+    "lower_bound_inr_qtl": 1182.5,
+    "upper_bound_inr_qtl": 1685.7143,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  },
+  {
+    "market_id": 3108,
+    "mandi_id": "maharashtra__vashi_new_mumbai",
+    "mandi": "Vashi New Mumbai",
+    "as_of_date": "2025-10-30",
+    "forecast_price_inr_qtl": 1414.2857,
+    "lower_bound_inr_qtl": 1203.9286,
+    "upper_bound_inr_qtl": 1707.1429,
+    "confidence_level": 0.9,
+    "risk_level": "high"
+  }
+]

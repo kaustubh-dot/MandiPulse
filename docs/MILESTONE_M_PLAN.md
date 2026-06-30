@@ -178,15 +178,15 @@ only the patch target changes.
 
 ### M-08 — Finalize
 
-- `ruff check api/ src/ scripts/ tests/` + `black --check` (skip `.claude/skills/`).
+- `ruff check api/ src/ scripts/ tests/` + `black --check`.
 - Full `pytest` green at the (possibly raised) floor.
-- TRACKER → M Done. Commit. **Push only when asked.** STOP for Opus review.
+- TRACKER → M Done. Commit. **Push only when asked.**
 
 ## Constraints (carried)
 
 - No `→ … ± × —`/emoji in any `print()` path; UTF-8 file writes fine.
 - `tempfile.TemporaryDirectory()`, never the `tmp_path` fixture (Windows PermissionError).
-- No `Co-Authored-By: Claude` / "Generated with Claude Code" in commits or PRs.
+- No generated-code attribution trailers in commits or PRs.
 - CORS `*` is a deliberate read-only-demo decision; revisit if auth/secrets are ever added.
 
 ## Out of scope for M (still deferred)

@@ -1,7 +1,5 @@
 # Milestone J Plan — DuckDB read-layer + coverage gating
 
-**For:** Sonnet (implementer)
-**Reviewer:** Opus
 **Goal:** Close the last RULES-compliance gap. RULES §Architecture mandates DuckDB as the local data
 store; the pipeline is CSV-only today. Adopt DuckDB as a **read/query layer over the existing processed
 CSVs** (CSV stays the on-disk source of truth), route the dashboard + evaluation reads through it, and
@@ -154,8 +152,7 @@ def read_csv_via_duckdb(path: Path, *, parse_dates: list[str] | None = None) -> 
 - Optionally regenerate the backtest (`python scripts/run_recommendation_backtest_7d.py`) to confirm the
   store-routed reads produce the **same** regret numbers (296.3 / 370.1) — parity proof.
 - `python -m ruff check app/ tests/ src/ scripts/` and `python -m black app/ tests/ src/ scripts/ --line-length 100`.
-- Commit (imperative subject, **NO Claude co-author/attribution** per CLAUDE.md) and push. Then STOP for
-  Opus review.
+- Commit (imperative subject, no generated-code attribution trailer) and push.
 
 ---
 

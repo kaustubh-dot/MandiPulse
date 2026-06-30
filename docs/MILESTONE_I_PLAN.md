@@ -1,7 +1,5 @@
 # Milestone I Plan — Beat the moving-average baseline honestly (M3-04)
 
-**For:** Sonnet (implementer)
-**Reviewer:** Opus
 **Goal:** Give the LightGBM forecaster a fair shot at beating `moving_average_7d` by **reformulating the
 target as a residual over the baseline**, evaluate it under the same temporal/metrics rules, and **only
 promote it if it actually wins on the test split**. If it still loses, keep moving-average shipped and
@@ -119,8 +117,7 @@ baselines, report MAE/RMSE/sMAPE/MASE, save split dates. None of that relaxes.
   `build_recommendations_7d.py` → `run_recommendation_backtest_7d.py`) so artifacts stay consistent.
 - `python -m pytest tests/ -q` (all green).
 - `python -m ruff check app/ tests/ src/ scripts/` and `python -m black app/ tests/ src/ scripts/ --line-length 100`.
-- Commit (imperative subject, **NO Claude co-author/attribution** per CLAUDE.md) and push. Then STOP for
-  Opus review.
+- Commit (imperative subject, no generated-code attribution trailer) and push.
 
 ---
 

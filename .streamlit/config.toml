@@ -1,0 +1,34 @@
+# MandiPulse — Streamlit theme
+# Mirrors docs/DESIGN.md "Design System Tokens". Keep the two in sync.
+# Style direction: Data-Dense Dashboard (BI/analytics, WCAG AA).
+
+[theme]
+base = "light"
+primaryColor = "#1E40AF"            # brand / selected filters / neutral KPIs
+backgroundColor = "#F8FAFC"         # page canvas
+secondaryBackgroundColor = "#E9EEF6" # sidebar, cards, table header fill
+textColor = "#0F172A"               # body + table text (slate-900)
+font = "sans serif"
+
+# --- Streamlit >= 1.45 extended theming (installed: 1.58) ---
+# Older Streamlit (>= 1.38 floor) ignores unknown keys with a warning; safe to keep.
+linkColor = "#1E40AF"
+borderColor = "#CBD5E1"             # visible card/table borders
+# headingFont / bodyFont / codeFont accept a font name or a Google Fonts URL.
+# Fira Sans for text, Fira Code for tabular/numeric data (see DESIGN.md typography).
+headingFont = "Fira Sans"
+bodyFont = "Fira Sans"
+codeFont = "Fira Code"
+baseRadius = "0.4rem"
+
+# Chart series colors (reference for Plotly traces; Streamlit does not read these keys
+# directly — pass them in code). Documented here so the app stays on-palette:
+#   history (actual)  solid  #1E40AF
+#   forecast          dashed #D97706
+#   confidence band   #D97706 @ 15% opacity
+#   gridlines         #E2E8F0
+#   risk: low #16A34A  med #D97706  high #DC2626  (always paired with icon/text)
+
+[server]
+# Offline MVP reads local artifacts; no telemetry needed for the demo.
+headless = true
