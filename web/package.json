@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test --import tsx test/transport.parity.test.ts"
+    "test": "tsx --test test/transport.parity.test.ts"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
