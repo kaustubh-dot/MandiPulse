@@ -1,0 +1,22 @@
+[
+  {
+    "model": "moving_average_7d",
+    "test_mae": 139.57,
+    "ships": true
+  },
+  {
+    "model": "ridge",
+    "test_mae": 224.43,
+    "ships": false
+  },
+  {
+    "model": "lightgbm",
+    "test_mae": 188.2,
+    "ships": false
+  },
+  {
+    "model": "lightgbm_residual",
+    "test_mae": 195.63,
+    "ships": false
+  }
+]

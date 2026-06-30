@@ -1,7 +1,5 @@
 # Milestone H Plan — Surface the recommendation backtest in the dashboard
 
-**For:** Sonnet (implementer)
-**Reviewer:** Opus
 **Goal:** Make the Milestone-G regret@K backtest *visible and credible* inside the Streamlit
 Recommendation page, and refresh the docs. The evaluation exists and is sound (regret@1 296.3 vs
 nearest-mandi 370.1 INR/qtl; top-1 beats nearest 78.8%) but no user can see it today.
@@ -139,8 +137,7 @@ before the map. Behavior:
 - `python -m ruff check app/ tests/ src/ scripts/` and `python -m black app/ tests/ src/ scripts/ --line-length 100`.
 - **Manually run the app is NOT required**, but if quick: `streamlit run app/streamlit_app.py` and click
   to the Recommendation page to confirm the section renders and degrades gracefully.
-- Commit (imperative subject, NO Claude co-author/attribution per CLAUDE.md) and push. Then STOP for
-  Opus review.
+- Commit (imperative subject, no generated-code attribution trailer) and push.
 
 ---
 

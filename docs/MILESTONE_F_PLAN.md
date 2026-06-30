@@ -1,6 +1,6 @@
 # Milestone F — Test Coverage + Dashboard Reliability Hardening
 
-**Owner:** Sonnet · **Scope:** strictly within MVP (Onion/Maharashtra, 7-day horizon). No new
+**Scope:** strictly within MVP (Onion/Maharashtra, 7-day horizon). No new
 features, no new scope. This milestone closes the RULES-required test gap and fixes correctness
 issues found in the Milestone E dashboard review.
 

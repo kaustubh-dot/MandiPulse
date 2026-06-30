@@ -168,3 +168,9 @@ artifacts/monitoring/
 outputs/
 logs/
 reports/modeling/*_predictions*.csv
+
+# Next.js frontend (web/) — build artefacts only; web/public/data/*.json is committed
+web/node_modules/
+web/.next/
+web/out/
+web/.vercel/

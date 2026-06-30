@@ -121,11 +121,25 @@ Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
 | F-04 | Done | Surface shipped forecaster (moving-average) vs benched LightGBM on Forecast page |
 | F-05 | Done | Map center computed from centroid of all plotted points + farmer location |
 
-### Pending
+### In Progress (Milestone N — Next.js static frontend, Vercel deploy)
 
 | ID | Status | Task | Depends On |
 |---|---|---|---|
-| J-01 | Pending | Milestone J: adopt DuckDB as local store per RULES §Architecture (or document justification) + `pytest --cov` gating | - |
+| N-01 | Done | Scope promotion: RULES + PRD + TRACKER; promote X-12 | - |
+| N-02 | Pending | `scripts/build_web_export.py`: exports `data/sample/*.csv` → `web/public/data/*.json` | N-01 |
+| N-03 | Pending | Next.js + Tailwind scaffold in `web/`; static export config | N-02 |
+| N-04 | Pending | `lib/types.ts`, `lib/data.ts` — typed loaders for each JSON file | N-03 |
+| N-05 | Pending | `lib/transport.ts` — exact port of `engine.py` (haversine + rankMandis) | N-03 |
+| N-06 | Pending | Shared components: NavBar, SampleBanner, MandiMap, ForecastChart, RecommendTable, BacktestSummary, HonestResultsTable | N-04, N-05 |
+| N-07 | Pending | Data Coverage page | N-06 |
+| N-08 | Pending | Forecast page (chart + uncertainty band + honest-results table) | N-06 |
+| N-09 | Pending | Recommendation page (transport-cost slider, live re-rank, backtest summary) | N-05, N-06 |
+| N-10 | Pending | TS↔Python ranking parity test | N-05, N-02 |
+| N-11 | Pending | Vercel deploy; `docs/DEPLOY_FRONTEND.md`; README badge + Frontend section | N-03..N-10 |
+| N-12 | Pending | `.gitignore` + `.nvmrc`; ruff/black/pytest gates; `npm run build` clean | all |
+
+Promoted from Deferred: X-12 (React frontend). MVP data scope unchanged (onion/maharashtra/7d).
+Static export only — no backend. Data: pre-exported JSON from the same `data/sample/` bundle.
 
 ### Done
 
@@ -174,7 +188,7 @@ Plan: `docs/MILESTONE_G_PLAN.md`. Primary metric: regret@K vs nearest-mandi.
 | X-09 | Deferred | Similar historical days module |
 | X-10 | Deferred | Price propagation graph |
 | X-11 | Deferred | Causal weather shock module |
-| X-12 | Deferred | React frontend |
+| X-12 | **Promoted → Milestone N** | Next.js static frontend |
 | X-13 | Deferred | Kubernetes/microservices |
 
 ### Blocked

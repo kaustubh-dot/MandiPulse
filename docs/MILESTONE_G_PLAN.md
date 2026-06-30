@@ -1,6 +1,6 @@
 # Milestone G — Recommendation-Quality Evaluation + F-Review Cleanups
 
-**Owner:** Sonnet · **Scope:** strictly within MVP (Onion/Maharashtra, 7-day horizon). No new
+**Scope:** strictly within MVP (Onion/Maharashtra, 7-day horizon). No new
 features beyond what RULES already requires. This milestone closes the last open RULES gap — the
 project ranks mandis but has never *measured* whether the ranking is good — and folds in the
 hardening items found while reviewing Milestone F.
@@ -132,7 +132,7 @@ Update `docs/TRACKER.md`:
 - If the backtest shows the model loses to the nearest-mandi baseline, that is a legitimate result —
   record it and leave `M3-04` (beat the baseline) as the open lever. Do not fudge the numbers.
 
-Update the pipeline order note in `CLAUDE.md` / README to include
+Update the pipeline order note in README to include
 `run_recommendation_backtest_7d.py` after `build_recommendations_7d.py`.
 
 ---
@@ -144,5 +144,5 @@ Update the pipeline order note in `CLAUDE.md` / README to include
 - Staleness logic lives in one tested helper; no in-place mutation of cached frames.
 - Missing-artifact and duplicate-market_id guards are tested.
 - `pytest` green (existing 58 + new tests); `ruff check .` and `black .` clean.
-- Tracker + README/CLAUDE pipeline order updated.
+- Tracker + README pipeline order updated.
 - No new dependencies, no scope creep, no committed secrets/raw data/artifacts.

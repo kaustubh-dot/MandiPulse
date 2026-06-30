@@ -16,7 +16,7 @@
 | Explainability | SHAP | Feature importance and local drivers | Interview-friendly, model-aware explanations |
 | API | FastAPI, Pydantic, Uvicorn | Post-MVP prediction and recommendation service | Useful later, not part of the narrowed MVP |
 | Dashboard | Streamlit, Plotly, Folium or PyDeck | MVP product interface | Fast offline dashboard with maps and charts |
-| UI design system | `docs/DESIGN.md` + `.streamlit/config.toml` | Palette, typography, chart specs, theme | Data-Dense Dashboard tokens; authored with the `ui-ux-pro-max` skill (`.claude/skills/`) for future UI work |
+| UI design system | `docs/DESIGN.md` + `.streamlit/config.toml` | Palette, typography, chart specs, theme | Data-Dense Dashboard tokens for future UI work |
 | Experiment tracking | MLflow | Metrics, parameters, model artifacts | Standard MLOps signal for portfolio |
 | Monitoring | Custom reports | Data coverage, missingness, backtest metrics | Static reports are enough for MVP |
 | Testing | Pytest, pytest-cov | Unit and integration tests | Simple and reliable |
