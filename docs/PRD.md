@@ -167,12 +167,12 @@ Built an offline mandi decision intelligence system for Maharashtra onion market
 
 ## MVP Acceptance Checklist
 
-- [ ] Tracks Onion across the top 10-15 Maharashtra mandis.
-- [ ] Uses temporal validation only.
-- [ ] Compares against at least three baselines.
-- [ ] Produces 7-day forecasts.
-- [ ] Produces uncertainty intervals and reports coverage.
-- [ ] Recommends mandis after transport cost and uncertainty penalty.
-- [ ] Provides a Streamlit dashboard from static local artifacts.
-- [ ] Logs experiments and artifacts with MLflow.
-- [ ] Includes data coverage reports and tests for the core pipeline.
+- [x] Tracks Onion across 15 Maharashtra mandis.
+- [x] Uses temporal validation only.
+- [x] Compares against at least three baselines.
+- [x] Produces 7-day forecasts.
+- [x] Produces uncertainty intervals and reports coverage.
+- [x] Recommends mandis after transport cost and reports the uncertainty penalty.
+- [x] Provides a Streamlit dashboard from static local artifacts.
+- [x] Logs experiments and artifacts with local MLflow tracking.
+- [x] Includes data coverage reports and tests for the core pipeline.

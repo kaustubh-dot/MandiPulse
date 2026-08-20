@@ -1,8 +1,8 @@
-# MandiPulse API — Deployment Guide (Render)
+# MandiPulse API — Local Snapshot and Optional Render Deployment
 
-The FastAPI backend deploys on **Render** (free tier). Vercel is not used for the backend —
-the ML deps blow past Vercel's 250 MB bundle cap, and the Render free tier handles cold starts
-acceptably for a demo project.
+FastAPI is a **local snapshot API by default**. It serves the committed `data/sample/` bundle and is
+not required by the static Next.js frontend. Render deployment is an optional external step; do not
+describe the API as publicly deployed until a real URL has been smoke-tested and recorded.
 
 ## Local run
 
@@ -26,7 +26,7 @@ Endpoints:
 | GET | `/docs` | Interactive Swagger UI |
 | GET | `/redoc` | ReDoc documentation |
 
-## Render deployment
+## Optional Render deployment
 
 1. Push this repo to GitHub (already done).
 2. Go to [render.com](https://render.com) → **New Web Service** → connect your GitHub repo.

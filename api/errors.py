@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from fastapi import Request
@@ -31,6 +32,24 @@ def _error_body(code: str, message: str, details: dict[str, Any] | None = None) 
     return body
 
 
+def _json_safe(value: Any) -> Any:
+    """Normalize validation details before strict JSON serialization.
+
+    Pydantic includes the rejected input in validation errors.  A request
+    containing JSON ``NaN``/``Infinity`` therefore needs sanitizing even
+    though the field itself is correctly rejected; otherwise Starlette's
+    response encoder would raise while rendering the 422 envelope.
+    """
+
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.http_status,
@@ -44,6 +63,13 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
         content=_error_body(
             "VALIDATION_ERROR",
             "Request validation failed.",
-            {"errors": exc.errors()},
+            {"errors": _json_safe(exc.errors())},
         ),
+    )
+
+
+async def internal_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
+        content=_error_body("INTERNAL_ERROR", "An unexpected internal error occurred."),
     )

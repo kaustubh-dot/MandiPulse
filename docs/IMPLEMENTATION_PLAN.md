@@ -2,7 +2,8 @@
 
 ## Current State
 
-The Onion/Maharashtra 7-day decision loop is implemented and portfolio-ready:
+The Onion/Maharashtra 7-day decision loop is implemented locally; portfolio readiness remains
+subject to the Phase 1 verification and deployment gate:
 
 - Cached CEDA data can be transformed into clean panel and feature-table artifacts.
 - Temporal baselines, LightGBM, residual-LightGBM, and uncertainty reports are implemented.

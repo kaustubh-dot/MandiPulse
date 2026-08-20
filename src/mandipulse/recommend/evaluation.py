@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import pandas as pd
 
+from mandipulse.modeling.phase3 import observed_target_mask
 from mandipulse.recommend.engine import (
     compute_transport_cost_inr_qtl,
     haversine_km,
@@ -17,15 +18,36 @@ def realized_net_price(
     target_date: pd.Timestamp,
     transport_cost_inr_qtl: float,
     tolerance_days: int = 2,
+    observed_only: bool = False,
 ) -> float | None:
     """Return realized net price (INR/quintal) at target_date for market_id.
 
     Searches ±tolerance_days for an observed row. Prefers is_observed=True rows.
     Returns None if no usable row is found within the tolerance window.
     """
+    net, _ = realized_price_details(
+        panel=panel,
+        market_id=market_id,
+        target_date=target_date,
+        transport_cost_inr_qtl=transport_cost_inr_qtl,
+        tolerance_days=tolerance_days,
+        observed_only=observed_only,
+    )
+    return net
+
+
+def realized_price_details(
+    panel: pd.DataFrame,
+    market_id: int,
+    target_date: pd.Timestamp,
+    transport_cost_inr_qtl: float,
+    tolerance_days: int = 2,
+    observed_only: bool = False,
+) -> tuple[float | None, str]:
+    """Return realized net price and status (observed, imputed, unavailable)."""
     mandi_rows = panel[panel["market_id"] == market_id].copy()
     if mandi_rows.empty:
-        return None
+        return None, "unavailable"
 
     mandi_rows = mandi_rows.copy()
     mandi_rows["date"] = pd.to_datetime(mandi_rows["date"])
@@ -35,16 +57,21 @@ def realized_net_price(
         (mandi_rows["date"] >= window_start) & (mandi_rows["date"] <= window_end)
     ].copy()
     if window.empty:
-        return None
+        return None, "unavailable"
 
     # Prefer observed rows; among those, pick the closest date to target_date
-    observed = window[window["is_observed"].astype(bool)]
+    observed = window[window["is_observed"].fillna(False).astype(bool)]
+    if observed_only and observed.empty:
+        return None, "unavailable"
     candidates = observed if not observed.empty else window
     candidates = candidates.copy()
     candidates["date_dist"] = (candidates["date"] - target_date).abs()
     best = candidates.sort_values("date_dist").iloc[0]
+    if pd.isna(best["modal_price_inr_qtl"]):
+        return None, "unavailable"
     realized_price = float(best["modal_price_inr_qtl"])
-    return realized_price - transport_cost_inr_qtl
+    status = "observed" if bool(best["is_observed"]) else "imputed"
+    return realized_price - transport_cost_inr_qtl, status
 
 
 def regret_at_k(
@@ -116,7 +143,7 @@ def summarize_backtest(backtest: pd.DataFrame, k_values: list[int]) -> dict:
     optimal_rate_{k} (fraction top-K captured the best mandi, i.e. regret<=0),
     beats_nearest_{k} (fraction where regret_at_k < nearest_mandi_regret).
     Plus: nearest_mandi_regret_mean, nearest_mandi_regret_median,
-    n_dates, date_min, date_max, n_dropped.
+    n_dates, date_min, date_max, n_dropped, and explicit population/exclusion sums.
     Returns {} for an empty frame.
     """
     if backtest.empty:
@@ -152,6 +179,17 @@ def summarize_backtest(backtest: pd.DataFrame, k_values: list[int]) -> dict:
     result["date_min"] = str(backtest["as_of_date"].min())
     result["date_max"] = str(backtest["as_of_date"].max())
     result["n_dropped"] = int(backtest["n_dropped"].sum())
+    for column in (
+        "n_candidate_mandis",
+        "n_prediction_candidates",
+        "n_target_ineligible",
+        "n_coordinate_excluded",
+        "n_observed_realized",
+        "n_imputed_realized",
+        "n_eligible_realized",
+    ):
+        if column in backtest.columns:
+            result[f"{column}_sum"] = int(backtest[column].sum())
 
     return result
 
@@ -170,6 +208,7 @@ def backtest_recommendations(
     high_min_interval_pct: float,
     lower_residual: float,
     upper_residual: float,
+    observed_target_only: bool = False,
 ) -> pd.DataFrame:
     """Backtest recommendations over leakage-safe per-as-of-date predictions.
 
@@ -192,9 +231,18 @@ def backtest_recommendations(
     rows = []
     n_scoring_failures = 0
     first_scoring_error: str | None = None
-    for as_of_date, group in predictions.groupby("date"):
+    for as_of_date, original_group in predictions.groupby("date"):
         as_of_date = pd.Timestamp(as_of_date)
         target_date = as_of_date + timedelta(days=7)
+
+        group = original_group.copy()
+        n_target_ineligible = 0
+        if observed_target_only:
+            eligible_mask = observed_target_mask(group)
+            n_target_ineligible = int((~eligible_mask).sum())
+            group = group[eligible_mask].copy()
+
+        n_prediction_candidates = len(group)
 
         # Build per-mandi forecast using the moving-average prediction at this as-of date
         forecast_rows = group.copy()
@@ -217,7 +265,33 @@ def backtest_recommendations(
         forecast_for_scoring = forecast_rows[
             forecast_rows["market_id"].isin(mandis_with_coords["market_id"])
         ].copy()
+        n_coordinate_excluded = n_prediction_candidates - len(forecast_for_scoring)
         if forecast_for_scoring.empty:
+            rows.append(
+                {
+                    "as_of_date": as_of_date.date().isoformat(),
+                    "target_date": target_date.date().isoformat(),
+                    "n_mandis_ranked": 0,
+                    "n_prediction_candidates": n_prediction_candidates,
+                    "n_target_ineligible": n_target_ineligible,
+                    "n_candidate_mandis": 0,
+                    "n_coordinate_excluded": n_coordinate_excluded,
+                    "n_observed_realized": 0,
+                    "n_imputed_realized": 0,
+                    "n_eligible_realized": 0,
+                    "n_dropped": 0,
+                    "realized_target_population": (
+                        "observed_only"
+                        if observed_target_only
+                        else "observed_preferred_with_imputed_fallback"
+                    ),
+                    "best_realized_net_price": None,
+                    "best_mandi": None,
+                    **{f"regret_at_{k}": None for k in k_values},
+                    **{f"top{k}_mandi": None for k in k_values},
+                    "nearest_mandi_regret": None,
+                }
+            )
             continue
 
         # score_recommendations pulls market_name/district_name from the mandis frame;
@@ -245,54 +319,86 @@ def backtest_recommendations(
                 first_scoring_error = f"{type(exc).__name__}: {exc}"
             continue
 
-        # Compute per-mandi transport cost for realized net price calculation
+        candidate_mandis = mandis_with_coords[
+            mandis_with_coords["market_id"].isin(forecast_for_scoring["market_id"])
+        ].copy()
+
+        # Compute per-mandi transport cost for realized net price calculation.
+        # Status counts make the matched denominator explicit in every row.
         realized: dict[int, float] = {}
         n_dropped = 0
-        for _, mandi_row in mandis_with_coords.iterrows():
+        n_observed_realized = 0
+        n_imputed_realized = 0
+        for _, mandi_row in candidate_mandis.iterrows():
             mid = int(mandi_row["market_id"])
             air_dist = haversine_km(
                 farmer_lat, farmer_lon, float(mandi_row["latitude"]), float(mandi_row["longitude"])
             )
             road_dist = air_dist * road_distance_factor
             tc = compute_transport_cost_inr_qtl(road_dist, cost_per_km_per_quintal)
-            net = realized_net_price(panel, mid, target_date, tc)
+            net, status = realized_price_details(
+                panel,
+                mid,
+                target_date,
+                tc,
+                observed_only=observed_target_only,
+            )
             if net is None:
                 n_dropped += 1
             else:
                 realized[mid] = net
-
-        if not realized:
-            continue
+                if status == "observed":
+                    n_observed_realized += 1
+                elif status == "imputed":
+                    n_imputed_realized += 1
 
         row: dict = {
             "as_of_date": as_of_date.date().isoformat(),
             "target_date": target_date.date().isoformat(),
             "n_mandis_ranked": len(ranked),
+            "n_prediction_candidates": n_prediction_candidates,
+            "n_target_ineligible": n_target_ineligible,
+            "n_candidate_mandis": len(candidate_mandis),
+            "n_coordinate_excluded": n_coordinate_excluded,
+            "n_observed_realized": n_observed_realized,
+            "n_imputed_realized": n_imputed_realized,
+            "n_eligible_realized": len(realized),
             "n_dropped": n_dropped,
+            "realized_target_population": (
+                "observed_only"
+                if observed_target_only
+                else "observed_preferred_with_imputed_fallback"
+            ),
         }
 
-        best_realized = max(realized.values())
-        best_market_id = max(realized, key=realized.__getitem__)
-        best_mandi_name = (
-            mandis_with_coords[mandis_with_coords["market_id"] == best_market_id][
-                "market_name"
-            ].iloc[0]
-            if best_market_id in mandis_with_coords["market_id"].values
-            else str(best_market_id)
-        )
-
-        row["best_realized_net_price"] = best_realized
-        row["best_mandi"] = best_mandi_name
+        if realized:
+            best_realized = max(realized.values())
+            best_market_id = max(realized, key=realized.__getitem__)
+            best_mandi_name = (
+                mandis_with_coords[mandis_with_coords["market_id"] == best_market_id][
+                    "market_name"
+                ].iloc[0]
+                if best_market_id in candidate_mandis["market_id"].values
+                else str(best_market_id)
+            )
+            row["best_realized_net_price"] = best_realized
+            row["best_mandi"] = best_mandi_name
+        else:
+            row["best_realized_net_price"] = None
+            row["best_mandi"] = None
 
         for k in k_values:
             regret = regret_at_k(ranked, realized, k)
             row[f"regret_at_{k}"] = regret
-            top1_id = int(ranked.sort_values("rank").iloc[0]["market_id"])
-            row[f"top{k}_mandi"] = (
-                ranked[ranked["market_id"] == top1_id]["mandi"].iloc[0] if k == 1 else None
-            )
+            if not ranked.empty:
+                top1_id = int(ranked.sort_values("rank").iloc[0]["market_id"])
+                row[f"top{k}_mandi"] = (
+                    ranked[ranked["market_id"] == top1_id]["mandi"].iloc[0] if k == 1 else None
+                )
+            else:
+                row[f"top{k}_mandi"] = None
 
-        nm_regret = nearest_mandi_regret(realized, farmer_lat, farmer_lon, mandis_with_coords)
+        nm_regret = nearest_mandi_regret(realized, farmer_lat, farmer_lon, candidate_mandis)
         row["nearest_mandi_regret"] = nm_regret
 
         rows.append(row)

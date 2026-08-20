@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -94,6 +96,17 @@ class TestForecast:
         assert r.status_code == 422
         assert r.json()["error"]["code"] == "VALIDATION_ERROR"
 
+    def test_unknown_request_field_is_rejected(self, client) -> None:
+        r = client.post("/forecast", json={**self._VALID, "unexpected": True})
+        assert r.status_code == 422
+        assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    def test_response_exposes_canonical_as_of_and_target(self, client) -> None:
+        body = client.post("/forecast", json=self._VALID).json()
+        assert body["canonical_as_of_date"] == "2025-10-30"
+        assert body["target_date"] == "2025-11-06"
+        assert body["staleness_days"] == 0
+
 
 class TestRecommend:
     _VALID = {
@@ -143,3 +156,147 @@ class TestRecommend:
         r = client.post("/recommend", json=bad)
         assert r.status_code == 422
         assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    def test_canonical_policy_and_default_limits_are_explicit(self, client) -> None:
+        body = client.post("/recommend", json=self._VALID).json()
+        assert body["as_of_date"] == "2025-10-30"
+        assert body["as_of_policy"] == "as_of_equals_bundle_max"
+        assert body["max_transport_radius_km"] == 500.0
+        assert body["max_alternatives"] == 10
+        assert len(body["alternatives"]) <= 10
+        assert {row["as_of_date"] for row in body["alternatives"]} == {"2025-10-30"}
+
+    def test_configured_alternative_limit_is_enforced(self, client) -> None:
+        body = client.post("/recommend", json={**self._VALID, "max_alternatives": 1}).json()
+        assert len(body["alternatives"]) == 1
+        assert body["alternatives"][0]["rank"] == 1
+
+    @pytest.mark.parametrize(
+        "field,value",
+        [
+            ("max_transport_radius_km", 0),
+            ("max_transport_radius_km", 501),
+            ("max_alternatives", 0),
+            ("max_alternatives", 11),
+        ],
+    )
+    def test_configured_limits_are_validated(self, client, field, value) -> None:
+        r = client.post("/recommend", json={**self._VALID, field: value})
+        assert r.status_code == 422
+        assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    def test_empty_candidate_states_is_typed_validation_error(self, client) -> None:
+        r = client.post("/recommend", json={**self._VALID, "candidate_states": []})
+        assert r.status_code == 422
+        assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    def test_non_finite_quantity_is_rejected(self, client) -> None:
+        body = json.dumps({**self._VALID, "quantity_quintal": float("nan")}, allow_nan=True)
+        r = client.post(
+            "/recommend",
+            content=body,
+            headers={"content-type": "application/json"},
+        )
+        assert r.status_code == 422
+        assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    def test_no_candidates_within_radius_is_typed_not_found(self, client) -> None:
+        request = {
+            **self._VALID,
+            "farmer_location": {"latitude": 0.0, "longitude": 0.0},
+            "max_transport_radius_km": 500,
+        }
+        r = client.post("/recommend", json=request)
+        assert r.status_code == 404
+        body = r.json()
+        assert body["error"]["code"] == "NO_CANDIDATES_AVAILABLE"
+        assert body["error"]["details"]["as_of_policy"] == "as_of_equals_bundle_max"
+
+    def test_unknown_request_field_is_rejected(self, client) -> None:
+        r = client.post("/recommend", json={**self._VALID, "unexpected": True})
+        assert r.status_code == 422
+        assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+class TestUnavailableData:
+    def test_health_reports_unavailable_snapshot(self, client, monkeypatch) -> None:
+        from api import service
+
+        def _raise_unavailable():
+            raise OSError("snapshot is missing")
+
+        monkeypatch.setattr(service, "read_forecasts", _raise_unavailable)
+        r = client.get("/health")
+        assert r.status_code == 503
+        body = r.json()
+        assert body["status"] == "not_ready"
+        assert body["data_status"] == "unavailable"
+
+    def test_health_rejects_malformed_nonempty_snapshot(self, client, monkeypatch) -> None:
+        from api import service
+
+        monkeypatch.setattr(
+            service,
+            "read_forecasts",
+            lambda: pd.DataFrame({"as_of_date": ["2025-10-30"], "model_version": ["v1"]}),
+        )
+        r = client.get("/health")
+        assert r.status_code == 503
+        body = r.json()
+        assert body["status"] == "not_ready"
+        assert body["data_status"] == "unavailable"
+
+    def test_health_requires_mandi_metadata(self, client, monkeypatch) -> None:
+        from api import service
+
+        def _raise_unavailable():
+            raise OSError("metadata is missing")
+
+        monkeypatch.setattr(service, "read_mandi_metadata", _raise_unavailable)
+        r = client.get("/health")
+        assert r.status_code == 503
+        body = r.json()
+        assert body["status"] == "not_ready"
+        assert body["data_status"] == "unavailable"
+
+    def test_health_reports_empty_mandi_metadata(self, client, monkeypatch) -> None:
+        from api import service
+
+        monkeypatch.setattr(service, "read_mandi_metadata", lambda: pd.DataFrame())
+        r = client.get("/health")
+        assert r.status_code == 503
+        body = r.json()
+        assert body["status"] == "not_ready"
+        assert body["data_status"] == "empty"
+
+    def test_forecast_reports_unavailable_snapshot(self, client, monkeypatch) -> None:
+        from api import service
+
+        monkeypatch.setattr(service, "read_forecasts", lambda: pd.DataFrame())
+        r = client.post("/forecast", json=TestForecast._VALID)
+        assert r.status_code == 503
+        assert r.json()["error"]["code"] == "DATA_NOT_AVAILABLE"
+
+    def test_malformed_forecast_columns_are_typed_unavailable(self, client, monkeypatch) -> None:
+        from api import service
+
+        monkeypatch.setattr(
+            service,
+            "read_forecasts",
+            lambda: pd.DataFrame({"as_of_date": ["2025-10-30"]}),
+        )
+        r = client.post("/forecast", json=TestForecast._VALID)
+        assert r.status_code == 503
+        assert r.json()["error"]["code"] == "DATA_NOT_AVAILABLE"
+
+    def test_malformed_mandi_metadata_is_typed_unavailable(self, client, monkeypatch) -> None:
+        from api import service
+
+        monkeypatch.setattr(
+            service,
+            "read_mandi_metadata",
+            lambda: pd.DataFrame({"market_id": [1], "market_name": ["Mandi"]}),
+        )
+        r = client.post("/forecast", json=TestForecast._VALID)
+        assert r.status_code == 503
+        assert r.json()["error"]["code"] == "DATA_NOT_AVAILABLE"

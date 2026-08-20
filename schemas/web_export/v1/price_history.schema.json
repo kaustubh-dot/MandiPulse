@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mandipulse.local/schemas/web-export/v1/price_history.schema.json",
+  "title": "Recent price-history export",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "market_id",
+      "market_name",
+      "date",
+      "modal_price_inr_qtl",
+      "is_imputed"
+    ],
+    "properties": {
+      "market_id": { "type": "integer" },
+      "market_name": { "type": "string", "minLength": 1 },
+      "date": { "type": "string", "format": "date" },
+      "modal_price_inr_qtl": { "type": ["number", "null"] },
+      "is_imputed": { "type": "boolean" }
+    }
+  }
+}

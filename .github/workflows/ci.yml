@@ -32,6 +32,11 @@ jobs:
       - name: Black
         run: black --check api app src scripts tests
 
+      - name: Build and validate web exports
+        run: |
+          python scripts/build_web_export.py
+          python scripts/validate_web_export.py
+
       - name: Pytest
         run: pytest -q
 

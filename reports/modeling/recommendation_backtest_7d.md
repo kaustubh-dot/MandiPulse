@@ -21,7 +21,7 @@
 | Regret@1 (mean) | 296.3 INR/qtl |
 | Regret@1 (median) | 0.0 INR/qtl |
 | Optimal rate@1 (top-1 captured best mandi) | 58.9% |
-| Beats nearest-mandi@1 | 78.8% |
+| Beats nearest-mandi@1 | 74.4% |
 | Regret@3 (mean) | 191.0 INR/qtl |
 | Regret@3 (median) | 0.0 INR/qtl |
 | Optimal rate@3 (top-3 captured best mandi) | 87.8% |

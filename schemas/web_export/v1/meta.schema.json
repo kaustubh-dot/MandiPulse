@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mandipulse.local/schemas/web-export/v1/meta.schema.json",
+  "title": "MandiPulse web export metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "as_of_date",
+    "snapshot_date",
+    "forecast_horizon_days",
+    "crop",
+    "state",
+    "model_version",
+    "confidence_level",
+    "empirical_coverage",
+    "candidate_policy",
+    "default_farmer",
+    "ranking"
+  ],
+  "properties": {
+    "as_of_date": { "type": "string", "format": "date" },
+    "snapshot_date": { "type": "string", "format": "date" },
+    "forecast_horizon_days": { "const": 7 },
+    "crop": { "const": "onion" },
+    "state": { "const": "maharashtra" },
+    "model_version": { "type": "string", "minLength": 1 },
+    "confidence_level": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+    "empirical_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+    "candidate_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "eligible_as_of_date", "eligible_count", "excluded_stale_count"],
+      "properties": {
+        "rule": { "const": "as_of_equals_bundle_max" },
+        "eligible_as_of_date": { "type": "string", "format": "date" },
+        "eligible_count": { "type": "integer", "minimum": 1 },
+        "excluded_stale_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "default_farmer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latitude", "longitude"],
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
+      }
+    },
+    "ranking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cost_per_km_per_quintal",
+        "road_distance_factor",
+        "max_transport_radius_km",
+        "max_alternatives",
+        "uncertainty_penalty_weight",
+        "low_max_interval_pct",
+        "high_min_interval_pct",
+        "cost_variation_pct"
+      ],
+      "properties": {
+        "cost_per_km_per_quintal": { "type": "number", "minimum": 0 },
+        "road_distance_factor": { "type": "number", "exclusiveMinimum": 0 },
+        "max_transport_radius_km": { "type": "number", "exclusiveMinimum": 0 },
+        "max_alternatives": { "type": "integer", "minimum": 1 },
+        "uncertainty_penalty_weight": { "type": "number", "minimum": 0 },
+        "low_max_interval_pct": { "type": "number", "minimum": 0 },
+        "high_min_interval_pct": { "type": "number", "minimum": 0 },
+        "cost_variation_pct": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # MandiPulse India Development Rules
 
-This file is for future AI coding agents and maintainers. Follow these rules unless the project docs are intentionally updated first.
+This file is for future maintainers. Follow these rules unless the project docs are intentionally updated first.
 
 ## Scope Rules
 
@@ -194,6 +194,9 @@ __pycache__/
 - Update `docs/ARCHITECTURE.md` if system flow changes.
 - Update README after meaningful implementation milestones.
 - Document assumptions, limitations, and known risks.
+- Update [CHECKPOINTS.md](portfolio/CHECKPOINTS.md) before requesting review.
+- Update [CURRENT_STATE.md](portfolio/CURRENT_STATE.md) only after phase approval.
+- Tracker, README, metrics, generated artifacts, and implementation must agree before completion.
 
 ## Stop Conditions
 

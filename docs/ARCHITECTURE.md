@@ -65,11 +65,13 @@ This keeps the repo small while preserving a no-secrets demo path.
 | Surface | Role | Data source |
 |---|---|---|
 | Streamlit | Offline data-science showcase with coverage, forecast, and recommendation pages | `data/sample/` fallback or local full artifacts |
-| FastAPI | Additive API for `/health`, `/forecast`, and `/recommend` | Shared streamlit-free loaders over `data/sample/` |
-| Next.js | Static Vercel frontend with client-side transport-cost re-ranking | `web/public/data/*.json` |
+| FastAPI | Local snapshot API for `/health`, `/forecast`, and `/recommend`; external deployment is optional | Shared streamlit-free loaders over `data/sample/` |
+| Next.js | Static recommendation-first frontend with client-side decision-input re-ranking; external deployment is optional | `web/public/data/*.json` |
 
-The Next.js ranking code is a TypeScript port of `src/mandipulse/recommend/engine.py`. The parity
-test compares TypeScript output against Python-generated `recommendations.json` within 0.01 INR/qtl.
+The Next.js ranking code is a TypeScript port of `src/mandipulse/recommend/engine.py`, wrapped by the
+same canonical as-of, radius, and alternative-limit policy used by the exporter and API. The parity
+test compares the policy-filtered TypeScript output against Python-generated `recommendations.json`
+within 0.01 INR/qtl.
 
 ## Modeling Boundary
 
@@ -94,6 +96,12 @@ risk_adjusted_score = expected_net_price - uncertainty_penalty
 Transport cost uses haversine distance, a road-distance factor, and cost-per-km assumptions from
 `configs/recommendation.yaml`. Recommendation quality is evaluated with regret@K against a nearest
 mandi baseline.
+
+The road-distance factor and cost rate are configurable evaluation assumptions, not routing-engine
+distances or carrier quotes. The public v1 residual interval has one global width, so its
+uncertainty penalty is constant across candidates in the same snapshot and does not change their
+relative order. Risk labels and empirical coverage still communicate uncertainty; forecast price
+and transport cost drive the current public ranking.
 
 ## Optional Stretch Work
 

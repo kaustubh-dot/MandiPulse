@@ -192,7 +192,7 @@ only the patch target changes.
 ## Out of scope for M (still deferred)
 
 `/regime`, `/metrics`, SHAP `top_drivers`, real `market_regime`, horizons 14/30, non-MH states,
-auth/rate-limiting, the Next.js frontend (Milestone N), deployment execution on Render (the agent
+auth/rate-limiting, the Next.js frontend (Milestone N), deployment execution on Render (the maintainer
 preps everything; connecting the Render account is a user step in N/O).
 
 ## Next

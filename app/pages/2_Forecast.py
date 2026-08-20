@@ -17,6 +17,12 @@ from mandipulse.app.data_access import (  # noqa: E402
     load_forecasts,
     load_report_markdown,
 )
+from mandipulse.policy import (  # noqa: E402
+    canonical_forecast_as_of,
+    cap_history_at_as_of,
+    forecast_target_date,
+    select_latest_forecast_for_market,
+)
 
 st.set_page_config(page_title="Forecast · MandiPulse", layout="wide")
 st.title("7-Day Price Forecast")
@@ -29,13 +35,21 @@ with st.spinner("Loading data…"):
 mandis = available_mandis(forecasts)
 selected_mandi = st.selectbox("Select Mandi", mandis, index=0)
 
-mandi_row = forecasts[forecasts["mandi"] == selected_mandi].iloc[0]
-market_id = int(mandi_row["market_id"])
+mandi_matches = forecasts.loc[forecasts["mandi"] == selected_mandi]
+market_id = int(mandi_matches["market_id"].iloc[0])
+mandi_row = select_latest_forecast_for_market(forecasts, market_id)
 
-history = history_for_mandi(panel, market_id)
+history = cap_history_at_as_of(
+    history_for_mandi(panel, market_id),
+    mandi_row["as_of_date"],
+)
 
-_max_as_of = forecasts["as_of_date"].max()
+_max_as_of = canonical_forecast_as_of(forecasts)
 _staleness_days = int(mandi_row["staleness_days"])
+_target_date = forecast_target_date(
+    mandi_row["as_of_date"],
+    int(mandi_row["horizon_days"]),
+)
 
 # --- Forecast KPIs ---
 st.divider()
@@ -64,6 +78,7 @@ _staleness_suffix = (
 )
 st.caption(
     f"As-of date: **{mandi_row['as_of_date']}**{_staleness_suffix} · "
+    f"Target date: **{_target_date.isoformat()}** · "
     f"Model: `{mandi_row['model_name']}` · "
     f"Horizon: {mandi_row['horizon_days']} days"
 )
@@ -107,9 +122,9 @@ if imputed_mask.any():
         )
     )
 
-# Forecast point (7 days after as_of_date)
-as_of = pd.to_datetime(mandi_row["as_of_date"])
-forecast_date = as_of + pd.Timedelta(days=7)
+# Forecast point (horizon_days after this mandi's own as_of_date)
+as_of = pd.Timestamp(pd.to_datetime(mandi_row["as_of_date"]).date())
+forecast_date = pd.Timestamp(_target_date)
 
 fig.add_trace(
     go.Scatter(
@@ -170,7 +185,7 @@ with st.expander("View full baseline metrics report"):
 # --- Data notes ---
 st.info(
     f"**{selected_mandi}** · market_id={market_id} · "
-    f"History rows: {len(history)} · "
+    f"History available through {mandi_row['as_of_date']}: {len(history)} rows · "
     f"Observed: {int(history['is_observed'].sum())} / Imputed: {int(history['is_imputed'].fillna(False).sum())}",
     icon="ℹ️",
 )

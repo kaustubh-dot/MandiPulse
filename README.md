@@ -2,17 +2,28 @@
 
 **Transport-cost-aware mandi decision intelligence for Maharashtra onion farmers.**
 
-[![Tests](https://img.shields.io/badge/tests-169%20passed-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-73%25-green)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-206%20passed-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-75%25-green)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
-## Live demos
+## Demo surfaces
 
 | Surface | URL | Stack |
 |---|---|---|
 | Streamlit dashboard | [mandipulse.streamlit.app](https://mandipulse.streamlit.app/) | Python + Streamlit |
-| FastAPI service | _optional Render deploy - see [docs/DEPLOY_API.md](docs/DEPLOY_API.md)_ | FastAPI + Render |
-| Next.js frontend | _deploy to get URL — see [docs/DEPLOY_FRONTEND.md](docs/DEPLOY_FRONTEND.md)_ | Next.js + Vercel |
+| FastAPI service | _local snapshot API; optional Render deploy — see [docs/DEPLOY_API.md](docs/DEPLOY_API.md)_ | FastAPI |
+| Next.js frontend | _updated frontend packaging is intentionally deferred to a separate commit_ | Next.js |
+
+---
+
+## Product surfaces
+
+The Streamlit dashboard and FastAPI snapshot service are part of this release. The updated
+recommendation-first Next.js experience is being packaged separately and should not be described as
+publicly deployed until its dedicated frontend commit, CI pass, and browser smoke test are complete.
+
+The snapshot is intentionally frozen at **2025-10-30**. It is a reproducible portfolio artifact,
+not a live price feed.
 
 ---
 
@@ -40,8 +51,14 @@ held-out test split. The baseline ships. This is reported transparently.
 | `lightgbm` | 188.2 | No |
 | `lightgbm_residual` | 195.63 | No |
 
-Forecast uncertainty intervals (nominal 90%) achieved **86.71% empirical coverage** on the test
-split — conservative, safe to show to users.
+The committed public v1 forecast bundle uses the residual interval from the shipped all-row
+calibration and reports **86.71% empirical coverage** on its test split. This is below the nominal
+level, so the interval is an observed uncertainty estimate, not a guarantee, and the shortfall is
+reported rather than described as conservative. The Phase 3 observed-target re-evaluation is kept
+separate in [the evidence report](reports/modeling/phase3_evaluation.md): conditional residual
+coverage is 86.87%, split-conformal coverage is 90.91%, and the pre-declared rule adopts
+split-conformal for that evaluation population. No public v1 field or schema is changed by the
+internal evidence export.
 
 Recommendation backtest (regret@K vs nearest-mandi baseline, held-out test window):
 
@@ -49,7 +66,7 @@ Recommendation backtest (regret@K vs nearest-mandi baseline, held-out test windo
 |---|---|
 | Mean regret@1 | 296.3 INR/qtl |
 | Nearest-mandi baseline regret | 370.1 INR/qtl |
-| Beats nearest-mandi | 78.8% of dates |
+| Beats nearest-mandi | 74.4% of dates |
 
 ---
 
@@ -60,7 +77,41 @@ Recommendation backtest (regret@K vs nearest-mandi baseline, held-out test windo
 - Forecasts include uncertainty intervals with measured empirical coverage.
 - Recommendations are evaluated with regret@K against a nearest-mandi baseline.
 - The demo is clone-runnable from committed `data/sample/` artifacts; no secrets required.
-- The Next.js transport-cost ranking is parity-tested against the Python engine within 0.01 INR/qtl.
+- The separately packaged Next.js ranking has a recorded local Python/TypeScript parity tolerance
+  of 0.01 INR/qtl; publish that claim with the frontend commit and its CI evidence.
+
+## ML Engineer case study
+
+**Problem.** A higher mandi price is not necessarily a better farmer outcome once distance,
+transport cost, and forecast uncertainty are included.
+
+**Approach.** Build a point-in-time daily panel for 15 Maharashtra onion mandis, compare temporal
+models, calibrate uncertainty on observed targets, and rank only candidates whose forecast as-of
+date matches the canonical bundle date. The shipped baseline is the 7-day moving average because
+it beats the trained LightGBM variants on the untouched held-out split.
+
+**Evidence.** The public v1 bundle reports 86.71% all-row test coverage; the Phase 3 observed-target
+holdout has 792 eligible rows, with 86.87% conditional-residual coverage and 90.91% split-conformal
+coverage. The multi-origin recommendation evidence reports matched observed-target denominators
+and explicit 0.8x/1.0x/1.2x transport-cost scenarios. These are measured decision-support results,
+not profit guarantees. The strict export process generates a manifest with snapshot, model,
+configuration, input, code, and artifact hashes; that bundle will be published with the separate
+frontend commit.
+
+**Engineering lesson.** The valuable part is the contract between data, model, policy, API, and
+UI: the same as-of date, denominator, transport assumptions, and uncertainty semantics must survive
+export, browser ranking, and documentation.
+
+### Decision-model limitations
+
+- Road distance is approximated as haversine distance multiplied by a configurable `1.3` factor;
+  it is not routing-engine distance.
+- The baseline `4.0 INR/km/quintal` rate is a configurable evaluation scenario, not a live carrier
+  quote. Phase 3 tests 0.8x, 1.0x, and 1.2x versions of that rate.
+- The public v1 residual interval has one global width. Its penalty is therefore the same for every
+  eligible mandi in a snapshot and does not change their relative ordering. The interval remains
+  useful for coverage reporting and relative risk labels; transport cost and forecast price drive
+  the current public ranking.
 
 ---
 
@@ -87,7 +138,7 @@ CEDA/AGMARKNET cache
        |
  build_web_export.py  (→ web/public/data/*.json)
        |
- Next.js frontend  (Vercel static export — transport-cost slider re-ranks in TS)
+Next.js frontend  (static export — decision inputs re-rank in TS)
 ```
 
 Data reads go through a DuckDB query layer (`src/mandipulse/data/store.py`). CSV files remain the
@@ -133,14 +184,16 @@ uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 | `POST /recommend` | Transport-adjusted mandi ranking |
 
 All three endpoints run over the same committed `data/sample/` bundle — no pipeline run required.
-See [docs/DEPLOY_API.md](docs/DEPLOY_API.md) for Render deployment instructions.
+FastAPI is a local snapshot surface by default; see [docs/DEPLOY_API.md](docs/DEPLOY_API.md) for the
+optional Render deployment procedure.
 
 ---
 
 ## Frontend (Next.js)
 
-The static frontend reads committed JSON from `web/public/data/` and re-ranks recommendations in
-the browser as transport cost changes.
+The separately packaged static frontend reads generated JSON from `web/public/data/` and re-ranks
+recommendations in the browser as the farmer location, transport rate, and maximum radius change.
+Quantity is used to show the corresponding lot-level net estimate.
 
 ```powershell
 python scripts\build_web_export.py
@@ -151,7 +204,7 @@ npm run build
 npm run dev
 ```
 
-Deploy it on Vercel with **Root Directory** set to `web`. No environment variables are required.
+To deploy it on Vercel, set **Root Directory** to `web`. No environment variables are required.
 
 ---
 
@@ -180,8 +233,10 @@ python scripts\train_lightgbm_7d.py
 python scripts\build_forecast_intervals_7d.py
 python scripts\build_recommendations_7d.py
 python scripts\run_recommendation_backtest_7d.py
+python scripts\run_phase3_evaluation.py
 python scripts\build_demo_sample.py
 python scripts\build_web_export.py
+python scripts\validate_web_export.py
 ```
 
 See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
@@ -194,7 +249,7 @@ See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
 pytest
 ```
 
-169 tests, 73% coverage, `--cov-fail-under=70`. Includes pipeline smoke tests, leakage guards,
+206 Python tests, 74.90% coverage, `--cov-fail-under=70`. Includes pipeline smoke tests, leakage guards,
 temporal-split validation, recommendation scoring, and data-store parity tests.
 
 Web gates:
@@ -205,7 +260,9 @@ npm test
 npm run build
 ```
 
-GitHub Actions runs the Python lint/format/test gate and the web parity/build gate on `main`.
+GitHub Actions currently runs the Python lint/format/test gate. The Next.js source, generated public
+data, strict export/schema gate, and updated frontend parity/build evidence are intentionally
+reserved for a separate frontend commit.
 
 ---
 

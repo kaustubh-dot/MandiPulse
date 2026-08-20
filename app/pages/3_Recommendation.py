@@ -18,7 +18,11 @@ from mandipulse.app.data_access import (  # noqa: E402
 )
 from mandipulse.recommend.evaluation import summarize_backtest  # noqa: E402
 from mandipulse.config import load_yaml_config  # noqa: E402
-from mandipulse.recommend.engine import score_recommendations  # noqa: E402
+from mandipulse.policy import (  # noqa: E402
+    canonical_forecast_as_of,
+    select_recommendation_candidates,
+)
+from mandipulse.recommend.engine import haversine_km, score_recommendations  # noqa: E402
 
 st.set_page_config(page_title="Recommendation · MandiPulse", layout="wide")
 st.title("Mandi Recommendation")
@@ -33,14 +37,17 @@ _rt = _cfg.get("risk_thresholds", {})
 DEFAULT_ROAD_FACTOR = float(_tc.get("road_distance_factor", 1.3))
 DEFAULT_COST_PER_KM = float(_tc.get("cost_per_km_per_quintal", 4.0))
 DEFAULT_PENALTY = float(_rk.get("uncertainty_penalty_weight", 0.3))
+MAX_TRANSPORT_RADIUS_KM = float(_tc.get("max_transport_radius_km", 500))
+MAX_ALTERNATIVES = int(_rk.get("max_alternatives", 10))
 LOW_MAX_PCT = float(_rt.get("low_max_interval_pct", 10)) / 100
 HIGH_MIN_PCT = float(_rt.get("high_min_interval_pct", 25)) / 100
 
 with st.spinner("Loading data…"):
-    forecasts = add_staleness_days(load_forecasts())
+    all_forecasts = add_staleness_days(load_forecasts())
     mandis_meta = load_mandi_metadata()
 
-_max_as_of = forecasts["as_of_date"].max()
+_max_as_of = canonical_forecast_as_of(all_forecasts)
+forecasts = select_recommendation_candidates(all_forecasts)
 
 # --- Sidebar inputs ---
 st.sidebar.header("Farmer Location & Inputs")
@@ -98,8 +105,29 @@ penalty_weight = st.sidebar.slider(
     help=f"Fraction of interval width deducted from net price. Config default: {DEFAULT_PENALTY}",
 )
 
-# --- Score recommendations live ---
-mandis_with_coords = mandis_meta.dropna(subset=["latitude", "longitude"])
+# --- Score recommendations live under the shared candidate policy ---
+mandis_with_coords = mandis_meta.dropna(subset=["latitude", "longitude"]).copy()
+mandis_with_coords["_road_distance_km"] = mandis_with_coords.apply(
+    lambda row: haversine_km(
+        farmer_lat,
+        farmer_lon,
+        float(row["latitude"]),
+        float(row["longitude"]),
+    )
+    * road_factor,
+    axis=1,
+)
+mandis_with_coords = mandis_with_coords.loc[
+    mandis_with_coords["_road_distance_km"] <= MAX_TRANSPORT_RADIUS_KM
+].drop(columns=["_road_distance_km"])
+forecasts = forecasts.loc[forecasts["market_id"].isin(mandis_with_coords["market_id"])]
+
+if forecasts.empty:
+    st.warning(
+        f"No {_max_as_of.isoformat()} forecast is available within the configured "
+        f"{MAX_TRANSPORT_RADIUS_KM:.0f} km road radius."
+    )
+    st.stop()
 
 try:
     recs = score_recommendations(
@@ -113,7 +141,7 @@ try:
         low_max_interval_pct=LOW_MAX_PCT,
         high_min_interval_pct=HIGH_MIN_PCT,
         candidate_state="maharashtra",
-    )
+    ).head(MAX_ALTERNATIVES)
 except Exception as exc:
     st.error(f"Recommendation engine error: {exc}")
     st.stop()
@@ -129,12 +157,11 @@ _RISK_COLOR = {"low": "#16A34A", "medium": "#D97706", "high": "#DC2626"}
 _RISK_ICON = {"low": "✅", "medium": "⚠️", "high": "🔴"}
 
 top3 = recs.head(3)
-_stale_count = int((recs["staleness_days"] > 0).sum())
-if _stale_count > 0:
-    st.caption(
-        f"⚠️ {_stale_count} of {len(recs)} mandis have forecasts older than "
-        f"{_max_as_of} (latest). Stale mandis are ranked but flagged."
-    )
+st.caption(
+    f"Candidate policy: forecasts must be as-of {_max_as_of.isoformat()}; "
+    f"stale forecasts are excluded. Showing {len(recs)} eligible mandis "
+    f"within the configured {MAX_TRANSPORT_RADIUS_KM:.0f} km road radius."
+)
 
 cols = st.columns(3)
 for i, (col, (_, row)) in enumerate(zip(cols, top3.iterrows())):

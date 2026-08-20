@@ -134,8 +134,8 @@ st.plotly_chart(fig_tr, use_container_width=True)
 st.markdown("### Data Notes")
 st.warning(
     "**Data ends 2025-10-30.** All rows are from a cached CEDA/AGMARKNET dump. "
-    "Imputed rows use forward-fill within a 7-day gap window. "
-    "Rows with gaps > 7 days are flagged `long_gap` and excluded from training "
+    "Imputed rows use point-in-time forward-fill only for internal gaps of 3 days or less. "
+    "Longer gaps are flagged `missing_long_gap` and excluded from training "
     "(`feature_row_valid = False`).",
     icon="⚠️",
 )

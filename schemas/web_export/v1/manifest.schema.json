@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mandipulse.local/schemas/web-export/v1/manifest.schema.json",
+  "title": "MandiPulse public artifact manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "bundle_version",
+    "generated_at",
+    "snapshot",
+    "as_of_policy",
+    "source",
+    "code",
+    "configuration",
+    "model",
+    "inputs",
+    "artifacts",
+    "validation"
+  ],
+  "properties": {
+    "manifest_version": { "const": "1.0.0" },
+    "bundle_version": { "const": "1.0.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_date", "crop", "state", "forecast_horizon_days"],
+      "properties": {
+        "snapshot_date": { "type": "string", "format": "date" },
+        "crop": { "const": "onion" },
+        "state": { "const": "maharashtra" },
+        "forecast_horizon_days": { "const": 7 }
+      }
+    },
+    "as_of_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "canonical_as_of_date",
+        "forecast_rows",
+        "eligible_count",
+        "excluded_stale_count"
+      ],
+      "properties": {
+        "rule": { "const": "as_of_equals_bundle_max" },
+        "canonical_as_of_date": { "type": "string", "format": "date" },
+        "forecast_rows": { "type": "integer", "minimum": 1 },
+        "eligible_count": { "type": "integer", "minimum": 1 },
+        "excluded_stale_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "mode"],
+      "properties": {
+        "name": { "const": "CEDA/AGMARKNET" },
+        "mode": { "const": "committed_demo_snapshot" }
+      }
+    },
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_version", "generator_path", "generator_sha256"],
+      "properties": {
+        "project_version": { "type": "string", "minLength": 1 },
+        "generator_path": { "const": "scripts/build_web_export.py" },
+        "generator_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "const": "configs/recommendation.yaml" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "confidence_level",
+        "empirical_coverage",
+        "coverage_split",
+        "coverage_rows"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "confidence_level": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "empirical_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+        "coverage_split": { "const": "test" },
+        "coverage_rows": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/fileIdentity" }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/fileIdentity" },
+          {
+            "type": "object",
+            "required": ["schema_path", "schema_version", "records"],
+            "properties": {
+              "schema_path": { "type": "string", "minLength": 1 },
+              "schema_version": { "const": "1.0.0" },
+              "records": { "type": "integer", "minimum": 1 }
+            }
+          }
+        ]
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "strict_json",
+        "schemas",
+        "finite_numbers",
+        "artifact_count"
+      ],
+      "properties": {
+        "status": { "const": "passed" },
+        "strict_json": { "const": true },
+        "schemas": { "const": true },
+        "finite_numbers": { "const": true },
+        "artifact_count": { "const": 8 }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "fileIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "schema_path": { "type": "string", "minLength": 1 },
+        "schema_version": { "const": "1.0.0" },
+        "records": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

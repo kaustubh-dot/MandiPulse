@@ -3,10 +3,12 @@
 transport_cost:
   cost_per_km_per_quintal: 4.0
   road_distance_factor: 1.3
+  default_transport_radius_km: 500
   max_transport_radius_km: 500
 
 ranking:
   uncertainty_penalty_weight: 0.3
+  default_alternatives: 10
   max_alternatives: 10
 
 risk_thresholds:
@@ -16,4 +18,3 @@ risk_thresholds:
 sensitivity:
   enabled: true
   transport_cost_variation_pct: 20
-

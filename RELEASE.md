@@ -2,7 +2,7 @@
 
 ## Scope
 
-MandiPulse is a portfolio-ready mandi decision-intelligence demo:
+MandiPulse is a clone-runnable mandi decision-intelligence release candidate:
 
 - Crop: Onion
 - State: Maharashtra
@@ -41,6 +41,7 @@ python scripts\build_recommendations_7d.py
 python scripts\run_recommendation_backtest_7d.py
 python scripts\build_demo_sample.py
 python scripts\build_web_export.py
+python scripts\validate_web_export.py
 ```
 
 Full generated CSVs under `artifacts/`, `data/raw/`, and `data/processed/` are local and ignored.
@@ -76,8 +77,8 @@ npm test
 npm run build
 ```
 
-Current local gate: 169 Python tests, 72-73% coverage depending on platform, and 76 web parity
-assertions. Coverage floor is 70%.
+Current non-frontend gate: 206 Python tests and 74.90% coverage. Coverage floor is 70%.
+The updated Next.js parity/build gate is intentionally reserved for a separate frontend release.
 
 ## Key Metrics
 
@@ -87,13 +88,17 @@ assertions. Coverage floor is 70%.
 | Test MAE | 139.57 INR/quintal |
 | Nominal interval coverage (90%) | 86.71% empirical (test, out-of-sample) |
 | Recommendation regret@1 | 296.3 INR/qtl vs 370.1 nearest-mandi baseline |
-| Beats nearest-mandi baseline | 78.8% of as-of dates |
+| Beats nearest-mandi baseline | 74.4% of as-of dates |
+
+These are offline decision-support measurements, not profit or production-usage claims. The public
+v1 interval has a global width, so its uncertainty penalty is constant across eligible mandis in a
+snapshot. The current ranking order is therefore driven by forecast price and transport cost.
 
 ## Deployment
 
 - Streamlit Cloud: deploy `app/streamlit_app.py`.
-- Vercel: deploy with root directory `web`; no environment variables are required.
-- Render API: deploy with `requirements-api.txt` and start command
+- Vercel (optional): deploy with root directory `web`; no environment variables are required.
+- Render API (optional): deploy with `requirements-api.txt` and start command
   `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
 
 After deployment, update the README live-demo table with the final URLs.

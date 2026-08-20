@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mandipulse.local/schemas/web-export/v1/recommendations.schema.json",
+  "title": "Recommendation export",
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 10,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "rank",
+      "market_id",
+      "mandi_id",
+      "mandi",
+      "district_name",
+      "as_of_date",
+      "forecast_price_inr_qtl",
+      "lower_bound_inr_qtl",
+      "upper_bound_inr_qtl",
+      "estimated_transport_cost_inr_qtl",
+      "expected_net_price_inr_qtl",
+      "uncertainty_penalty_inr_qtl",
+      "risk_adjusted_score",
+      "risk_level",
+      "air_distance_km",
+      "road_distance_km",
+      "reason"
+    ],
+    "properties": {
+      "rank": { "type": "integer", "minimum": 1, "maximum": 10 },
+      "market_id": { "type": "integer" },
+      "mandi_id": { "type": "string", "minLength": 1 },
+      "mandi": { "type": "string", "minLength": 1 },
+      "district_name": { "type": "string" },
+      "as_of_date": { "type": "string", "format": "date" },
+      "forecast_price_inr_qtl": { "type": "number" },
+      "lower_bound_inr_qtl": { "type": "number" },
+      "upper_bound_inr_qtl": { "type": "number" },
+      "estimated_transport_cost_inr_qtl": { "type": "number", "minimum": 0 },
+      "expected_net_price_inr_qtl": { "type": "number" },
+      "uncertainty_penalty_inr_qtl": { "type": "number", "minimum": 0 },
+      "risk_adjusted_score": { "type": "number" },
+      "risk_level": { "enum": ["low", "medium", "high"] },
+      "air_distance_km": { "type": "number", "minimum": 0 },
+      "road_distance_km": { "type": "number", "minimum": 0, "maximum": 500 },
+      "reason": { "type": "string", "minLength": 1 }
+    }
+  }
+}

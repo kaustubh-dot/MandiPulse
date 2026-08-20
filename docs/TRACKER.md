@@ -1,10 +1,18 @@
 # MandiPulse Tracker
 
+## Canonical Portfolio Documents
+
+The active portfolio execution and review contract lives in these documents:
+
+- [RESCUE_PLAN.md](portfolio/RESCUE_PLAN.md) — frozen scope, phases, stable task IDs, gates, and exclusions.
+- [CURRENT_STATE.md](portfolio/CURRENT_STATE.md) — approved snapshot and active blocker state.
+- [CHECKPOINTS.md](portfolio/CHECKPOINTS.md) — phase handoffs, review evidence, verdicts, and small fixes.
+
 ## Scope
 
-Active product scope remains Onion/Maharashtra, 15 mandis, 7-day horizon. The portfolio demo now has
-three public surfaces: Streamlit, FastAPI, and static Next.js. Future modeling work must be promoted
-here before implementation.
+Active product scope remains Onion/Maharashtra, 15 mandis, 7-day horizon. Streamlit and FastAPI are
+included in this release. The updated static Next.js surface is reserved for a separate frontend
+commit. Future modeling work must be promoted here before implementation.
 
 ## Current Status
 
@@ -13,40 +21,42 @@ here before implementation.
 | Python MVP pipeline | Done | Clean panel, feature table, baselines, LightGBM comparison, intervals, recommendations, backtest |
 | Streamlit dashboard | Done | Clone-runnable from `data/sample/` |
 | FastAPI additive surface | Done | `/health`, `/forecast`, `/recommend`; tested via TestClient |
-| Next.js static frontend | Done locally | Static export, committed JSON, client-side re-ranking, parity test |
-| Vercel frontend deploy | Pending | External account step; update README once URL exists |
-| GitHub Actions CI | Added | Runs Python lint/format/tests and web parity/build gates |
+| Next.js static frontend | Packaging pending | Updated source, generated JSON, and parity changes are reserved for a separate frontend commit |
+| Vercel frontend deploy | Optional pending | External account step; no public URL is claimed |
+| GitHub Actions CI | Added | Runs Python lint/format/tests and strict export validation; frontend parity/build publication remains part of the separate frontend commit |
 
 ## Local Verification
 
 Last local gate for this finish pass:
 
 ```powershell
-python scripts\build_web_export.py
+python scripts\validate_web_export.py
 ruff check api app src scripts tests
 black --check api app src scripts tests
 pytest -q
-cd web
-npm test
-npm run build
 ```
 
-Expected current results: 169 Python tests, coverage floor 70%, 76 web parity assertions, and a
-successful Next.js static export.
+Expected current non-frontend results: 206 Python tests with 74.90% coverage (70% floor), plus a
+schema-valid deterministic export. The recorded local frontend result is 52 passing assertions; it
+should be rerun and published with the separate frontend commit.
+
+CP-001 and CP-003 are Approved and Complete. CP-002 has approved local evidence, but its frontend
+packaging and publication are deferred. Phase 3 technical evidence is generated in
+`reports/modeling/phase3_evaluation.md` and `.json`.
 
 ## Milestone N - Static Frontend And Portfolio Closeout
 
 | ID | Status | Task |
 |---|---|---|
 | N-01 | Done | Scope promotion: RULES + PRD + TRACKER; promote X-12 |
-| N-02 | Done | `scripts/build_web_export.py` exports sample data to `web/public/data/*.json` |
+| N-02 | Done | Strict schema-validated `scripts/build_web_export.py` export plus manifest to `web/public/data/*.json` |
 | N-03 | Done | Next.js + Tailwind scaffold in `web/`; static export config |
 | N-04 | Done | Typed frontend data loaders |
 | N-05 | Done | TypeScript port of recommendation engine |
 | N-06 | Done | Shared frontend components |
 | N-07 | Done | Data Coverage page |
 | N-08 | Done | Forecast page |
-| N-09 | Done | Recommendation page with live transport-cost re-ranking |
+| N-09 | Done | Recommendation page with live location/quantity/transport/radius re-ranking |
 | N-10 | Done | TS/Python ranking parity test |
 | N-11 | Pending | Vercel deploy; update README with final URL |
 | N-12 | Done | `.gitignore`, `.nvmrc`, local Python/web gates |
@@ -85,7 +95,7 @@ successful Next.js static export.
 | ID | Status | Task |
 |---|---|---|
 | O | Deferred | Offline calendar/exogenous features; arrivals gated on valid refresh |
-| P | Deferred | Conformal intervals compared against residual intervals |
+| P | Done | Conformal intervals compared against residual intervals; Phase 3 adopted split-conformal for the observed-target evaluation population |
 | X-03 | Deferred | Regime/anomaly detection |
 | X-04 | Deferred | Live monitoring/drift platform |
 | X-05 | Deferred | 14-day and 30-day forecasts |

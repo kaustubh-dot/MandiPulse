@@ -33,6 +33,25 @@ class SplitDates:
     test_end: pd.Timestamp
 
 
+@dataclass(frozen=True)
+class RollingOriginSplit:
+    """Date boundaries for one rolling-origin evaluation window."""
+
+    origin_date: pd.Timestamp
+    dates: SplitDates
+
+    def select(self, frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        """Select train/validation/test rows for this origin from a feature frame."""
+
+        dates = pd.to_datetime(frame[DATE_COLUMN])
+        train = frame[(dates >= self.dates.train_start) & (dates <= self.dates.train_end)].copy()
+        validation = frame[
+            (dates >= self.dates.validation_start) & (dates <= self.dates.validation_end)
+        ].copy()
+        test = frame[(dates >= self.dates.test_start) & (dates <= self.dates.test_end)].copy()
+        return train, validation, test
+
+
 def load_trainable_features(path: Path) -> pd.DataFrame:
     features = pd.read_csv(path)
     features[DATE_COLUMN] = pd.to_datetime(features[DATE_COLUMN])
@@ -108,3 +127,65 @@ def make_temporal_splits(
         test_end=test[DATE_COLUMN].max(),
     )
     return train, validation, test, split_dates
+
+
+def make_rolling_origin_splits(
+    df: pd.DataFrame,
+    config: SplitConfig,
+    *,
+    n_origins: int = 3,
+    final_holdout_days: int = 90,
+) -> list[RollingOriginSplit]:
+    """Build reproducible rolling windows before an untouched final holdout.
+
+    Origins are spaced by one test window.  The latest rolling test window ends
+    immediately before the final holdout, and every validation/train boundary is
+    purged by ``horizon_days`` so a target cannot cross a split boundary.
+    """
+
+    if n_origins < 1:
+        raise ValueError("n_origins must be positive")
+    if final_holdout_days < 1:
+        raise ValueError("final_holdout_days must be positive")
+    if config.validation_days < 1 or config.test_days < 1 or config.horizon_days < 1:
+        raise ValueError("split window and horizon values must be positive")
+    if DATE_COLUMN not in df:
+        raise ValueError(f"Frame is missing required column: {DATE_COLUMN}")
+
+    dates = pd.to_datetime(df[DATE_COLUMN]).dt.normalize()
+    max_date = dates.max()
+    min_date = dates.min()
+    final_holdout_start = max_date - pd.Timedelta(days=final_holdout_days - 1)
+    latest_test_end = final_holdout_start - pd.Timedelta(days=1)
+    origins: list[RollingOriginSplit] = []
+
+    for offset in reversed(range(n_origins)):
+        test_end = latest_test_end - pd.Timedelta(days=offset * config.test_days)
+        test_start = test_end - pd.Timedelta(days=config.test_days - 1)
+        validation_end = test_start - pd.Timedelta(days=config.horizon_days + 1)
+        validation_start = validation_end - pd.Timedelta(days=config.validation_days - 1)
+        train_end = validation_start - pd.Timedelta(days=config.horizon_days)
+        train_start = min_date
+        if train_end < train_start or validation_start < train_start or test_start < train_start:
+            continue
+
+        boundaries = SplitDates(
+            train_start=train_start,
+            train_end=train_end,
+            validation_start=validation_start,
+            validation_end=validation_end,
+            test_start=test_start,
+            test_end=test_end,
+        )
+        candidate = RollingOriginSplit(origin_date=test_end, dates=boundaries)
+        train, validation, test = candidate.select(df)
+        if train.empty or validation.empty or test.empty:
+            continue
+        origins.append(candidate)
+
+    if len(origins) != n_origins:
+        raise ValueError(
+            "Unable to build the requested rolling origins; "
+            f"requested={n_origins}, available={len(origins)}"
+        )
+    return origins

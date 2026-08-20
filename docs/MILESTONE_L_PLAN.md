@@ -149,7 +149,7 @@ so caching is unaffected. Do not cache `Path` objects or DuckDB connections.
 - Streamlit Cloud entrypoint: `app/streamlit_app.py` (confirmed correct; the RELEASE.md fix in
   6dbf280 already corrected the earlier `app/Home.py` error).
 - Deployment itself is a web action on share.streamlit.io (connect repo, pick branch `main`, set
-  entrypoint). **This step needs the user** — it requires their Streamlit/GitHub account. The agent
+  entrypoint). **This step needs the repository owner** — it requires their Streamlit/GitHub account. The maintainer
   prepares everything (requirements.txt, verified fallback) and hands the user a 3-line checklist;
   the user clicks deploy and pastes back the URL.
 - Once live, the URL flows into L-05.
@@ -160,7 +160,7 @@ Recruiters skim. Restructure the top of `README.md` to land the project in under
 
 1. Title + one-line pitch + **🔗 Live Demo** badge (the L-04 URL) + build/coverage line.
 2. **Hero visual:** a screenshot or GIF of the Forecast or Recommendation page. (Asset capture is a
-   user step — agent leaves a marked placeholder and the exact markdown to drop the image in.)
+   manual step — leave a marked placeholder and the exact markdown to drop the image in.)
 3. Two-sentence problem statement.
 4. **Honest results table** — lead with it: baseline-vs-LightGBM MAE/MASE and the one-line
    *"LightGBM did not beat the 7-day moving-average baseline on held-out data, so the baseline

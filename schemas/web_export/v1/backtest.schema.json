@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mandipulse.local/schemas/web-export/v1/backtest.schema.json",
+  "title": "Recommendation backtest summary export",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mean_regret_at_1",
+    "nearest_mandi_baseline_regret",
+    "pct_beats_nearest",
+    "n_dates_evaluated",
+    "test_window_start",
+    "test_window_end"
+  ],
+  "properties": {
+    "mean_regret_at_1": { "type": "number", "minimum": 0 },
+    "nearest_mandi_baseline_regret": { "type": "number", "minimum": 0 },
+    "pct_beats_nearest": { "type": "number", "minimum": 0, "maximum": 100 },
+    "n_dates_evaluated": { "type": "integer", "minimum": 1 },
+    "test_window_start": { "type": "string", "format": "date" },
+    "test_window_end": { "type": "string", "format": "date" }
+  }
+}

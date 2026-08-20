@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
+from mandipulse.modeling.phase3 import impute_short_internal_gaps  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -64,39 +65,23 @@ def add_short_gap_imputations(
     panel: pd.DataFrame,
     max_gap_days: int,
 ) -> pd.DataFrame:
-    frames: list[pd.DataFrame] = []
-    price_columns = ["min_price", "max_price", "modal_price"]
+    group = impute_short_internal_gaps(
+        panel,
+        value_columns=["min_price", "max_price", "modal_price"],
+        group_column="market_id",
+        date_column="date",
+        max_gap_days=max_gap_days,
+    )
 
-    for _, group in panel.groupby("market_id", sort=False):
-        group = group.sort_values("date").copy()
-        missing = group["modal_price"].isna()
-        run_id = missing.ne(missing.shift()).cumsum()
-        run_lengths = missing.groupby(run_id).transform("sum")
-        previous_seen = group["modal_price"].notna().cummax()
-        next_seen = group["modal_price"].notna()[::-1].cummax()[::-1]
-        short_internal_gap = missing & previous_seen & next_seen & (run_lengths <= max_gap_days)
+    group["is_observed"] = group["source_rows"].fillna(0).astype(int) > 0
+    group["quality_flag"] = "ok"
+    group.loc[group["is_imputed"], "quality_flag"] = "imputed_short_gap"
+    group.loc[
+        group["modal_price"].isna() & ~group["is_imputed"],
+        "quality_flag",
+    ] = "missing_long_gap"
 
-        group["is_imputed"] = False
-        group["imputation_method"] = ""
-        if short_internal_gap.any():
-            filled_prices = group[price_columns].ffill()
-            group.loc[short_internal_gap, price_columns] = filled_prices.loc[
-                short_internal_gap,
-                price_columns,
-            ]
-            group.loc[short_internal_gap, "is_imputed"] = True
-            group.loc[short_internal_gap, "imputation_method"] = f"ffill_gap_le_{max_gap_days}_days"
-
-        group["is_observed"] = group["source_rows"].fillna(0).astype(int) > 0
-        group["quality_flag"] = "ok"
-        group.loc[group["is_imputed"], "quality_flag"] = "imputed_short_gap"
-        group.loc[
-            group["modal_price"].isna() & ~group["is_imputed"],
-            "quality_flag",
-        ] = "missing_long_gap"
-        frames.append(group)
-
-    return pd.concat(frames, ignore_index=True)
+    return group
 
 
 def build_panel(

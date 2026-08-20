@@ -168,6 +168,8 @@ def write_report(
         "",
         "- Distance is haversine distance multiplied by road_distance_factor from configs/recommendation.yaml.",
         "- Transport cost is INR per km per quintal (load-size-independent), consistent with the config unit.",
+        "- The road factor and cost rate are configurable evaluation assumptions, not route distance or a carrier quote.",
+        "- The public interval width is global, so its penalty is equal across candidates and does not change relative ordering in this snapshot.",
         "- This is decision support, not a guaranteed-profit recommendation.",
     ]
     report_path.parent.mkdir(parents=True, exist_ok=True)
