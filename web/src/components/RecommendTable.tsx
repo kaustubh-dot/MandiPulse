@@ -39,7 +39,7 @@ export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
               Net Price (INR/qtl)
             </th>
             <th className="px-2 py-2 border border-gray-200 text-right">
-              Risk-adj Score
+              Transport-adjusted Net Price (INR/qtl)
             </th>
             <th className="px-2 py-2 border border-gray-200 text-right">
               Uncertainty penalty
@@ -75,7 +75,7 @@ export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
                 {r.expected_net_price_inr_qtl.toFixed(0)}
               </td>
               <td className="px-2 py-2 border border-gray-200 text-right">
-                {r.risk_adjusted_score.toFixed(0)}
+                {r.transport_adjusted_net_price_inr_qtl.toFixed(0)}
               </td>
               <td className="px-2 py-2 border border-gray-200 text-right">
                 {r.uncertainty_penalty_inr_qtl.toFixed(0)}

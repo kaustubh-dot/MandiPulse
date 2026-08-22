@@ -89,8 +89,8 @@ export default function RecommendPage() {
       <div>
         <h1 className="mb-1 text-xl font-bold">Mandi Recommendation</h1>
         <p className="text-sm text-gray-500">
-          Mandis ranked by risk-adjusted net price after transport cost. Adjust the decision inputs
-          to re-rank eligible candidates instantly in the browser.
+          Mandis ranked by transport-adjusted net price: forecast minus estimated transport
+          cost. Adjust the decision inputs to re-rank eligible candidates instantly in the browser.
         </p>
       </div>
 
@@ -143,7 +143,7 @@ export default function RecommendPage() {
               </h2>
               <RecommendTable rows={ranked} canonicalAsOfDate={policyResult?.canonicalAsOfDate ?? meta.as_of_date} />
               <p className="mt-1 text-xs text-gray-500">
-                Ranking: risk_adjusted_score DESC → net price DESC. Road km = haversine × 1.3 factor.
+                Ranking: expected_net_price_inr_qtl DESC → market_id ASC. Road km = haversine × 1.3 factor.
               </p>
             </div>
           )}

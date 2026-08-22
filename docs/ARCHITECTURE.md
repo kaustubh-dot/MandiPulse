@@ -90,18 +90,22 @@ The recommendation is a decision-support ranking, not a profit guarantee.
 
 ```text
 expected_net_price = forecast_price - estimated_transport_cost
-risk_adjusted_score = expected_net_price - uncertainty_penalty
 ```
+
+Candidates are ranked by `expected_net_price_inr_qtl` descending (market_id ascending tie-break);
+this value is published as `transport_adjusted_net_price_inr_qtl` in export bundle v2.0.0. The
+uncertainty penalty is shown as separate evidence only and is not part of the ranking arithmetic:
+the public residual interval has one global width, so the penalty is constant across candidates in
+the same snapshot. (Pre-v2 exports used a `risk_adjusted_score` column that subtracted this penalty;
+that name and formula are superseded.)
 
 Transport cost uses haversine distance, a road-distance factor, and cost-per-km assumptions from
 `configs/recommendation.yaml`. Recommendation quality is evaluated with regret@K against a nearest
 mandi baseline.
 
 The road-distance factor and cost rate are configurable evaluation assumptions, not routing-engine
-distances or carrier quotes. The public v1 residual interval has one global width, so its
-uncertainty penalty is constant across candidates in the same snapshot and does not change their
-relative order. Risk labels and empirical coverage still communicate uncertainty; forecast price
-and transport cost drive the current public ranking.
+distances or carrier quotes. Risk labels and empirical coverage still communicate uncertainty;
+expected net price (forecast minus transport cost) drives the current public ranking.
 
 ## Optional Stretch Work
 

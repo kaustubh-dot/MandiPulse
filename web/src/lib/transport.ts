@@ -1,6 +1,8 @@
 // Port of src/mandipulse/recommend/engine.py
 // Formula: atan2 (NOT asin), radius 6371.0, road = air * road_distance_factor.
-// Ranking: risk_adjusted_score DESC, then expected_net_price DESC.
+// Ranking: expected_net_price_inr_qtl DESC, then market_id ASC tie-break.
+// transport_adjusted_net_price_inr_qtl is numerically equal to
+//   expected_net_price_inr_qtl (forecast minus transport cost).
 // Thresholds: low_max_interval_pct and high_min_interval_pct are ratios (0.10, 0.25),
 //   matching the /100 division in build_recommendations_7d.py:63,69.
 
@@ -52,9 +54,13 @@ export function rankMandis(
       const roadKm = airKm * p.road_distance_factor;
       const transport = roadKm * p.cost_per_km_per_quintal;
       const netPrice = f.forecast_price_inr_qtl - transport;
+      // Evidence-only penalty: forecast interval widths are uniform across the
+      // candidate set, so width * uncertainty_penalty_weight is a constant term
+      // that cancels in pairwise comparison and never affects rank. It is kept
+      // for display only; ranking uses expected_net_price_inr_qtl directly.
       const width = f.upper_bound_inr_qtl - f.lower_bound_inr_qtl;
       const penalty = width * p.uncertainty_penalty_weight;
-      const riskAdjusted = netPrice - penalty;
+      const transportAdjustedNetPrice = netPrice;
       const relWidth = width / Math.max(f.forecast_price_inr_qtl, 1.0);
 
       return {
@@ -73,15 +79,15 @@ export function rankMandis(
         estimated_transport_cost_inr_qtl: transport,
         expected_net_price_inr_qtl: netPrice,
         uncertainty_penalty_inr_qtl: penalty,
-        risk_adjusted_score: riskAdjusted,
+        transport_adjusted_net_price_inr_qtl: transportAdjustedNetPrice,
         risk_level: riskLevel(relWidth, p.low_max_interval_pct, p.high_min_interval_pct),
       } as Omit<RankedMandi, "rank"> & { rank: number };
     })
     .filter((r): r is RankedMandi => r !== null)
     .sort(
       (a, b) =>
-        b.risk_adjusted_score - a.risk_adjusted_score ||
-        b.expected_net_price_inr_qtl - a.expected_net_price_inr_qtl
+        b.expected_net_price_inr_qtl - a.expected_net_price_inr_qtl ||
+        a.market_id - b.market_id
     )
     .map((r, i) => ({ ...r, rank: i + 1 }));
 

@@ -370,7 +370,9 @@ def get_recommendations(
             ),
             expected_net_price_inr_qtl=round(float(row["expected_net_price_inr_qtl"]), 2),
             uncertainty_penalty_inr_qtl=round(float(row["uncertainty_penalty_inr_qtl"]), 2),
-            risk_adjusted_score=round(float(row["risk_adjusted_score"]), 2),
+            transport_adjusted_net_price_inr_qtl=round(
+                float(row["transport_adjusted_net_price_inr_qtl"]), 2
+            ),
             risk_level=str(row["risk_level"]),
             market_regime=None,
             reason=str(row["reason"]),

@@ -83,12 +83,12 @@ def score_recommendations(
         merged["forecast_price_inr_qtl"] - merged["estimated_transport_cost_inr_qtl"]
     )
     merged["interval_width_inr_qtl"] = merged["upper_bound_inr_qtl"] - merged["lower_bound_inr_qtl"]
+    # Evidence only: the public interval width is global, so this penalty is
+    # identical for every candidate and must never modify candidate order.
     merged["uncertainty_penalty_inr_qtl"] = (
         merged["interval_width_inr_qtl"] * uncertainty_penalty_weight
     )
-    merged["risk_adjusted_score"] = (
-        merged["expected_net_price_inr_qtl"] - merged["uncertainty_penalty_inr_qtl"]
-    )
+    merged["transport_adjusted_net_price_inr_qtl"] = merged["expected_net_price_inr_qtl"]
     merged["relative_interval_width"] = merged["interval_width_inr_qtl"] / merged[
         "forecast_price_inr_qtl"
     ].clip(lower=1.0)
@@ -96,8 +96,8 @@ def score_recommendations(
         lambda w: risk_level(w, low_max_interval_pct, high_min_interval_pct)
     )
     merged = merged.sort_values(
-        ["risk_adjusted_score", "expected_net_price_inr_qtl"],
-        ascending=[False, False],
+        ["expected_net_price_inr_qtl", "market_id"],
+        ascending=[False, True],
     ).reset_index(drop=True)
     merged["rank"] = range(1, len(merged) + 1)
     merged["recommendation_id"] = [str(uuid.uuid4()) for _ in range(len(merged))]
@@ -109,8 +109,8 @@ def score_recommendations(
         lambda row: (
             f"{row['market_name']} ranks #{row['rank']} with forecast "
             f"{row['forecast_price_inr_qtl']:.2f}, transport cost "
-            f"{row['estimated_transport_cost_inr_qtl']:.2f}, and risk-adjusted score "
-            f"{row['risk_adjusted_score']:.2f} INR/quintal."
+            f"{row['estimated_transport_cost_inr_qtl']:.2f}, and transport-adjusted "
+            f"net price {row['transport_adjusted_net_price_inr_qtl']:.2f} INR/quintal."
         ),
         axis=1,
     )
@@ -132,7 +132,7 @@ def score_recommendations(
         "estimated_transport_cost_inr_qtl",
         "expected_net_price_inr_qtl",
         "uncertainty_penalty_inr_qtl",
-        "risk_adjusted_score",
+        "transport_adjusted_net_price_inr_qtl",
         "risk_level",
         "reason",
         "air_distance_km",

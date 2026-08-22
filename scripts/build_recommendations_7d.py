@@ -125,7 +125,7 @@ def write_report(
         "estimated_transport_cost_inr_qtl",
         "expected_net_price_inr_qtl",
         "uncertainty_penalty_inr_qtl",
-        "risk_adjusted_score",
+        "transport_adjusted_net_price_inr_qtl",
         "road_distance_km",
     ]:
         top3[col] = top3[col].round(2)
@@ -157,7 +157,7 @@ def write_report(
                     "estimated_transport_cost_inr_qtl",
                     "expected_net_price_inr_qtl",
                     "uncertainty_penalty_inr_qtl",
-                    "risk_adjusted_score",
+                    "transport_adjusted_net_price_inr_qtl",
                     "risk_level",
                     "road_distance_km",
                 ]
@@ -216,7 +216,7 @@ def main() -> int:
                 "estimated_transport_cost_inr_qtl",
                 "expected_net_price_inr_qtl",
                 "uncertainty_penalty_inr_qtl",
-                "risk_adjusted_score",
+                "transport_adjusted_net_price_inr_qtl",
                 "risk_level",
             ]
         ]

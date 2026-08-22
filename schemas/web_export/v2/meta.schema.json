@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mandipulse.local/schemas/web-export/v1/meta.schema.json",
+  "$id": "https://mandipulse.local/schemas/web-export/v2/meta.schema.json",
   "title": "MandiPulse web export metadata",
   "type": "object",
   "additionalProperties": false,

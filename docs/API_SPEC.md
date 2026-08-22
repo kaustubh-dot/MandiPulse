@@ -12,7 +12,7 @@ Implemented endpoints:
 |---|---|---|
 | GET | `/health` | API and data readiness |
 | POST | `/forecast` | One mandi forecast with uncertainty interval |
-| POST | `/recommend` | Ranked mandis by risk-adjusted net expected price |
+| POST | `/recommend` | Ranked mandis by transport-adjusted net price (expected net after transport cost) |
 
 Deferred endpoints: `/regime`, `/metrics`, `/data-quality`, `/arbitrage`, and `/similar-days`.
 
@@ -110,16 +110,21 @@ The current frozen scope accepts one candidate state (`maharashtra`) per request
 Response includes:
 
 - `recommended_mandi`, headline net price, risk level, and reason.
-- `alternatives`, including rank 1, with forecast, interval, transport cost, expected net price,
-  uncertainty penalty, risk-adjusted score, and risk level.
+- `alternatives`, including rank 1, each with forecast and interval bounds, road distance,
+  transport cost, `expected_net_price_inr_qtl`, `transport_adjusted_net_price_inr_qtl`
+  (the ranking value; candidates are ranked by it descending, numerically equal to
+  `expected_net_price_inr_qtl`), `uncertainty_penalty_inr_qtl` (evidence only), and risk level.
 - `as_of_date` and `as_of_policy` (`as_of_equals_bundle_max`), plus the applied radius and
   alternative limits.
 - `model_version`.
 
-The current public v1 interval uses one global residual width. As a result, the uncertainty penalty
-is equal across candidates in one snapshot and does not affect their relative rank; it remains
-visible for risk communication. Transport inputs are configurable scenarios, not live route or
-carrier quotes.
+The public residual interval has one global width. As a result, the uncertainty penalty is equal
+across candidates in one snapshot and does not affect their relative rank (which sorts by
+`expected_net_price_inr_qtl` descending with a `market_id` ascending tie-break); it remains visible
+for risk communication. Transport inputs are configurable scenarios, not live route or carrier
+quotes. Field names must stay aligned with `api/schemas.py::MandiRecommendation`. The exported
+ranking value was formerly published as `risk_adjusted_score`; that name is superseded in export
+bundle v2.0.0 (`schemas/web_export/v2/`) by `transport_adjusted_net_price_inr_qtl`.
 
 ## Compatibility Rules
 

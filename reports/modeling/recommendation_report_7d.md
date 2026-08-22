@@ -14,16 +14,16 @@
 
 ## Top 3 Ranked Mandis
 
-| rank | mandi | district_name | forecast_price_inr_qtl | estimated_transport_cost_inr_qtl | expected_net_price_inr_qtl | uncertainty_penalty_inr_qtl | risk_adjusted_score | risk_level | road_distance_km |
+| rank | mandi | district_name | forecast_price_inr_qtl | estimated_transport_cost_inr_qtl | expected_net_price_inr_qtl | uncertainty_penalty_inr_qtl | transport_adjusted_net_price_inr_qtl | risk_level | road_distance_km |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Pimpalgaon | Nashik | 1439.29 | 143.57 | 1295.72 | 150.96 | 1144.75 | high | 35.89 |
-| 2 | Lasalgaon | Nashik | 1275.86 | 259.91 | 1015.95 | 150.96 | 864.99 | high | 64.98 |
-| 3 | Lasalgaon(Niphad) | Nashik | 1045.71 | 49.92 | 995.8 | 150.96 | 844.83 | high | 12.48 |
+| 1 | Pimpalgaon | Nashik | 1439.29 | 143.57 | 1295.72 | 150.96 | 1295.72 | high | 35.89 |
+| 2 | Lasalgaon | Nashik | 1275.86 | 259.91 | 1015.95 | 150.96 | 1015.95 | high | 64.98 |
+| 3 | Lasalgaon(Niphad) | Nashik | 1045.71 | 49.92 | 995.8 | 150.96 | 995.8 | high | 12.48 |
 
 ## Notes
 
 - Distance is haversine distance multiplied by road_distance_factor from configs/recommendation.yaml.
 - Transport cost is INR per km per quintal (load-size-independent), consistent with the config unit.
 - The road factor and cost rate are configurable evaluation assumptions, not route distance or a carrier quote.
-- The public interval width is global, so the uncertainty penalty is equal across candidates and does not change their relative ordering in this snapshot.
+- The public interval width is global, so its penalty is equal across candidates and does not change relative ordering in this snapshot.
 - This is decision support, not a guaranteed-profit recommendation.

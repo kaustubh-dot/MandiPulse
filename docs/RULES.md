@@ -56,7 +56,7 @@ This file is for future maintainers. Follow these rules unless the project docs 
 
 - The recommendation feature is core to the project.
 - Always include transport cost in recommendation calculations.
-- Always rank by net expected price or risk-adjusted score, not raw forecast price alone.
+- Always rank by transport-adjusted net expected price (expected net price after estimated transport cost), not raw forecast price alone. The uncertainty penalty is evidence only (globally constant across candidates) and must not affect rank.
 - Always show alternatives, not only the top mandi.
 - Include risk level and reason in the recommendation output.
 - Document transport cost assumptions clearly.

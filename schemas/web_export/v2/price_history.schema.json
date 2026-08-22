@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mandipulse.local/schemas/web-export/v1/price_history.schema.json",
+  "$id": "https://mandipulse.local/schemas/web-export/v2/price_history.schema.json",
   "title": "Recent price-history export",
   "type": "array",
   "minItems": 1,

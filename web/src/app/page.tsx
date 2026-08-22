@@ -72,7 +72,7 @@ export default function Home() {
       <section aria-labelledby="home-heading" className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">Maharashtra onion · 7-day decision support</p>
         <h1 id="home-heading" className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">
-          Choose the mandi with the best risk-adjusted return.
+          Choose the mandi with the best transport-adjusted net price.
         </h1>
         <p className="max-w-3xl text-base leading-7 text-gray-600">
           Enter the lot and transport assumptions below. MandiPulse ranks the frozen snapshot by

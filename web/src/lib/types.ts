@@ -1,5 +1,5 @@
 // Types mirror web/public/data/ JSON schemas exactly.
-// Column names match forecast_outputs_7d.csv and engine.py output; do not rename.
+// Columns mirror the v2.0.0 export schema (schemas/web_export/v2) and engine.py output.
 
 export interface MetaRanking {
   cost_per_km_per_quintal: number;
@@ -76,7 +76,7 @@ export interface RecommendationRow {
   estimated_transport_cost_inr_qtl: number;
   expected_net_price_inr_qtl: number;
   uncertainty_penalty_inr_qtl: number;
-  risk_adjusted_score: number;
+  transport_adjusted_net_price_inr_qtl: number;
   risk_level: string;
   air_distance_km: number;
   road_distance_km: number;
@@ -115,7 +115,7 @@ export interface RankedMandi {
   estimated_transport_cost_inr_qtl: number;
   expected_net_price_inr_qtl: number;
   uncertainty_penalty_inr_qtl: number;
-  risk_adjusted_score: number;
+  transport_adjusted_net_price_inr_qtl: number;
   risk_level: string;
   staleness_days?: number;
 }

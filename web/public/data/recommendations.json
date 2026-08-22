@@ -12,11 +12,11 @@
     "estimated_transport_cost_inr_qtl": 143.5707,
     "expected_net_price_inr_qtl": 1295.7151,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 1144.7508,
+    "transport_adjusted_net_price_inr_qtl": 1295.7151,
     "risk_level": "high",
     "air_distance_km": 27.6097,
     "road_distance_km": 35.8927,
-    "reason": "Pimpalgaon ranks #1 with forecast 1439.29, transport cost 143.57, and risk-adjusted score 1144.75 INR/quintal."
+    "reason": "Pimpalgaon ranks #1 with forecast 1439.29, transport cost 143.57, and transport-adjusted net price 1295.72 INR/quintal."
   },
   {
     "rank": 2,
@@ -31,11 +31,11 @@
     "estimated_transport_cost_inr_qtl": 259.9076,
     "expected_net_price_inr_qtl": 1015.9496,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 864.9853,
+    "transport_adjusted_net_price_inr_qtl": 1015.9496,
     "risk_level": "high",
     "air_distance_km": 49.9822,
     "road_distance_km": 64.9769,
-    "reason": "Lasalgaon ranks #2 with forecast 1275.86, transport cost 259.91, and risk-adjusted score 864.99 INR/quintal."
+    "reason": "Lasalgaon ranks #2 with forecast 1275.86, transport cost 259.91, and transport-adjusted net price 1015.95 INR/quintal."
   },
   {
     "rank": 3,
@@ -50,11 +50,11 @@
     "estimated_transport_cost_inr_qtl": 679.7085,
     "expected_net_price_inr_qtl": 734.5773,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 583.613,
+    "transport_adjusted_net_price_inr_qtl": 734.5773,
     "risk_level": "high",
     "air_distance_km": 130.7132,
     "road_distance_km": 169.9271,
-    "reason": "Vashi New Mumbai ranks #3 with forecast 1414.29, transport cost 679.71, and risk-adjusted score 583.61 INR/quintal."
+    "reason": "Vashi New Mumbai ranks #3 with forecast 1414.29, transport cost 679.71, and transport-adjusted net price 734.58 INR/quintal."
   },
   {
     "rank": 4,
@@ -69,11 +69,11 @@
     "estimated_transport_cost_inr_qtl": 800.3772,
     "expected_net_price_inr_qtl": 592.4799,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 441.5156,
+    "transport_adjusted_net_price_inr_qtl": 592.4799,
     "risk_level": "high",
     "air_distance_km": 153.9187,
     "road_distance_km": 200.0943,
-    "reason": "Pune(Pimpri) ranks #4 with forecast 1392.86, transport cost 800.38, and risk-adjusted score 441.52 INR/quintal."
+    "reason": "Pune(Pimpri) ranks #4 with forecast 1392.86, transport cost 800.38, and transport-adjusted net price 592.48 INR/quintal."
   },
   {
     "rank": 5,
@@ -88,11 +88,11 @@
     "estimated_transport_cost_inr_qtl": 862.5157,
     "expected_net_price_inr_qtl": 280.3414,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 129.3771,
+    "transport_adjusted_net_price_inr_qtl": 280.3414,
     "risk_level": "high",
     "air_distance_km": 165.8684,
     "road_distance_km": 215.6289,
-    "reason": "Pune(Manjri) ranks #5 with forecast 1142.86, transport cost 862.52, and risk-adjusted score 129.38 INR/quintal."
+    "reason": "Pune(Manjri) ranks #5 with forecast 1142.86, transport cost 862.52, and transport-adjusted net price 280.34 INR/quintal."
   },
   {
     "rank": 6,
@@ -107,11 +107,11 @@
     "estimated_transport_cost_inr_qtl": 854.4164,
     "expected_net_price_inr_qtl": 274.155,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 123.1907,
+    "transport_adjusted_net_price_inr_qtl": 274.155,
     "risk_level": "high",
     "air_distance_km": 164.3109,
     "road_distance_km": 213.6041,
-    "reason": "Pune ranks #6 with forecast 1128.57, transport cost 854.42, and risk-adjusted score 123.19 INR/quintal."
+    "reason": "Pune ranks #6 with forecast 1128.57, transport cost 854.42, and transport-adjusted net price 274.15 INR/quintal."
   },
   {
     "rank": 7,
@@ -126,11 +126,11 @@
     "estimated_transport_cost_inr_qtl": 762.4508,
     "expected_net_price_inr_qtl": 230.4063,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": 79.442,
+    "transport_adjusted_net_price_inr_qtl": 230.4063,
     "risk_level": "high",
     "air_distance_km": 146.6252,
     "road_distance_km": 190.6127,
-    "reason": "Pune(Moshi) ranks #7 with forecast 992.86, transport cost 762.45, and risk-adjusted score 79.44 INR/quintal."
+    "reason": "Pune(Moshi) ranks #7 with forecast 992.86, transport cost 762.45, and transport-adjusted net price 230.41 INR/quintal."
   },
   {
     "rank": 8,
@@ -145,11 +145,11 @@
     "estimated_transport_cost_inr_qtl": 834.5083,
     "expected_net_price_inr_qtl": 115.4917,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": -35.4726,
+    "transport_adjusted_net_price_inr_qtl": 115.4917,
     "risk_level": "high",
     "air_distance_km": 160.4824,
     "road_distance_km": 208.6271,
-    "reason": "Chattrapati Sambhajinagar ranks #8 with forecast 950.00, transport cost 834.51, and risk-adjusted score -35.47 INR/quintal."
+    "reason": "Chattrapati Sambhajinagar ranks #8 with forecast 950.00, transport cost 834.51, and transport-adjusted net price 115.49 INR/quintal."
   },
   {
     "rank": 9,
@@ -164,11 +164,11 @@
     "estimated_transport_cost_inr_qtl": 829.5417,
     "expected_net_price_inr_qtl": 13.3154,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": -137.6488,
+    "transport_adjusted_net_price_inr_qtl": 13.3154,
     "risk_level": "high",
     "air_distance_km": 159.5272,
     "road_distance_km": 207.3854,
-    "reason": "Pune(Khadiki) ranks #9 with forecast 842.86, transport cost 829.54, and risk-adjusted score -137.65 INR/quintal."
+    "reason": "Pune(Khadiki) ranks #9 with forecast 842.86, transport cost 829.54, and transport-adjusted net price 13.32 INR/quintal."
   },
   {
     "rank": 10,
@@ -183,10 +183,10 @@
     "estimated_transport_cost_inr_qtl": 1926.9069,
     "expected_net_price_inr_qtl": -998.3354,
     "uncertainty_penalty_inr_qtl": 150.9643,
-    "risk_adjusted_score": -1149.2997,
+    "transport_adjusted_net_price_inr_qtl": -998.3354,
     "risk_level": "high",
     "air_distance_km": 370.559,
     "road_distance_km": 481.7267,
-    "reason": "Kolhapur ranks #10 with forecast 928.57, transport cost 1926.91, and risk-adjusted score -1149.30 INR/quintal."
+    "reason": "Kolhapur ranks #10 with forecast 928.57, transport cost 1926.91, and transport-adjusted net price -998.34 INR/quintal."
   }
 ]

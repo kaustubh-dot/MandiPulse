@@ -125,25 +125,9 @@ class TestScoreRecommendations:
         ).abs()
         assert diff.max() < 1e-6
 
-    def test_score_equals_net_minus_penalty(self, minimal_forecasts, minimal_mandis) -> None:
-        penalty_weight = 0.3
-        recs = score_recommendations(
-            forecasts=minimal_forecasts,
-            mandis=minimal_mandis,
-            farmer_latitude=19.9975,
-            farmer_longitude=73.7898,
-            cost_per_km_per_quintal=4.0,
-            road_distance_factor=1.3,
-            uncertainty_penalty_weight=penalty_weight,
-            low_max_interval_pct=0.10,
-            high_min_interval_pct=0.25,
-            candidate_state="maharashtra",
-        )
-        expected_score = recs["expected_net_price_inr_qtl"] - recs["uncertainty_penalty_inr_qtl"]
-        diff = (recs["risk_adjusted_score"] - expected_score).abs()
-        assert diff.max() < 1e-6
-
-    def test_sorted_by_score_descending(self, minimal_forecasts, minimal_mandis) -> None:
+    def test_transport_adjusted_equals_expected_net_and_penalty_is_constant_evidence(
+        self, minimal_forecasts, minimal_mandis
+    ) -> None:
         recs = score_recommendations(
             forecasts=minimal_forecasts,
             mandis=minimal_mandis,
@@ -156,8 +140,70 @@ class TestScoreRecommendations:
             high_min_interval_pct=0.25,
             candidate_state="maharashtra",
         )
-        scores = recs["risk_adjusted_score"].tolist()
-        assert scores == sorted(scores, reverse=True)
+        assert recs["transport_adjusted_net_price_inr_qtl"].equals(
+            recs["expected_net_price_inr_qtl"]
+        )
+        penalties = recs["uncertainty_penalty_inr_qtl"]
+        assert (penalties > 0).all()
+        # Evidence only: identical for every candidate so it cannot affect order.
+        assert penalties.nunique() == 1
+
+    def test_sorted_by_expected_net_descending(self, minimal_forecasts, minimal_mandis) -> None:
+        recs = score_recommendations(
+            forecasts=minimal_forecasts,
+            mandis=minimal_mandis,
+            farmer_latitude=19.9975,
+            farmer_longitude=73.7898,
+            cost_per_km_per_quintal=4.0,
+            road_distance_factor=1.3,
+            uncertainty_penalty_weight=0.3,
+            low_max_interval_pct=0.10,
+            high_min_interval_pct=0.25,
+            candidate_state="maharashtra",
+        )
+        nets = recs["expected_net_price_inr_qtl"].tolist()
+        assert nets == sorted(nets, reverse=True)
+
+    def test_equal_net_price_tie_breaks_by_market_id_ascending(self) -> None:
+        forecasts = pd.DataFrame(
+            {
+                "market_id": [9, 2],
+                "mandi_id": ["mh__zeta", "mh__alpha"],
+                "mandi": ["Zeta", "Alpha"],
+                "crop": ["onion"] * 2,
+                "model_name": ["moving_average_7d"] * 2,
+                "horizon_days": [7] * 2,
+                "forecast_price_inr_qtl": [1200.0, 1200.0],
+                "lower_bound_inr_qtl": [1000.0] * 2,
+                "upper_bound_inr_qtl": [1400.0] * 2,
+                "confidence_level": [0.9] * 2,
+            }
+        )
+        mandis = pd.DataFrame(
+            {
+                "market_id": [9, 2],
+                "market_name": ["Zeta", "Alpha"],
+                "district_name": ["Nashik", "Nashik"],
+                # Identical coordinates => identical transport cost => equal net price.
+                "latitude": [19.0] * 2,
+                "longitude": [74.0] * 2,
+            }
+        )
+        recs = score_recommendations(
+            forecasts=forecasts,
+            mandis=mandis,
+            farmer_latitude=19.9975,
+            farmer_longitude=73.7898,
+            cost_per_km_per_quintal=4.0,
+            road_distance_factor=1.3,
+            uncertainty_penalty_weight=0.3,
+            low_max_interval_pct=0.10,
+            high_min_interval_pct=0.25,
+            candidate_state="maharashtra",
+        )
+        assert recs["mandi"].tolist() == ["Alpha", "Zeta"]
+        assert recs["market_id"].tolist() == [2, 9]
+        assert recs["rank"].tolist() == [1, 2]
 
     def test_required_output_columns_present(self, minimal_forecasts, minimal_mandis) -> None:
         recs = score_recommendations(
@@ -176,11 +222,14 @@ class TestScoreRecommendations:
             "mandi",
             "estimated_transport_cost_inr_qtl",
             "expected_net_price_inr_qtl",
+            "uncertainty_penalty_inr_qtl",
+            "transport_adjusted_net_price_inr_qtl",
             "risk_level",
             "reason",
             "rank",
         }
         assert required.issubset(set(recs.columns))
+        assert "risk_adjusted_score" not in recs.columns
 
     def test_raises_when_mandi_missing_coords(self, minimal_forecasts, minimal_mandis) -> None:
         mandis_missing = minimal_mandis.copy()

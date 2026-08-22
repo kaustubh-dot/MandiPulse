@@ -24,7 +24,7 @@ A single crop price prediction is not enough. The useful decision is:
 | User | Need | MVP Support |
 |---|---|---|
 | Small farmer | Understand nearby mandi selling options | Ranked mandi recommendation after transport cost |
-| Farmer Producer Organization | Compare multiple mandis for aggregated sale | Candidate mandi table, risk-adjusted net price |
+| Farmer Producer Organization | Compare multiple mandis for aggregated sale | Candidate mandi table, transport-adjusted net price |
 | Market analyst | Compare spreads across selected onion mandis | Forecast table, net-price ranking, coverage diagnostics |
 | Portfolio reviewer / interviewer | Evaluate ML engineering ability | Real data pipeline, temporal validation, recommendation logic, Streamlit demo |
 | Project maintainer | Reproduce and extend the system | Documented schemas, API contract, tests, tracker |
@@ -51,7 +51,7 @@ A single crop price prediction is not enough. The useful decision is:
 | Forecast horizons | 7 days only |
 | Validation | Temporal split or rolling/walk-forward validation |
 | Forecast output | Forecast price plus uncertainty interval |
-| Recommendation | Rank mandis by expected net price after transport cost and uncertainty penalty |
+| Recommendation | Rank mandis by expected net price after transport cost; uncertainty penalty shown as separate evidence |
 | Regime detection | Deferred |
 | Backend | Deferred; no FastAPI in MVP |
 | Dashboard | Single Streamlit app loading static data/model artifacts |
@@ -103,7 +103,7 @@ A single crop price prediction is not enough. The useful decision is:
 | Baselines | Seasonal naive, moving average, linear/Ridge. | P0 |
 | Main model | LightGBM as the first primary model. CatBoost is P1 comparison only. | P0 |
 | Uncertainty intervals | Conformal prediction, quantile regression, or residual intervals. | P0 |
-| Recommendation engine | Net expected price after transport cost and uncertainty penalty. | P0 |
+| Recommendation engine | Net expected price after transport cost; uncertainty penalty reported as evidence only. | P0 |
 | Regime/anomaly detection | Deferred until the core decision engine works. | P2 |
 | FastAPI service | Deferred until after the Streamlit MVP is useful. | P1 |
 | Streamlit dashboard | Data coverage, forecast, recommendation, and metrics views. | P0 |

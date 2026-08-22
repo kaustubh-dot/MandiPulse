@@ -34,8 +34,8 @@ MANDIS_CSV = Path("data/external/mvp_mandis.csv")
 CONFIG_PATH = Path("configs/recommendation.yaml")
 OUT = Path("web/public/data")
 
-BUNDLE_VERSION = "1.0.0"
-SCHEMA_VERSION = "1.0.0"
+BUNDLE_VERSION = "2.0.0"
+SCHEMA_VERSION = "2.0.0"
 DEFAULT_LAT = 19.99750
 DEFAULT_LON = 73.78981
 EMPIRICAL_COVERAGE = 0.8671
@@ -134,7 +134,7 @@ def _build_manifest(
         artifacts.append(
             {
                 "path": f"web/public/data/{artifact_name}",
-                "schema_path": f"schemas/web_export/v1/{schema_name}",
+                "schema_path": f"schemas/web_export/v2/{schema_name}",
                 "schema_version": SCHEMA_VERSION,
                 "sha256": sha256_file(artifact_path),
                 "bytes": artifact_path.stat().st_size,
@@ -322,7 +322,7 @@ def main() -> int:
         "estimated_transport_cost_inr_qtl",
         "expected_net_price_inr_qtl",
         "uncertainty_penalty_inr_qtl",
-        "risk_adjusted_score",
+        "transport_adjusted_net_price_inr_qtl",
         "risk_level",
         "air_distance_km",
         "road_distance_km",

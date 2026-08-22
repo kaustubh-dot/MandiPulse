@@ -106,8 +106,18 @@ class MandiRecommendation(ResponseModel):
     road_distance_km: float
     estimated_transport_cost_inr_qtl: float
     expected_net_price_inr_qtl: float
-    uncertainty_penalty_inr_qtl: float
-    risk_adjusted_score: float
+    uncertainty_penalty_inr_qtl: float = Field(
+        description=(
+            "Evidence only. The public interval width is global, so this value is "
+            "identical across candidates and does not affect rank."
+        )
+    )
+    transport_adjusted_net_price_inr_qtl: float = Field(
+        description=(
+            "Ranking value: expected net price after estimated transport cost, in "
+            "INR per quintal. Candidates are ranked by this field descending."
+        )
+    )
     risk_level: str
     market_regime: str | None = None
     reason: str

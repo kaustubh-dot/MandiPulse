@@ -102,7 +102,8 @@ penalty_weight = st.sidebar.slider(
     max_value=1.0,
     value=DEFAULT_PENALTY,
     step=0.05,
-    help=f"Fraction of interval width deducted from net price. Config default: {DEFAULT_PENALTY}",
+    help=f"Fraction of interval width shown as a separate evidence column; "
+    f"identical across candidates and does not affect rank. Config default: {DEFAULT_PENALTY}",
 )
 
 # --- Score recommendations live under the shared candidate policy ---
@@ -151,7 +152,7 @@ _stale_cols = forecasts[["market_id", "as_of_date", "staleness_days"]].copy()
 recs = recs.merge(_stale_cols, on="market_id", how="left")
 
 # --- Top-3 callout ---
-st.markdown("### Top 3 Mandis by Risk-Adjusted Net Price")
+st.markdown("### Top 3 Mandis by Transport-Adjusted Net Price")
 
 _RISK_COLOR = {"low": "#16A34A", "medium": "#D97706", "high": "#DC2626"}
 _RISK_ICON = {"low": "✅", "medium": "⚠️", "high": "🔴"}
@@ -205,7 +206,7 @@ display_cols = [
     "estimated_transport_cost_inr_qtl",
     "expected_net_price_inr_qtl",
     "uncertainty_penalty_inr_qtl",
-    "risk_adjusted_score",
+    "transport_adjusted_net_price_inr_qtl",
     "risk_level",
 ]
 table = recs[display_cols].copy()
@@ -215,7 +216,7 @@ for col in [
     "estimated_transport_cost_inr_qtl",
     "expected_net_price_inr_qtl",
     "uncertainty_penalty_inr_qtl",
-    "risk_adjusted_score",
+    "transport_adjusted_net_price_inr_qtl",
 ]:
     table[col] = table[col].round(1)
 
@@ -230,8 +231,8 @@ table = table.rename(
         "road_distance_km": "Road km",
         "estimated_transport_cost_inr_qtl": "Transport ₹/qtl",
         "expected_net_price_inr_qtl": "Net Price ₹/qtl",
-        "uncertainty_penalty_inr_qtl": "Penalty ₹/qtl",
-        "risk_adjusted_score": "Score",
+        "uncertainty_penalty_inr_qtl": "Penalty ₹/qtl (evidence only)",
+        "transport_adjusted_net_price_inr_qtl": "Transport-Adj Net ₹/qtl",
         "risk_level": "Risk",
     }
 )
@@ -339,7 +340,10 @@ with st.expander("Assumption details"):
         f"- Transport cost: **{cost_per_km} INR/km/qtl** (config default: {DEFAULT_COST_PER_KM})\n"
         f"- Uncertainty penalty weight: **{penalty_weight}** (config default: {DEFAULT_PENALTY})\n"
         f"- Risk thresholds: low ≤ {LOW_MAX_PCT:.0%}, high ≥ {HIGH_MIN_PCT:.0%}\n\n"
-        "Ranking formula: `score = net_price − penalty_weight × interval_width`"
+        "Ranking formula: `expected net price = forecast − estimated transport cost`, "
+        "sorted descending (market_id ascending tie-break). The uncertainty penalty "
+        "(`penalty_weight × interval width`) is separate evidence only: the public interval "
+        "width is global, so it is identical across candidates and does not affect rank."
     )
 st.warning(
     "This is decision support, not a guaranteed-profit recommendation. "

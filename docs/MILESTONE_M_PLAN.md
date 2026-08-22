@@ -151,7 +151,9 @@ only the patch target changes.
   request `farmer_location` and config defaults (allow optional per-request overrides for
   cost/km, road factor, penalty — defaults from `configs/recommendation.yaml`).
 - Build `RecommendationResponse`: `recommended_mandi` = rank 1; `alternatives` = full ranked list
-  with transport cost, net price, bounds, risk-adjusted score, risk level, `market_regime=None`.
+  with transport cost, net price, bounds, ranking score (superseded in export v2.0.0: this
+  pre-v2 plan called it the risk-adjusted score; the current field is
+  `transport_adjusted_net_price_inr_qtl`), risk level, `market_regime=None`.
   Carry `reason` from the engine output. Assert rank-1 == recommended in a test.
 
 ### M-06 — Tests (CI-safe, over the committed bundle)

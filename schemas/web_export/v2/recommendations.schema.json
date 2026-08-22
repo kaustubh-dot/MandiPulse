@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mandipulse.local/schemas/web-export/v1/recommendations.schema.json",
+  "$id": "https://mandipulse.local/schemas/web-export/v2/recommendations.schema.json",
   "title": "Recommendation export",
   "type": "array",
   "minItems": 1,
@@ -21,7 +21,7 @@
       "estimated_transport_cost_inr_qtl",
       "expected_net_price_inr_qtl",
       "uncertainty_penalty_inr_qtl",
-      "risk_adjusted_score",
+      "transport_adjusted_net_price_inr_qtl",
       "risk_level",
       "air_distance_km",
       "road_distance_km",
@@ -39,8 +39,15 @@
       "upper_bound_inr_qtl": { "type": "number" },
       "estimated_transport_cost_inr_qtl": { "type": "number", "minimum": 0 },
       "expected_net_price_inr_qtl": { "type": "number" },
-      "uncertainty_penalty_inr_qtl": { "type": "number", "minimum": 0 },
-      "risk_adjusted_score": { "type": "number" },
+      "uncertainty_penalty_inr_qtl": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Evidence only. The public interval width is global, so this value is identical across candidates and does not affect rank."
+      },
+      "transport_adjusted_net_price_inr_qtl": {
+        "type": "number",
+        "description": "Ranking value: expected net price after transport cost, in INR per quintal. Candidates are ranked by this field descending."
+      },
       "risk_level": { "enum": ["low", "medium", "high"] },
       "air_distance_km": { "type": "number", "minimum": 0 },
       "road_distance_km": { "type": "number", "minimum": 0, "maximum": 500 },

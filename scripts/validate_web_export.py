@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_DIR = PROJECT_ROOT / "web" / "public" / "data"
-DEFAULT_SCHEMA_DIR = PROJECT_ROOT / "schemas" / "web_export" / "v1"
+DEFAULT_SCHEMA_DIR = PROJECT_ROOT / "schemas" / "web_export" / "v2"
 
 ARTIFACT_SCHEMAS: dict[str, str] = {
     "backtest.json": "backtest.schema.json",
@@ -162,7 +162,7 @@ def main() -> int:
         return 1
 
     for result in results:
-        print(f"PASS {result['artifact']}: strict JSON, schema v1, finite numeric values")
+        print(f"PASS {result['artifact']}: strict JSON, schema-valid, finite numeric values")
     print(f"PASS: {len(results)}/{len(ARTIFACT_SCHEMAS)} exported JSON files validated")
     print("PASS: manifest artifact/input/code/config hashes verified")
     return 0

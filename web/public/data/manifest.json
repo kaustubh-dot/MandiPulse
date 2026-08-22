@@ -1,6 +1,6 @@
 {
   "manifest_version": "1.0.0",
-  "bundle_version": "1.0.0",
+  "bundle_version": "2.0.0",
   "generated_at": "2026-06-14T10:13:03+00:00",
   "snapshot": {
     "snapshot_date": "2025-10-30",
@@ -22,7 +22,7 @@
   "code": {
     "project_version": "0.1.0",
     "generator_path": "scripts/build_web_export.py",
-    "generator_sha256": "aa36e5ce7bc3d85869c34b69023e3d4ce192c207c7f53c0892ba230cda7fb60f"
+    "generator_sha256": "c6bde4b636b8716b4777e676b9ec1b78f73d28464d20e2b8f5b227bff327c6c9"
   },
   "configuration": {
     "path": "configs/recommendation.yaml",
@@ -81,58 +81,58 @@
   "artifacts": [
     {
       "path": "web/public/data/backtest.json",
-      "schema_path": "schemas/web_export/v1/backtest.schema.json",
-      "schema_version": "1.0.0",
+      "schema_path": "schemas/web_export/v2/backtest.schema.json",
+      "schema_version": "2.0.0",
       "sha256": "9c587559ccb38f97a86f6773d503aa1fe2c7a304ce678ec5dffd4e1b994c6cc0",
       "bytes": 216,
       "records": 1
     },
     {
       "path": "web/public/data/forecasts.json",
-      "schema_path": "schemas/web_export/v1/forecasts.schema.json",
-      "schema_version": "1.0.0",
+      "schema_path": "schemas/web_export/v2/forecasts.schema.json",
+      "schema_version": "2.0.0",
       "sha256": "ff5ff606ac137ba1531ff51b63c6dacb29c96e6f47aefb7ddda9fe35d88f8482",
       "bytes": 4708,
       "records": 15
     },
     {
       "path": "web/public/data/honest_results.json",
-      "schema_path": "schemas/web_export/v1/honest_results.schema.json",
-      "schema_version": "1.0.0",
+      "schema_path": "schemas/web_export/v2/honest_results.schema.json",
+      "schema_version": "2.0.0",
       "sha256": "2780d8a1cc1c43e40c3e5e4d2bd261d39c7e342d5e82ac1925925ddf8b38934f",
       "bytes": 346,
       "records": 4
     },
     {
       "path": "web/public/data/mandis.json",
-      "schema_path": "schemas/web_export/v1/mandis.schema.json",
-      "schema_version": "1.0.0",
+      "schema_path": "schemas/web_export/v2/mandis.schema.json",
+      "schema_version": "2.0.0",
       "sha256": "247b7984107ca2d9b741ad1b3d805ca06ec9aaed0f83a3510c676590fcf12817",
       "bytes": 3337,
       "records": 15
     },
     {
       "path": "web/public/data/meta.json",
-      "schema_path": "schemas/web_export/v1/meta.schema.json",
-      "schema_version": "1.0.0",
+      "schema_path": "schemas/web_export/v2/meta.schema.json",
+      "schema_version": "2.0.0",
       "sha256": "bc3211c67167eb8028569388a51fc34416891807d4ebb2cc42737855b49fc130",
       "bytes": 827,
       "records": 1
     },
     {
       "path": "web/public/data/price_history.json",
-      "schema_path": "schemas/web_export/v1/price_history.schema.json",
-      "schema_version": "1.0.0",
+      "schema_path": "schemas/web_export/v2/price_history.schema.json",
+      "schema_version": "2.0.0",
       "sha256": "860014aeff2f87a34dced08672aaf55660889c4954e52b39a0a3f27ee4008ad3",
       "bytes": 425542,
       "records": 2715
     },
     {
       "path": "web/public/data/recommendations.json",
-      "schema_path": "schemas/web_export/v1/recommendations.schema.json",
-      "schema_version": "1.0.0",
-      "sha256": "db2de282507b9c08934c528ddd6e042ceafa3905148b1892b98158e84398747c",
-      "bytes": 7130,
+      "schema_path": "schemas/web_export/v2/recommendations.schema.json",
+      "schema_version": "2.0.0",
+      "sha256": "d1a9ba8f3b04f98741c286aa0fc3574a25abe1a0e631225ce3ae4f03caa9e52f",
+      "bytes": 7389,
       "records": 10
     }
   ],

@@ -299,9 +299,9 @@ Table or artifact: `recommendation_outputs`
 | `lower_bound_inr_qtl` | float | Yes | Lower forecast bound |
 | `upper_bound_inr_qtl` | float | Yes | Upper forecast bound |
 | `estimated_transport_cost_inr_qtl` | float | Yes | Transport cost per quintal |
-| `expected_net_price_inr_qtl` | float | Yes | Forecast minus transport cost |
-| `uncertainty_penalty_inr_qtl` | float | Yes | Risk penalty |
-| `risk_adjusted_score` | float | Yes | Ranking score |
+| `expected_net_price_inr_qtl` | float | Yes | Forecast minus estimated transport cost; ranking value (sorted descending, `market_id` ascending tie-break) |
+| `uncertainty_penalty_inr_qtl` | float | Yes | Evidence only: global interval width times weight, identical across candidates in a snapshot and does not affect rank |
+| `transport_adjusted_net_price_inr_qtl` | float | Yes | Transport-adjusted net price exposed by export schema v2.0.0; numerically equal to `expected_net_price_inr_qtl`. Superseded column name: `risk_adjusted_score` (pre-v2 vocabulary) |
 | `risk_level` | string | Yes | `low`, `medium`, `high` |
 | `market_regime` | string | No | Post-MVP only |
 | `reason` | string | No | Recommendation explanation |

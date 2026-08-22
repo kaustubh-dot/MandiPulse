@@ -55,12 +55,18 @@ Add these files:
 - `risk_level`: boundary cases at `low_max_pct` and `high_min_pct` (≤ low → "low", between →
   "medium", ≥ high → "high").
 - `score_recommendations`:
-  - `rank` is dense 1..N, sorted by `risk_adjusted_score` descending.
+  - `rank` is dense 1..N, sorted by the ranking score descending.
   - `expected_net_price = forecast - transport_cost`.
   - `risk_adjusted_score = expected_net_price - penalty_weight * interval_width`.
   - all RULES-required output columns present (`mandi`, `alternatives` via full table,
     `estimated_transport_cost_inr_qtl`, `expected_net_price_inr_qtl`, `risk_level`, `reason`).
   - raises `ValueError` when a candidate mandi is missing coordinates.
+
+  > Historical note (pre-v2 vocabulary): at Milestone F the engine's ranking column was
+  > `risk_adjusted_score`, computed with the formula above. Export bundle v2.0.0 supersedes it with
+  > `transport_adjusted_net_price_inr_qtl`, numerically equal to `expected_net_price_inr_qtl`;
+  > ranking now sorts by `expected_net_price_inr_qtl` descending and the uncertainty penalty is
+  > evidence only. The bullets above are kept verbatim for historical accuracy.
 
 ### `tests/test_intervals.py` (RULES: uncertainty interval shape)
 - `compute_interval_residuals`: lower ≤ upper; raises when no validation rows for the model.

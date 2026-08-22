@@ -35,7 +35,7 @@ no second server, numbers identical to Streamlit.
 | max_transport_radius_km | `500` | `configs/recommendation.yaml` |
 | sensitivity variation | `±20%` of cost | `configs/recommendation.yaml` |
 | Haversine | uses `atan2`, radius `6371.0`, `road = air × 1.3` | `engine.py:10-20,78` |
-| Ranking sort key | `risk_adjusted_score` DESC, then `expected_net_price` DESC | `engine.py:98-101` |
+| Ranking sort key | `risk_adjusted_score` DESC, then `expected_net_price` DESC — historical pre-v2 vocabulary, superseded in export v2.0.0 (now `expected_net_price_inr_qtl` DESC, `market_id` ASC tie-break) | `engine.py:98-101` |
 | Config loader API | `load_yaml_config("configs/...yaml")` — **no** `get_config()` | `config.py:18` |
 
 **Verified CSV schemas in `data/sample/` (use these exact column names):**
@@ -228,6 +228,9 @@ def main() -> int:
     _dump("forecasts.json", flat[fcols + ["risk_level"]].to_dict("records"))
 
     # --- recommendations.json (default-location ranking, full ranked output) ---
+    # Historical pre-v2 snippet: the column list below used "risk_adjusted_score",
+    # superseded in export bundle v2.0.0 by "transport_adjusted_net_price_inr_qtl"
+    # (numerically equal to expected_net_price_inr_qtl).
     rcols = ["rank","market_id","mandi","district_name","forecast_price_inr_qtl",
              "lower_bound_inr_qtl","upper_bound_inr_qtl","estimated_transport_cost_inr_qtl",
              "expected_net_price_inr_qtl","uncertainty_penalty_inr_qtl",
@@ -378,6 +381,12 @@ export function rankMandis(forecasts, mandis, farmerLat, farmerLon, p: RankParam
 Defaults from `meta.json.ranking`: `costPerKm=4.0`, `roadDistanceFactor=1.3`,
 `uncertaintyPenaltyWeight=0.3`, `lowMaxPct=0.10`, `highMinPct=0.25`.
 
+> Historical note (pre-v2 vocabulary): the port above sorts by its local
+> `riskAdjusted` variable (`netPrice − penalty`), which matched the pre-v2 engine. Export bundle
+> v2.0.0 supersedes this: ranking is by `expected_net_price_inr_qtl` (net price) descending with a
+> `market_id` ascending tie-break, and the penalty is evidence only. The snippet is kept verbatim
+> for historical accuracy.
+
 ---
 
 ## 8. Phase N-06 — Components
@@ -390,7 +399,8 @@ Defaults from `meta.json.ranking`: `costPerKm=4.0`, `roadDistanceFactor=1.3`,
 - **ForecastChart** — recharts `ComposedChart`: 90 days actual (`modal_price_inr_qtl`) as a line,
   shaded uncertainty band (`Area` between lower/upper), forecast as dashed line. Mark `is_imputed`
   points distinctly (lighter/hollow).
-- **RecommendTable** — Rank · Mandi · Forecast · Transport · Net · Risk-adjusted · Risk. Re-sorts on
+- **RecommendTable** — Rank · Mandi · Forecast · Transport · Net · Transport-adjusted Net · Risk
+  (the pre-v2 plan said "Risk-adjusted"; superseded in export v2.0.0). Re-sorts on
   slider/location change via React state (no refetch).
 - **BacktestSummary** — 3 tiles from `backtest.json` (296.3 / 370.1 / 78.8%) + "held-out test window" caption.
 - **HonestResultsTable** — from `honest_results.json`; moving-average row highlighted, Ships = ✓/–.
@@ -414,7 +424,8 @@ Defaults from `meta.json.ranking`: `costPerKm=4.0`, `roadDistanceFactor=1.3`,
 
 `web/test/transport.parity.test.ts`: load `recommendations.json` (Python-computed at default
 location) and `forecasts.json` + `mandis.json` + `meta.json`. Run `rankMandis` at the default
-location with `meta.ranking` params. Assert, for every mandi, that `riskAdjusted`, `transport`,
+location with `meta.ranking` params. Assert, for every mandi, that `riskAdjusted` (pre-v2 name;
+superseded in export v2.0.0 by `transport_adjusted_net_price_inr_qtl`), `transport`,
 `netPrice`, and `rank` match the Python JSON within **0.01**. Fail loudly on any drift.
 This is the guard that the live demo never silently disagrees with the Python pipeline.
 

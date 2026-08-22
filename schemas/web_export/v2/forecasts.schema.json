@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mandipulse.local/schemas/web-export/v1/forecasts.schema.json",
+  "$id": "https://mandipulse.local/schemas/web-export/v2/forecasts.schema.json",
   "title": "Forecast export",
   "type": "array",
   "minItems": 1,

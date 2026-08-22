@@ -16,9 +16,9 @@ const RISK_BADGE: Record<string, string> = {
 
 function rankReason(rank: number): string {
   if (rank === 1) {
-    return "Rank 1: highest risk-adjusted net price among the eligible mandis.";
+    return "Rank 1: highest transport-adjusted net price among the eligible mandis.";
   }
-  return `Rank ${rank}: next-best risk-adjusted net price after transport and uncertainty penalties.`;
+  return `Rank ${rank}: next-best transport-adjusted net price after transport cost.`;
 }
 
 export default function TopRecommendations({
@@ -41,7 +41,8 @@ export default function TopRecommendations({
           Top recommendations
         </h2>
         <p className="mt-1 text-sm text-gray-600">
-          Ranked by expected net price minus an uncertainty penalty. Prices are per quintal;
+          Ranked by expected net price after transport cost. The uncertainty penalty is identical
+          across candidates (evidence only) and never affects rank. Prices are per quintal;
           lot estimates use {quantityQtl.toLocaleString()} qtl.
         </p>
       </div>

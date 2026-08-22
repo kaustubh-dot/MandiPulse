@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mandipulse.local/schemas/web-export/v1/manifest.schema.json",
+  "$id": "https://mandipulse.local/schemas/web-export/v2/manifest.schema.json",
   "title": "MandiPulse public artifact manifest",
   "type": "object",
   "additionalProperties": false,
@@ -20,7 +20,7 @@
   ],
   "properties": {
     "manifest_version": { "const": "1.0.0" },
-    "bundle_version": { "const": "1.0.0" },
+    "bundle_version": { "const": "2.0.0" },
     "generated_at": { "type": "string", "format": "date-time" },
     "snapshot": {
       "type": "object",
@@ -116,7 +116,7 @@
             "required": ["schema_path", "schema_version", "records"],
             "properties": {
               "schema_path": { "type": "string", "minLength": 1 },
-              "schema_version": { "const": "1.0.0" },
+              "schema_version": { "const": "2.0.0" },
               "records": { "type": "integer", "minimum": 1 }
             }
           }
@@ -156,7 +156,7 @@
         "sha256": { "$ref": "#/$defs/sha256" },
         "bytes": { "type": "integer", "minimum": 1 },
         "schema_path": { "type": "string", "minLength": 1 },
-        "schema_version": { "const": "1.0.0" },
+        "schema_version": { "const": "2.0.0" },
         "records": { "type": "integer", "minimum": 1 }
       }
     }

@@ -49,11 +49,14 @@ describe("TS rankMandis parity with Python score_recommendations", () => {
       assert.strictEqual(tsRow.rank, pyRow.rank, `rank mismatch for ${mandiName}`);
     });
 
-    it(`${mandiName} risk_adjusted_score within ${TOLERANCE}`, () => {
+    it(`${mandiName} transport_adjusted_net_price within ${TOLERANCE}`, () => {
       const tsRow = tsRecs.find((r) => r.market_id === marketId)!;
       assert.ok(
-        Math.abs(tsRow.risk_adjusted_score - pyRow.risk_adjusted_score) <= TOLERANCE,
-        `risk_adjusted_score: TS=${tsRow.risk_adjusted_score.toFixed(4)} py=${pyRow.risk_adjusted_score}`
+        Math.abs(
+          tsRow.transport_adjusted_net_price_inr_qtl -
+            pyRow.transport_adjusted_net_price_inr_qtl
+        ) <= TOLERANCE,
+        `transport_adjusted_net_price_inr_qtl: TS=${tsRow.transport_adjusted_net_price_inr_qtl.toFixed(4)} py=${pyRow.transport_adjusted_net_price_inr_qtl}`
       );
     });
 
