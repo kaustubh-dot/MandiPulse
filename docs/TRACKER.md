@@ -64,7 +64,7 @@ approved.
 |---|---|---|
 | F0 | Done (2026-08-22) | Preserve and classify the current frontend work; establish a reproducible baseline |
 | F1 | Done (2026-08-22) | Align ranking vocabulary, schemas, exports, tests, reports, and UI copy with the implemented calculation |
-| F2 | Pending | Migrate the frontend to supported dependencies and clear the production security gate |
+| F2 | Done (2026-08-22) | Migrate the frontend to supported dependencies and clear the production security gate |
 | F3 | Pending | Implement the shared design system, shell, controls, formatting, and data states |
 | F4 | Pending | Replace the complete Next.js interface |
 | F5 | Pending | Replace the complete Streamlit interface |

@@ -21,10 +21,10 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F2 — Dependency and security migration
 
-- [ ] **F2-01:** Select supported Next.js, React, and related dependency versions from official migration guidance.
-- [ ] **F2-02:** Complete the controlled migration and update CI runtime/configuration.
-- [ ] **F2-03:** Reach a clean high/critical production dependency audit.
-- [ ] **F2-04:** Pass web tests, type checking, and static export on the upgraded stack.
+- [x] **F2-01:** Select supported Next.js, React, and related dependency versions from official migration guidance.
+- [x] **F2-02:** Complete the controlled migration and update CI runtime/configuration.
+- [x] **F2-03:** Reach a clean high/critical production dependency audit.
+- [x] **F2-04:** Pass web tests, type checking, and static export on the upgraded stack.
 
 ## F3 — Shared design foundations
 

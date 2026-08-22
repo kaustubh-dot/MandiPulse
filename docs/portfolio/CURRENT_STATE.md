@@ -21,7 +21,19 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Active implementation phase | F2 — supported, audit-ready frontend foundation |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Execute F2 controlled dependency migration (Next.js major + React 19), clear the production audit |
+| Next action | Implement Market Atlas tokens/shells (F3), then route rebuilds (F4) |
+
+### F2 outcome (2026-08-22)
+
+Migrated to supported dependencies: Next.js 16.3 with Turbopack builds and the static export
+retained (`trailingSlash: true`, unoptimized images), React 19, react-leaflet 5,
+Tailwind v4 via `@tailwindcss/postcss` (legacy config deleted; `shadow-sm` -> `shadow-xs`),
+TypeScript ~6.0.3, and ESLint 9 flat config using native `eslint-config-next` exports.
+New `lint`/`typecheck` scripts run in CI alongside tests and build on Node 24
+(`web/.nvmrc` = 24). Production audit now reports zero vulnerabilities (baseline: three high).
+React-hooks lint findings were fixed properly: artifact ranking config is adopted during
+render once per bundle, and retry loading is event-driven. All gates green post-migration:
+lint/typecheck clean, npm test 52/52, production static export built and smoke-served.
 
 ### F1 outcome (2026-08-22)
 
@@ -119,8 +131,8 @@ The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source i
 
 | Priority | Blocker | Required resolution |
 |---|---|---|
-| P0 | Public ranking vocabulary overstates uncertainty behavior | Complete F1 contract alignment across all surfaces |
-| P0 | Three high-severity production dependency findings | Controlled supported-version migration and clean audit |
+| P0 | Public ranking vocabulary overstates uncertainty behavior | RESOLVED in F1 — transport-adjusted contract shipped (v2.0.0 export) |
+| P0 | Three high-severity production dependency findings | RESOLVED in F2 — zero audit findings on supported Next.js 16/React 19 |
 | P0 | Both interfaces are explicitly non-final | Complete F3-F5 under the locked design and flow contracts |
 | P0 | Frontend verification is logic-heavy and experience-light | Add component, browser, accessibility, responsive, and performance gates |
 | P0 | Active and historical docs contradict current repository state | Reconcile public docs before release |
