@@ -62,7 +62,7 @@ approved.
 
 | ID | Status | Task |
 |---|---|---|
-| F0 | In progress | Preserve and classify the current frontend work; establish a reproducible baseline |
+| F0 | Done (2026-08-22) | Preserve and classify the current frontend work; establish a reproducible baseline |
 | F1 | Pending | Align ranking vocabulary, schemas, exports, tests, reports, and UI copy with the implemented calculation |
 | F2 | Pending | Migrate the frontend to supported dependencies and clear the production security gate |
 | F3 | Pending | Implement the shared design system, shell, controls, formatting, and data states |

@@ -6,10 +6,10 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F0 — Safe baseline
 
-- [ ] **F0-01:** Create the final finish branch.
-- [ ] **F0-02:** Classify every current `web/` change as retain, adapt, or replace.
-- [ ] **F0-03:** Capture baseline route screenshots and rerunnable verification output.
-- [ ] **F0-04:** Confirm committed sample/export artifacts contain no secrets or local paths.
+- [x] **F0-01:** Create the final finish branch.
+- [x] **F0-02:** Classify every current `web/` change as retain, adapt, or replace.
+- [x] **F0-03:** Capture baseline route screenshots and rerunnable verification output.
+- [x] **F0-04:** Confirm committed sample/export artifacts contain no secrets or local paths.
 
 ## F1 — Product and calculation truth
 

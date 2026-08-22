@@ -12,38 +12,70 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 
 | Field | Value |
 |---|---|
-| Branch | `main` |
-| Local HEAD | `df32e89` |
-| Remote relationship | One local commit ahead of `origin/main` at snapshot time |
-| Worktree | Existing `web/` changes are modified/untracked and intentionally not committed; final-planning documents are also being updated |
+| Branch | `finish/portfolio-release` (created from `main` at `ef4f393`) |
+| Local HEAD | See git log; `main` remains ahead of `origin/main` |
+| Remote relationship | Finish branch is local-only until release gates pass |
+| Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F0 — safe baseline and frontend inventory |
+| Active implementation phase | F1 — transport-adjusted ranking contract alignment |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Classify existing `web/` work, then execute F1 calculation-contract alignment before visual implementation |
+| Next action | Execute F1 rename across Python/API/TS/schemas/docs, regenerate bundle, run parity gates |
+
+### F0 incident record: locked artifact ACLs (2026-08-22)
+
+All 7 tracked JSON artifacts plus an untracked `manifest.json` under `web/public/data/`
+had been rewritten by a sandbox process with restrictive ACLs that denied this account
+read access. Resolution, without elevation:
+
+1. The directory was renamed aside and a clean one created in its place.
+2. Tracked artifacts were restored from git HEAD via `git checkout HEAD -- web/public/data`.
+3. Regeneration (`python scripts/build_web_export.py`) replaced all 8 files from committed
+   sample inputs; `scripts/validate_web_export.py` passed 8/8 including manifest hash checks.
+4. The unreadable sandbox copies are quarantined untracked at `.tmp/data_locked_acl_quarantine/`
+   for optional elevated cleanup later; nothing references them.
+
+Root cause of the earlier web test failure: the committed generator had evolved past the
+committed artifacts (meta gained `snapshot_date`, `candidate_policy`, `ranking.max_alternatives`;
+recommendations capped by `max_alternatives`). Regeneration re-aligned data with code.
+
+### F0 classification of inherited `web/` changes
+
+| Class | Files | Disposition |
+|---|---|---|
+| Retain (contracts, logic, tests) | `src/lib/types.ts`, `src/lib/policy.ts`, `src/lib/useAsyncData.ts`, `test/transport.parity.test.ts` | Kept as the target artifact contract; field rename lands here in F1 |
+| Retain then adapt in F1 | `src/lib/transport.ts`, `src/lib/data.ts` | Calculation/loading behavior kept; ranking field renamed with the bundle |
+| Adapt (behavior kept, presentation replaced in F3-F5) | `DataState.tsx`, `RecommendationControls.tsx`, `TopRecommendations.tsx`, `ForecastChart.tsx`, `HonestResultsTable.tsx`, `BacktestSummary.tsx`, `RecommendTable.tsx`, page data-loading patterns in all four routes | Reused inside the new shell |
+| Replace | `NavBar.tsx`, `SampleBanner.tsx`, `MandiMap.tsx`, `globals.css` theme | Rail/sheet shell, snapshot notice, map markers, and Market Atlas tokens replace them |
+| Generated evidence | `public/screenshots/recommendation-flow.svg` | Committed as inherited evidence; reviewed again during F7 freeze |
+| Regenerated | `public/data/*.json` + `manifest.json` | Restored from HEAD, then rebuilt by `build_web_export.py` to realign with the evolved generator |
 
 ## 3. Verified Baseline
 
-### Analytical and Python layer
+### Analytical and Python layer (rerun on `finish/portfolio-release`, 2026-08-22)
 
-- 206 Python tests passed at the last full gate.
-- Measured Python coverage was 74.90%, above the configured 70% floor.
-- Ruff and Black passed.
-- Strict web-export validation passed for the committed data contract.
-- The clean panel contains 31,950 rows across 15 selected mandis.
-- The shipped moving-average forecast policy records held-out test MAE of 139.57 INR/quintal.
-- The Phase 3 observed-target holdout contains 792 rows with MAE 133.61.
-- Phase 3 interval results record 86.87% conditional-residual coverage and 90.91% split-conformal coverage.
-- Recommendation evaluation records mean regret@1 of 296.3 versus 370.1 for nearest-mandi and beats nearest in 74.4% of evaluated cases.
+- 206 Python tests passed (`pytest -q`), coverage 74.90% against the 70% floor.
+- Ruff and Black passed (`ruff check`, `black --check`; 70 files unchanged).
+- Strict web-export validation passed 8/8 after regeneration, including manifest artifact,
+   input, code, and config hash verification.
+- Unchanged analytical facts from CP-003: 31,950-row clean panel across 15 mandis; shipped
+   moving-average policy held-out test MAE 139.57 INR/quintal; Phase 3 observed-target holdout
+   792 rows at MAE 133.61 with 86.87% conditional-residual / 90.91% split-conformal coverage;
+   recommendation mean regret@1 296.3 vs 370.1 nearest-mandi (74.4% win rate).
 
-### Frontend layer
+### Frontend layer (rerun on `finish/portfolio-release`, 2026-08-22)
 
-- 52 TypeScript logic/parity assertions passed on 2026-08-22.
-- The current Next.js project compiled, type-checked, and generated its seven static routes.
-- The production dependency audit reported three high-severity findings in the current dependency tree.
+- 52 TypeScript logic/parity assertions passed (`npm test`) after artifact realignment.
+- Production build passed: Next.js 14.2.35, seven static routes prerendered
+   (`/`, `/recommend`, `/forecast`, `/coverage` + not-found).
+- The production dependency audit reports three high-severity findings in the current tree
+   (Next.js 14.2.35 advisories plus bundled postcss); remediation is the F2 controlled
+   migration to a supported Next.js major.
 - No component-state, browser-flow, route-level accessibility, or production performance suite has been accepted yet.
 - The current Next.js and Streamlit interfaces are functional but explicitly scheduled for complete UI/UX replacement.
+- Baseline route screenshots for regression context only are stored outside version control
+   at `.tmp/baseline-screenshots/` (four routes x 1440 px and 390 px, full page).
 
 These are baseline results, not final-release evidence. They must be rerun on the exact release commit.
 
@@ -75,13 +107,15 @@ The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source i
 
 | Priority | Blocker | Required resolution |
 |---|---|---|
-| P0 | Existing frontend work is uncommitted | Preserve and classify it before replacement |
 | P0 | Public ranking vocabulary overstates uncertainty behavior | Complete F1 contract alignment across all surfaces |
 | P0 | Three high-severity production dependency findings | Controlled supported-version migration and clean audit |
 | P0 | Both interfaces are explicitly non-final | Complete F3-F5 under the locked design and flow contracts |
 | P0 | Frontend verification is logic-heavy and experience-light | Add component, browser, accessibility, responsive, and performance gates |
 | P0 | Active and historical docs contradict current repository state | Reconcile public docs before release |
 | P0 | Final public URLs and CI evidence do not exist | Deploy, verify signed out, and record the exact release commit |
+
+Resolved in F0: inherited `web/` work is classified (see F0 classification in section 2) and
+committed; locked export artifacts were regenerated from committed inputs (incident record above).
 
 ## 7. Frozen Scope
 
