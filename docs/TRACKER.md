@@ -4,30 +4,41 @@
 
 The active portfolio execution and review contract lives in these documents:
 
-- [RESCUE_PLAN.md](portfolio/RESCUE_PLAN.md) — frozen scope, phases, stable task IDs, gates, and exclusions.
-- [CURRENT_STATE.md](portfolio/CURRENT_STATE.md) — approved snapshot and active blocker state.
-- [CHECKPOINTS.md](portfolio/CHECKPOINTS.md) — phase handoffs, review evidence, verdicts, and small fixes.
+- [PRODUCT.md](../PRODUCT.md) — users, purpose, scope, product truth, and constraints.
+- [DESIGN.md](DESIGN.md) — locked visual and interaction system for both interfaces.
+- [APP_FLOW.md](APP_FLOW.md) — authoritative routes, user journeys, and state behavior.
+- [COMPLETION_ROADMAP.md](COMPLETION_ROADMAP.md) — evidence-based remaining-work inventory.
+- [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — active F0-F8 execution sequence and stable task IDs.
+- [RELEASE_GATES.md](portfolio/RELEASE_GATES.md) — objective portfolio release acceptance criteria.
+- [CURRENT_STATE.md](portfolio/CURRENT_STATE.md) — current baseline, blockers, and next action.
+- [CHECKPOINTS.md](portfolio/CHECKPOINTS.md) — historical phase handoffs and approved evidence.
+- [RESCUE_PLAN.md](portfolio/RESCUE_PLAN.md) — completed historical rescue scope; no longer the active implementation plan.
 
 ## Scope
 
-Active product scope remains Onion/Maharashtra, 15 mandis, 7-day horizon. Streamlit and FastAPI are
-included in this release. The updated static Next.js surface is reserved for a separate frontend
-commit. Future modeling work must be promoted here before implementation.
+Active product scope remains Onion/Maharashtra, 15 mandis, and a 7-day horizon. The analytical core,
+Streamlit, FastAPI, and static Next.js surface already exist. The active finish track replaces both
+interface designs, corrects the public recommendation vocabulary, hardens frontend dependencies and
+tests, reconciles documentation, and completes verified public deployment. Additional commodities,
+regions, horizons, and infrastructure remain deferred.
 
 ## Current Status
 
 | Area | Status | Notes |
 |---|---|---|
 | Python MVP pipeline | Done | Clean panel, feature table, baselines, LightGBM comparison, intervals, recommendations, backtest |
-| Streamlit dashboard | Done | Clone-runnable from `data/sample/` |
+| Product/calculation contract | Correction required | Public ranking must be described as transport-adjusted; uncertainty remains separate evidence |
+| Streamlit dashboard | Replacement pending | Functional and clone-runnable, but its complete UI/UX replacement is part of F5 |
 | FastAPI additive surface | Done | `/health`, `/forecast`, `/recommend`; tested via TestClient |
-| Next.js static frontend | Packaging pending | Updated source, generated JSON, and parity changes are reserved for a separate frontend commit |
-| Vercel frontend deploy | Optional pending | External account step; no public URL is claimed |
-| GitHub Actions CI | Added | Runs Python lint/format/tests and strict export validation; frontend parity/build publication remains part of the separate frontend commit |
+| Next.js static frontend | Replacement pending | Current local package passes tests/build but is intentionally uncommitted and will be rebuilt under F2-F4 |
+| Frontend dependencies | Release blocker | Current production audit reports three high-severity findings; controlled migration required |
+| Frontend experience tests | Incomplete | 52 logic/parity assertions pass; browser, component-state, accessibility, and performance coverage remain |
+| Public deployment | Pending | Final Next.js and redesigned Streamlit URLs are not yet verified |
+| GitHub Actions CI | Added, final rerun pending | Existing workflow covers Python and web gates; final release commit must pass expanded checks |
 
 ## Local Verification
 
-Last local gate for this finish pass:
+Most recent recorded baseline:
 
 ```powershell
 python scripts\validate_web_export.py
@@ -37,12 +48,33 @@ pytest -q
 ```
 
 Expected current non-frontend results: 206 Python tests with 74.90% coverage (70% floor), plus a
-schema-valid deterministic export. The recorded local frontend result is 52 passing assertions; it
-should be rerun and published with the separate frontend commit.
+schema-valid deterministic export. On 2026-08-22, the current local frontend also passed 52
+assertions and produced a successful static export. `npm audit --omit=dev` failed the release gate
+with three high-severity production dependency findings. All results must be rerun after the
+calculation-contract correction, dependency migration, and UI replacements.
 
 CP-001 and CP-003 are Approved and Complete. CP-002 has approved local evidence, but its frontend
-packaging and publication are deferred. Phase 3 technical evidence is generated in
-`reports/modeling/phase3_evaluation.md` and `.json`.
+packaging and publication remain unfinished. Phase 3 technical evidence is generated in
+`reports/modeling/phase3_evaluation.md` and `.json`. The next release checkpoint has not been
+approved.
+
+## Final Finish Track — F0 Through F8
+
+| ID | Status | Task |
+|---|---|---|
+| F0 | In progress | Preserve and classify the current frontend work; establish a reproducible baseline |
+| F1 | Pending | Align ranking vocabulary, schemas, exports, tests, reports, and UI copy with the implemented calculation |
+| F2 | Pending | Migrate the frontend to supported dependencies and clear the production security gate |
+| F3 | Pending | Implement the shared design system, shell, controls, formatting, and data states |
+| F4 | Pending | Replace the complete Next.js interface |
+| F5 | Pending | Replace the complete Streamlit interface |
+| F6 | Pending | Add component, browser, accessibility, parity, and Streamlit smoke verification |
+| F7 | Pending | Complete two-pass visual, responsive, accessibility, and performance acceptance |
+| F8 | Pending | Reconcile docs, deploy both interfaces, verify public URLs, and record the release |
+
+Progress and exit criteria are defined in `docs/IMPLEMENTATION_PLAN.md` and
+`docs/portfolio/RELEASE_GATES.md`. Historical milestone statuses below remain evidence of completed
+engineering work; they do not imply that the new finish track is complete.
 
 ## Milestone N - Static Frontend And Portfolio Closeout
 

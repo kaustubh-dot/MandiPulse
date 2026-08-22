@@ -1,259 +1,518 @@
-# MandiPulse Design Spec
+<!-- Hallmark pre-emit critique: P5 H5 E5 S5 R5 V4 -->
 
-## Product Design Goal
+# MandiPulse Design System
 
-MandiPulse should feel like a credible market-intelligence dashboard for agricultural decision-making. It should be clear, data-heavy, and practical. It should not feel like a flashy landing page, a childish agriculture-themed app, or a generic chart gallery.
+This is the locked visual and interaction specification for the Next.js and Streamlit redesign.
+Every UI implementation must read this file before changing a page or component. Product truth lives
+in [`PRODUCT.md`](../PRODUCT.md); this file controls presentation, hierarchy, interaction, and visual
+consistency.
 
-The MVP interface is a Streamlit dashboard over local artifacts for Onion/Maharashtra only.
+## Design Read
 
-## Visual Direction
+MandiPulse is an operating tool for a sell decision, with a secondary evidence-reading mode. It must
+help a farmer or FPO compare eligible mandis quickly while giving a technical reviewer direct access
+to assumptions, model performance, uncertainty, and provenance.
 
-| Area | Direction |
+| Dimension | Locked direction |
 |---|---|
-| Overall feel | Analytical, calm, credible, decision-focused |
-| Density | Medium-high information density, but readable |
-| Layout | Dashboard-first, no marketing hero |
-| Typography | Clean sans-serif, compact headings, readable table text |
-| Cards | Use only for KPIs, repeated metrics, and focused panels |
-| Decoration | Minimal; avoid farm clipart and decorative gradients |
-| Charts | Clear axes, labels, legends, and tooltips |
-| Maps | Useful for mandi comparison, not decorative |
-| Tone | Professional and practical |
+| Product mode | Operate first, Read second |
+| Genre | Modern-minimal technical product |
+| Visual world | Market Atlas Workbench |
+| Tone | Calm, exact, practical, evidence-led |
+| Design variance | 6/10: structured asymmetry, no ornamental chaos |
+| Motion intensity | 3/10: state feedback only |
+| Visual density | 7/10: compact evidence with deliberate breathing room |
+| Primary surface | Next.js static product |
+| Secondary surface | Streamlit technical dashboard |
 
-## Color Semantics
+## Thesis
 
-Color must reinforce status and risk. Hex values below are the canonical tokens
-(see [Design System Tokens](#design-system-tokens) for the full palette). All text-on-surface
-pairings meet WCAG AA (4.5:1); status fills meet 3:1 for graphical use.
+The interface should feel like a field atlas joined to an operations workbench: coordinates,
+distances, prices, intervals, and provenance arranged for a real decision. It must not look like a
+stock trading terminal, generic SaaS landing page, green agriculture portal, or chart gallery.
 
-| Color | Meaning | Hex (text / fill) | Usage |
-|---|---|---|---|
-| Green | Healthy/low risk | `#15803D` / `#16A34A` | Good data coverage, low recommendation risk |
-| Yellow/Amber | Warning/medium risk | `#B45309` / `#D97706` | Elevated uncertainty, stale-ish data, medium risk |
-| Red | Problem/high risk | `#B91C1C` / `#DC2626` | Stale data, missing model, high risk |
-| Blue/neutral | Informational | `#1E40AF` / `#3B82F6` | Forecast lines, selected filters, neutral KPIs |
-| Gray | Secondary | `#475569` / `#E2E8F0` | Gridlines, disabled states, helper labels |
+The first viewport must answer three questions:
+
+1. What decision can I make here?
+2. What is the current best eligible mandi under my assumptions?
+3. How current and trustworthy is the evidence?
+
+## Preserve and Replace
+
+### Preserve
+
+- Product name and domain terminology.
+- Existing route purposes and working data behavior.
+- Canonical as-of policy, input bounds, model metrics, and limitation copy.
+- Table, chart, and map accessibility fallbacks.
+- Loading, empty, error, stale, and retry behaviors already implemented.
+
+### Replace
+
+- Existing blue-gray Tailwind appearance and generic white cards.
+- Stacked page titles followed by repeated bordered panels.
+- Three-equal-card recommendation layout.
+- Desktop navigation that becomes a horizontally scrolling row on mobile.
+- Decorative badges, repeated uppercase labels, and redundant explanations.
+- Any visual treatment that implies live data, guaranteed prices, or financial execution.
+
+## Cross-Surface Architecture
+
+Both interfaces share the same hierarchy and vocabulary, but not identical composition.
+
+| Layer | Next.js | Streamlit |
+|---|---|---|
+| Navigation | Persistent desktop rail; compact mobile header and sheet | Native sidebar with the same labels and order |
+| Primary action | Decision controls remain visible beside results | Controls stay near the top and may use sidebar support |
+| Result hierarchy | One dominant recommendation, alternatives, then evidence | One dominant recommendation, alternatives, then evidence |
+| Detailed evidence | Progressive disclosure and supporting routes | Expanders and dedicated pages |
+| Visual system | Full token implementation | Theme config plus restrained, documented CSS |
+| Responsive target | 320px through 1440px and wider | 768px through desktop; usable, not optimized, on narrow screens |
+
+Page and navigation order is fixed:
+
+1. Sell decision (`/` in Next.js, landing page in Streamlit)
+2. Recommendations (`/recommend`)
+3. Forecast (`/forecast`)
+4. Data coverage (`/coverage`)
+
+Do not add speculative modules to primary navigation.
+
+## Visual World
+
+The Market Atlas Workbench direction combines four functional references without copying their
+decoration:
+
+- Survey field book: coordinates, measurement, compact annotation, and traceable assumptions.
+- Route atlas: spatial comparison and distance are part of the decision.
+- Commodity bulletin: prices are aligned, dated, and treated as evidence.
+- Calibration sheet: uncertainty and model performance are qualified, not celebrated.
+
+The result is cool, light, precise, and materially flat. No glass, glows, fake browser frames,
+farming clipart, stock photography, gradient headlines, or simulated trading screens.
+
+## Canonical Tokens
+
+All implementation colors must use semantic tokens. Do not add raw hex, RGB, HSL, or OKLCH values
+inside components. Add a named token here first when the system genuinely needs one.
+
+### Light theme
+
+```css
+:root {
+  color-scheme: light;
+
+  --color-paper: oklch(97.2% 0.008 235);
+  --color-paper-2: oklch(94.5% 0.014 235);
+  --color-surface: oklch(99% 0.006 235);
+  --color-surface-raised: oklch(100% 0.004 235);
+  --color-ink: oklch(21% 0.035 248);
+  --color-ink-2: oklch(42% 0.035 248);
+  --color-muted: oklch(52% 0.028 248);
+  --color-rule: oklch(82% 0.018 240);
+  --color-rule-strong: oklch(68% 0.025 245);
+
+  --color-accent: oklch(69% 0.17 70);
+  --color-accent-ink: oklch(21% 0.04 60);
+  --color-focus: oklch(57% 0.19 255);
+
+  --color-success: oklch(52% 0.14 150);
+  --color-warning: oklch(63% 0.16 70);
+  --color-danger: oklch(55% 0.19 28);
+  --color-info: oklch(55% 0.15 250);
+}
+```
+
+### Dark theme
+
+```css
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-paper: oklch(15% 0.018 248);
+  --color-paper-2: oklch(18.5% 0.021 248);
+  --color-surface: oklch(21.5% 0.023 248);
+  --color-surface-raised: oklch(24.5% 0.025 248);
+  --color-ink: oklch(94% 0.01 240);
+  --color-ink-2: oklch(78% 0.018 240);
+  --color-muted: oklch(68% 0.022 240);
+  --color-rule: oklch(34% 0.025 245);
+  --color-rule-strong: oklch(48% 0.03 245);
+
+  --color-accent: oklch(76% 0.145 76);
+  --color-accent-ink: oklch(18% 0.035 60);
+  --color-focus: oklch(72% 0.15 250);
+
+  --color-success: oklch(70% 0.13 150);
+  --color-warning: oklch(76% 0.14 76);
+  --color-danger: oklch(70% 0.16 28);
+  --color-info: oklch(72% 0.13 250);
+}
+```
+
+### Color rules
+
+- Accent occupies no more than roughly 5% of a viewport.
+- Primary actions may use `--color-ink` as the fill. Accent marks selection, focus, or one key value.
+- Status colors are reserved for real status. Every status also has a text label or icon.
+- Forecast and historical chart series must also differ by line style or marker, not only color.
+- Every foreground/background pair must be measured before release. Body text requires WCAG AA
+  4.5:1; large text and boundaries require 3:1; aim for 7:1 on primary body text.
+- A component that changes its background must explicitly set its foreground token.
+
+## Typography
+
+Use three roles and no additional families:
+
+| Role | Typeface | Weight | Usage |
+|---|---|---:|---|
+| Display | Barlow Condensed | 700 | Wordmark, page title, primary recommendation value |
+| Body | IBM Plex Sans | 400 and 700 | Navigation, labels, prose, controls, tables |
+| Numeric | IBM Plex Mono | 500 and 600 | Prices, dates, coordinates, units, ranks, provenance IDs |
+
+Fonts must be bundled or loaded through framework-supported font tooling with `font-display: swap`.
+Do not depend on an unverified paid license. Match fallback metrics to prevent layout shift.
+
+```css
+:root {
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", Arial, sans-serif;
+  --font-numeric: "IBM Plex Mono", ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.953rem;
+  --text-2xl: 2.441rem;
+  --text-3xl: 3.052rem;
+  --text-display: clamp(2.75rem, 4vw + 1rem, 5.25rem);
+}
+```
 
 Rules:
 
-- Do not make the whole UI green.
-- Use green/yellow/red only when status has meaning.
-- Avoid one-note palettes dominated by a single hue.
-- Use red sparingly for true user-impacting problems.
+- Body text is at least 16px. Supporting labels may be 14px, never smaller.
+- Numeric displays use tabular figures and right alignment where comparison matters.
+- Headings stay roman. No italic heading words and no gradient text.
+- Use no more than five sizes on one page.
+- Page titles target one line on desktop and at most two lines on mobile.
+- Body measure stays between 45 and 70 characters.
+- Use sentence case. Reserve all caps for short column labels only.
 
-## Design System Tokens
+## Spacing, Shape, and Depth
 
-Concrete, implementation-ready tokens for the Streamlit MVP. Style direction: **Data-Dense
-Dashboard** (BI/analytics, space-efficient, maximum data visibility, WCAG AA). These values are
-mirrored in [`.streamlit/config.toml`](../.streamlit/config.toml) for the app theme; keep the two
-in sync. Provenance: generated and validated with the `ui-ux-pro-max` design skill, then adjusted
-for this product's risk semantics.
+```css
+:root {
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
 
-### Color Palette
+  --radius-control: 0.375rem;
+  --radius-panel: 0.5rem;
+  --radius-pill: 999px;
 
-| Role | Token | Hex | Notes |
-|---|---|---|---|
-| Primary / brand | `--color-primary` | `#1E40AF` | Selected filters, neutral KPIs, primary actions |
-| Secondary | `--color-secondary` | `#3B82F6` | Secondary series, links, subtle emphasis |
-| Accent / forecast | `--color-accent` | `#D97706` | Forecast line + highlights (amber, distinct from blue history) |
-| Background (page) | `--color-background` | `#F8FAFC` | App canvas |
-| Surface (card) | `--color-surface` | `#FFFFFF` | KPI cards, panels |
-| Muted surface | `--color-muted` | `#E9EEF6` | Sidebar, secondary panels, table header fill |
-| Border | `--color-border` | `#CBD5E1` | Card/table borders, dividers (visible, not faint) |
-| Foreground (text) | `--color-foreground` | `#0F172A` | Body and table text (slate-900) |
-| Secondary text | `--color-text-muted` | `#475569` | Captions, helper text, units (slate-600) |
-| Gridline | `--color-grid` | `#E2E8F0` | Chart gridlines (low-contrast, never compete with data) |
-| Success / low risk | `--color-success` | `#15803D` | Risk badge text; fill `#16A34A` |
-| Warning / med risk | `--color-warning` | `#B45309` | Risk badge text; fill `#D97706` |
-| Danger / high risk | `--color-danger` | `#B91C1C` | Risk badge text; fill `#DC2626` |
+  --border-default: 1px;
+  --shadow-whisper: 0 1px 2px oklch(20% 0.02 248 / 0.06);
 
-Rule: never convey status by color alone — pair every risk color with an icon or text label
-(e.g. `● Low`, `▲ Medium`, `■ High`).
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}
+```
 
-### Typography
+- Use grid for page layout and flex only for component internals.
+- Panels are flat surfaces separated by space or one visible rule.
+- Do not put cards inside cards.
+- Do not give every section identical padding.
+- Radius is tight and functional. Pills are limited to compact filters or status chips.
+- Shadow is rare. Use surface lightness and borders for hierarchy.
+- Do not use more than one containment layer around a chart or table.
 
-| Use | Font | Rationale |
-|---|---|---|
-| Headings & body | **Fira Sans** (400/500/600/700) | Clean, compact, credible analytical sans |
-| Numeric / tabular data | **Fira Code** (tabular figures) | Prices, INR/quintal columns, metrics — prevents column jitter |
+## Next.js Layout System
 
-- Base body size 16px, line-height 1.5; table text may step down to 14px but no smaller.
-- Type scale: 12 / 14 / 16 / 20 / 24 / 32. Weight for hierarchy: 600–700 headings, 400 body, 500 labels.
-- Use tabular figures for every numeric column and KPI value so digits align.
+### Desktop shell
 
-### Spacing & Layout
+- Persistent left rail: 224px to 240px, fixed within the app viewport.
+- Main canvas: maximum 1440px content width, with a 12-column grid.
+- Recommendation workbench: controls occupy 4 columns; result and evidence occupy 8 columns.
+- Coverage and forecast pages: context column 3 to 4 columns, analysis area 8 to 9 columns.
+- The rail contains the wordmark, four primary routes, snapshot status, and one methodology/help
+  disclosure. It does not contain social links or a marketing CTA.
 
-- 4 / 8 px spacing rhythm; section spacing tiers 16 / 24 / 32.
-- Dashboard grid, no marketing hero. KPI strip → primary chart/table → supporting detail.
-- Keep numeric columns right-aligned; show units (INR/quintal) in the column label or caption.
+### Mobile shell
 
-### Chart Specifications
+- Compact header with wordmark, snapshot status, and menu button.
+- Navigation opens as a semantic sheet. No horizontally scrolling top navigation.
+- Controls appear before results and collapse into one column.
+- The top recommendation remains visible without requiring a wide table.
+- Large comparison tables become ranked record blocks. The full table may remain in a labeled,
+  horizontally scrollable evidence region only when every column is necessary.
 
-Library: Plotly (charts) + Folium/PyDeck (maps). Apply these per chart family:
+### Page composition
 
-| Chart | When | Encoding |
-|---|---|---|
-| **Line + confidence band** | 7-day price forecast | Historical actual: solid `#1E40AF`. Forecast: **dashed** `#D97706`. Interval: same-hue fill at 15% opacity. Distinguish actual vs forecast by line style, not color alone. |
-| **Bar (sorted desc)** | Baseline vs model comparison; coverage by mandi | One bar per category, sorted by value, value labels visible. Use for ≤15 categories, else table. |
-| **Choropleth / bubble map** | Farmer ↔ candidate mandis, transport distance | Single-hue gradient or sized bubbles; highlight top recommendation; always provide the ranked table as the accessible fallback. |
+- `/`: decision-first overview. One input summary, one dominant recommendation, two alternatives,
+  and a short evidence strip. No marketing hero.
+- `/recommend`: full decision workbench with inputs, eligibility summary, dominant result, ranked
+  alternatives, map, and backtest evidence.
+- `/forecast`: selected mandi context, one primary price chart, forecast interval facts, and model
+  comparison. The chart is the visual anchor.
+- `/coverage`: snapshot health, mandi coverage comparison, missingness, and provenance. Do not turn
+  every metric into a card.
 
-Cross-cutting chart rules: legends always visible with line-style described; tooltips show exact
-values; gridlines `#E2E8F0`; label axes with units; show a "No data" empty state and a skeleton
-while loading; respect `prefers-reduced-motion` (data must read without animation).
+## Streamlit Translation
 
-### Effects & Anti-Patterns
+Streamlit must express the same hierarchy with native primitives wherever possible.
 
-- Allowed: hover tooltips, row highlight on hover, chart zoom, smooth (150–300ms) filter transitions.
-- Avoid: ornate decoration, farm clipart, decorative gradients, emoji-as-icons, one-note all-green
-  palettes, charts without filtering or legends.
+- Keep the sidebar for navigation and secondary filters.
+- Keep the primary decision controls in the page body so they are visible during a demo.
+- Use `st.metric` only for the dominant recommendation and a small number of verified KPIs.
+- Prefer bordered groups, columns, and whitespace over injected card markup.
+- Use Plotly theme helpers derived from the canonical tokens.
+- Use a single, documented style helper module. Do not duplicate CSS strings across pages.
+- Avoid brittle selectors when a Streamlit theme setting or native component can do the job.
+- Streamlit may default to light mode if framework constraints make dual-theme control unreliable;
+  it must still use the light token hierarchy and pass contrast checks.
+- Do not imitate the Next.js rail or mobile sheet using unsafe HTML.
 
-## MVP Navigation
+## Core Components
 
-Pages:
+### App rail
 
-1. Data Coverage.
-2. Forecast.
-3. Mandi Recommendation.
+- Active route uses an accent rule and stronger ink, not a filled blue pill.
+- Snapshot status is compact and factual: `Snapshot 30 Oct 2025`.
+- Every target is at least 44px high and has an immediate focus ring.
 
-Do not show Regime/Anomaly, Monitoring, API Docs, Similar Days, Arbitrage, or Price Transmission pages in the MVP navigation.
+### Decision controls
 
-## Page Requirements
+- Visible label above every field.
+- Helper text explains units or assumptions, not the obvious location of the field.
+- Input and button heights match at 44px minimum.
+- Border width never changes between default, hover, focus, error, or success.
+- Validate on blur, then on change after the field has been touched.
+- Current valid values must be shareable through URL query parameters in Next.js.
 
-### Data Coverage
+### Primary recommendation
 
-Sections:
+- One dominant result, not three equal cards.
+- Required visible facts: rank, mandi, district, forecast target date, as-of date, forecast price,
+  transport estimate, expected net price, lot estimate, distance, and risk label.
+- Explain the rank in one direct sentence.
+- State that the transport rate and road factor are assumptions.
+- Until candidate-specific uncertainty is validated, do not claim uncertainty changes rank order.
 
-- KPI strip:
-  - Selected mandis.
-  - Latest available date.
-  - Observed rows.
-  - Imputed rows.
-  - Trainable feature rows.
-- Coverage chart by mandi.
-- Missingness or gap summary by mandi.
-- Selected mandi list table.
-- Data caveat panel explaining that local cached data is used.
+### Alternative recommendations
 
-### Forecast
+- Present ranks 2 and 3 as compact comparisons adjacent to or below the dominant result.
+- Do not repeat every field from the primary result. Show the differences that matter.
+- The full eligible list follows as a table or mobile record list.
 
-Sections:
+### Data tables
 
-- Filter controls:
-  - Crop, fixed to Onion for MVP.
-  - State, fixed to Maharashtra for MVP.
-  - Mandi.
-  - Horizon, fixed to 7 days for MVP.
-- Forecast summary metrics:
-  - Forecast price.
-  - Lower bound.
-  - Upper bound.
-  - Confidence level.
-- Price chart:
-  - Historical modal price.
-  - Forecast marker/line.
-  - Uncertainty interval when available.
-- Baseline comparison:
-  - Seasonal naive.
-  - Moving average.
-  - Ridge/linear baseline.
-  - LightGBM once trained.
+- Numeric columns are right-aligned and use the numeric font.
+- Units belong in headers.
+- Sticky headers are allowed only when the table is long enough to need them.
+- One divider between rows, not borders on every side.
+- Sorting is keyboard accessible and announced.
+- On mobile, use record blocks for the recommendation result. Preserve an accessible table for
+  evidence-heavy views when comparison across columns is essential.
 
-### Mandi Recommendation
+### Charts
 
-Sections:
+- Historical actual: solid ink-blue line.
+- Forecast: dashed accent line with a distinct marker.
+- Interval: low-chroma accent band; not the only signal of uncertainty.
+- Tooltips include date, units, and whether a value is observed, imputed, or forecast.
+- Legends are always visible when more than one series exists.
+- Axes include units. Avoid rotated labels unless no readable alternative exists.
+- No default library rainbow palette, gradient fill, 3D chart, or animated entrance.
+- Every chart has an adjacent textual summary and data-table fallback.
 
-- Input controls:
-  - Farmer latitude.
-  - Farmer longitude.
-  - Quantity.
-  - Transport cost assumption.
-  - Candidate mandi filter.
-- Recommendation summary:
-  - Recommended mandi.
-  - Expected net price.
-  - Risk level.
-  - Explanation.
-- Ranked mandi table:
-  - Rank.
-  - Mandi.
-  - District.
-  - Forecast price.
-  - Estimated transport cost.
-  - Net expected price.
-  - Uncertainty penalty.
-  - Risk-adjusted score.
-- Map:
-  - Farmer location.
-  - Candidate mandis.
-  - Top recommendation highlighted.
+### Map
 
-## Component List
+- The map supports spatial comparison; it is never decorative.
+- Farmer location, selected mandi, and alternatives use distinct shapes plus labels.
+- Provide the same locations and distances in a table.
+- Missing coordinates produce a specific warning and preserve the non-map result.
+- Do not recolor the entire base map to match the brand.
 
-| Component | Usage |
+### Freshness and limitation notice
+
+- One persistent snapshot notice per page is enough.
+- Use neutral information styling unless the data contract is actually invalid.
+- The notice names the date and says `Frozen demonstration data`, not `Live` or `Updated`.
+- Detailed limitations belong in progressive disclosure, not repeated blue alert boxes.
+
+### Loading, empty, error, and stale states
+
+- Skeletons match the final layout for predictable content.
+- Empty states name what is missing, why it matters, and the next available action.
+- Errors name the failed artifact or action and provide a retry or regeneration command.
+- Stale is a data state, not an application failure.
+- Focus moves to the state message only when the state change follows a user action.
+
+## Interaction and Motion
+
+```css
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+}
+```
+
+- No page-wide scroll reveals.
+- Animate only transform and opacity.
+- A control press may move by 1px. Cards do not universally lift or scale.
+- Re-ranking uses a short opacity transition and preserves focus and scroll position.
+- Map and chart transitions may show state change, but must never delay the new value.
+- Tooltips open after 800ms on hover and immediately on focus.
+- Focus rings appear instantly and never animate.
+- Reduced motion collapses spatial motion to an opacity transition of 150ms or less.
+- No parallax, cursor followers, marquee text, infinite ambient loops, or bounce easing.
+
+## Interaction State Contract
+
+Every interactive component must define:
+
+1. Default
+2. Hover where a fine pointer exists
+3. Focus-visible
+4. Active or pressed
+5. Disabled with a reason
+6. Loading
+7. Error
+8. Success
+
+Success is silent when the result is already visible. Use alerts only when the effect is otherwise
+hidden or when recovery is needed.
+
+## Copy System
+
+Use concrete labels and verbs.
+
+| Avoid | Use |
 |---|---|
-| KPI metric | Data coverage and forecast summaries |
-| Filter control | Mandi and optional date controls |
-| Selectbox | Mandi selection |
-| Numeric input | Quantity, latitude, longitude, transport assumptions |
-| Slider | Transport-cost sensitivity |
-| Line chart | Price history and forecast |
-| Confidence band | Forecast uncertainty |
-| Bar chart | Coverage and baseline comparison |
-| Table | Ranked mandis and coverage details |
-| Map | Farmer location and candidate mandis |
-| Alert box | Missing model, stale data, missing coordinates |
-| Tooltip/help text | Explain technical terms briefly |
+| Optimize your outcome | Compare mandis |
+| Unlock better prices | View sell options |
+| Smart recommendation | Best eligible mandi |
+| Confidence score | Observed interval coverage |
+| Live market price | Frozen snapshot price |
+| Risk-adjusted rank | Transport-adjusted rank |
+| Something went wrong | Forecast data could not be loaded |
 
-## Tables and Maps
+Additional rules:
 
-Tables are central because the product is comparative.
+- Define `quintal`, `as-of date`, `forecast interval`, and `regret` where first encountered.
+- Use `INR/qtl` consistently in compact displays and `INR per quintal` in explanatory copy.
+- Do not write guarantees, profit promises, customer claims, or vague superlatives.
+- Keep recommendation explanations under 30 words.
+- Button labels use a direct verb and remain on one line.
 
-Recommended table behavior:
+## Responsive Contract
 
-- Sort ranked mandis by risk-adjusted score.
-- Keep numeric columns aligned.
-- Show INR/quintal units in column labels or captions.
-- Avoid unnecessary decimals.
-- Show assumptions near derived numbers.
+Required Next.js review widths: 320, 375, 414, 768, 1024, and 1440 CSS pixels.
 
-Use maps only where location affects the decision:
+- Mobile-first styles, with content-driven `min-width` breakpoints.
+- `html` and `body` use `overflow-x: clip`.
+- No `100vw` layout widths and no `h-screen`; use percentages and dynamic viewport units.
+- Image-bearing tracks use `minmax(0, 1fr)`.
+- Clickable labels never wrap. Collapse the container or shorten the label.
+- Display headings use `overflow-wrap: anywhere` and `min-width: 0`.
+- Touch targets are at least 44 by 44 CSS pixels, preferably 48px on coarse pointers.
+- No hover-only information or action.
+- Mobile tables require a deliberate alternative, not accidental horizontal overflow.
 
-- Farmer location.
-- Candidate mandis.
-- Recommended mandi.
-- Approximate distance or transport cost.
+## Accessibility Contract
 
-If coordinates are missing, show a clear warning and table fallback.
+- WCAG 2.2 AA is the release floor.
+- Semantic heading order and landmarks are mandatory.
+- A skip link is the first focusable element.
+- Focus-visible rings must reach at least 3:1 contrast against both control and page.
+- Form errors use `aria-invalid` and `aria-describedby`.
+- Dynamic recommendation changes use a restrained `aria-live="polite"` summary.
+- Charts and maps have textual summaries and tabular fallbacks.
+- Risk, freshness, selection, and series identity never rely on color alone.
+- Test keyboard-only operation, 200% zoom, reduced motion, dark mode where supported, and common
+  color-vision simulations.
 
-## Empty and Error States
+## Performance Contract
 
-| Context | Message direction |
-|---|---|
-| No mandi selected | Ask user to select a mandi |
-| No model result | Explain model artifact is unavailable |
-| Missing coordinates | Explain recommendation cannot run until coordinates are filled |
-| Unsupported horizon | Restrict selector to 7 days |
-| Insufficient history | Suggest another mandi |
-| Missing local data | Show the script command needed to regenerate artifacts |
+- Next.js targets: LCP below 2.5s, INP below 200ms, CLS below 0.1 on the deployed static build.
+- Keep the initial route lightweight. Load map and heavy chart code only where used.
+- Reserve chart and map dimensions to prevent layout shift.
+- Do not add a motion library unless CSS cannot express a required state transition.
+- Use no WebGL, video, background canvas, or decorative image-generation assets in the operating UI.
+- A local production build and Lighthouse report are required before release.
 
-## Demo Screenshots to Capture Later
+## Anti-Template Bans
 
-Capture these after implementation:
+- No centered marketing hero.
+- No three equal recommendation cards.
+- No icon-above-heading feature grid.
+- No card-inside-card nesting.
+- No pure black or pure white base surfaces.
+- No purple-blue gradient, glow, glass panel, gradient text, or ambient blob.
+- No fake browser, phone, terminal, or operating-system chrome.
+- No decorative farm photos, leaf icons, commodity illustrations, or map textures.
+- No pill for every label.
+- No uppercase eyebrow above every section.
+- No repeated blue information alert for ordinary context.
+- No font smaller than 14px for readable content.
+- No arbitrary z-index values.
+- No invented metric, user, testimonial, freshness, or outcome.
 
-1. Data Coverage page showing selected mandis and coverage.
-2. Forecast page showing historical price, forecast, interval, and baseline comparison.
-3. Recommendation page showing ranked mandis and map.
-4. MLflow experiment comparison page, if useful after modeling.
+## Implementation Mapping
 
-## MVP Design Acceptance Checklist
+### Next.js
 
-- [ ] First screen communicates market decision intelligence, not generic prediction.
-- [ ] Forecast chart includes uncertainty once intervals exist.
-- [ ] Recommendation table includes transport cost and net price.
-- [ ] Data coverage and model limitations are visible.
-- [ ] Empty and error states are understandable.
-- [ ] No optional advanced module appears before it exists.
-- [ ] Palette and fonts match [Design System Tokens](#design-system-tokens) / `.streamlit/config.toml`.
-- [ ] Risk status uses icon or text in addition to color (never color alone).
-- [ ] Numeric columns use tabular figures and show INR/quintal units.
-- [ ] Text-on-surface pairings pass WCAG AA (4.5:1); chart series readable without color.
+- Add `web/src/styles/tokens.css` as the canonical CSS token implementation.
+- Keep `web/src/app/globals.css` as the framework entry and import tokens before component rules.
+- Add shared shell, rail, mobile navigation, field, state, result, table, and evidence components.
+- Keep data loading, policy logic, and route ownership intact during the visual rewrite.
+- Use one icon family only. Prefer Phosphor if a new dependency is approved; otherwise use text and
+  native controls instead of mixing icon sets.
+
+### Streamlit
+
+- Add `src/mandipulse/app/design.py` for Plotly templates, numeric formatting, semantic colors, and
+  any carefully scoped shared CSS.
+- Update `.streamlit/config.toml` from these tokens.
+- Refactor pages to call shared presentation helpers rather than duplicating markup and styles.
+- Keep calculation and artifact-loading logic outside page modules.
+
+## Release Acceptance Checklist
+
+- [ ] Product hierarchy matches this specification on both surfaces.
+- [ ] The main recommendation is visually dominant and alternatives remain comparable.
+- [ ] Public copy says transport-adjusted ranking unless candidate-specific uncertainty is promoted.
+- [ ] All tokens are named; no component-level color or font improvisation remains.
+- [ ] Contrast, keyboard, screen-reader, 200% zoom, and reduced-motion checks pass.
+- [ ] Next.js passes 320, 375, 414, 768, 1024, and 1440 width reviews with no overflow.
+- [ ] Streamlit pages remain usable at tablet and desktop widths.
+- [ ] Loading, empty, error, stale, disabled, and success states are implemented.
+- [ ] Tables, charts, and maps each have an accessible fallback.
+- [ ] Production screenshots show real project data and carry no fabricated claim.
+- [ ] Lighthouse and bundle checks meet the performance contract.
+- [ ] A bounded visual review is complete: one desktop/mobile defect pass, one confirmation pass.
+
+## Change Control
+
+This file is the system authority. A page may vary composition within its assigned job, but it may
+not introduce a new palette, font family, radius system, motion language, or navigation pattern.
+Amend this document first when a genuine cross-surface need appears.

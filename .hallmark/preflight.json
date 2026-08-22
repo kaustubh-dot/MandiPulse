@@ -1,0 +1,27 @@
+{
+  "scanned_at": "2026-08-22",
+  "scope": "multi-surface redesign planning",
+  "frameworks": ["Next.js 14 App Router", "React 18", "Tailwind CSS 3", "Streamlit"],
+  "font_stack": {
+    "nextjs": "browser and Tailwind defaults",
+    "streamlit": "Fira Sans and Fira Code"
+  },
+  "palette": "cool gray and blue surfaces with amber forecast and semantic risk colors",
+  "motion": "motion-cut; no dedicated motion library",
+  "spacing": "Tailwind default scale plus ad hoc Streamlit spacing",
+  "existing_design_authority": "docs/DESIGN.md",
+  "preserve": [
+    "product name",
+    "route purposes",
+    "decision inputs",
+    "data and model semantics",
+    "accessibility behavior already present"
+  ],
+  "replace": [
+    "visual identity",
+    "layout rhythm",
+    "component voice",
+    "navigation treatment",
+    "responsive composition"
+  ]
+}
