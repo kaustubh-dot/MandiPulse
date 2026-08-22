@@ -6,8 +6,14 @@ interface Props {
 
 export default function HonestResultsTable({ results }: Props) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm border-collapse">
+    <div
+      className="overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+      role="region"
+      aria-label="Held-out model comparison"
+      tabIndex={0}
+    >
+      <table className="min-w-[460px] w-full text-sm border-collapse">
+        <caption className="sr-only">Held-out test mean absolute error by model</caption>
         <thead>
           <tr className="bg-gray-100 text-left">
             <th className="px-3 py-2 border border-gray-200">Model</th>

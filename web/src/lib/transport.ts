@@ -62,6 +62,7 @@ export function rankMandis(
         market_id: f.market_id,
         mandi_id: f.mandi_id,
         mandi: f.mandi,
+        as_of_date: f.as_of_date,
         market_name: m.market_name,
         district_name: m.district_name,
         forecast_price_inr_qtl: f.forecast_price_inr_qtl,

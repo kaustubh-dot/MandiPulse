@@ -1,155 +1,171 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import SampleBanner from "@/components/SampleBanner";
 import RecommendTable from "@/components/RecommendTable";
 import BacktestSummaryCard from "@/components/BacktestSummary";
-import { loadMeta, loadMandis, loadForecasts, loadBacktest } from "@/lib/data";
-import { rankMandis } from "@/lib/transport";
+import RecommendationControls, { FARMER_PRESETS } from "@/components/RecommendationControls";
+import TopRecommendations from "@/components/TopRecommendations";
+import {
+  loadBacktest,
+  loadForecasts,
+  loadMandis,
+  loadMeta,
+} from "@/lib/data";
+import { rankRecommendationCandidates } from "@/lib/policy";
+import { useAsyncData } from "@/lib/useAsyncData";
 import type {
   Meta,
   MandiMeta,
   ForecastRow,
   BacktestSummary,
-  RankedMandi,
 } from "@/lib/types";
 
 const MandiMap = dynamic(() => import("@/components/MandiMap"), { ssr: false });
 
-// Named preset locations in Maharashtra for the farmer-location dropdown.
-const FARMER_PRESETS = [
-  { label: "Nashik (default)", lat: 19.9975, lon: 73.7898 },
-  { label: "Pune", lat: 18.5204, lon: 73.8567 },
-  { label: "Aurangabad", lat: 19.8762, lon: 75.3433 },
-  { label: "Solapur", lat: 17.6851, lon: 75.9064 },
-  { label: "Kolhapur", lat: 16.705, lon: 74.2433 },
-];
+interface RecommendationBundle {
+  meta: Meta;
+  mandis: MandiMeta[];
+  forecasts: ForecastRow[];
+  backtest: BacktestSummary;
+}
+
+function loadRecommendationBundle(): Promise<RecommendationBundle> {
+  return Promise.all([loadMeta(), loadMandis(), loadForecasts(), loadBacktest()]).then(
+    ([meta, mandis, forecasts, backtest]) => ({ meta, mandis, forecasts, backtest })
+  );
+}
 
 export default function RecommendPage() {
-  const [meta, setMeta] = useState<Meta | null>(null);
-  const [mandis, setMandis] = useState<MandiMeta[]>([]);
-  const [forecasts, setForecasts] = useState<ForecastRow[]>([]);
-  const [backtest, setBacktest] = useState<BacktestSummary | null>(null);
-
-  // Slider state
-  const [presetIdx, setPresetIdx] = useState(0);
-  const [costPerKm, setCostPerKm] = useState(4.0);
+  const state = useAsyncData(loadRecommendationBundle);
+  const [presetIndex, setPresetIndex] = useState(0);
+  const [quantityQtl, setQuantityQtl] = useState(100);
+  const [costPerKm, setCostPerKm] = useState(4);
+  const [maxRadiusKm, setMaxRadiusKm] = useState(500);
+  const data = state.status === "success" ? state.data : null;
 
   useEffect(() => {
-    Promise.all([loadMeta(), loadMandis(), loadForecasts(), loadBacktest()]).then(
-      ([m, ms, fcs, bt]) => {
-        setMeta(m);
-        setMandis(ms);
-        setForecasts(fcs);
-        setBacktest(bt);
-        // Sync slider default from config
-        setCostPerKm(m.ranking.cost_per_km_per_quintal);
-      }
-    );
-  }, []);
+    if (!data) return;
+    setCostPerKm(data.meta.ranking.cost_per_km_per_quintal);
+    setMaxRadiusKm(data.meta.ranking.max_transport_radius_km);
+  }, [data]);
 
-  const preset = FARMER_PRESETS[presetIdx];
-
-  const ranked: RankedMandi[] = useMemo(() => {
-    if (!meta || !forecasts.length || !mandis.length) return [];
-    return rankMandis(forecasts, mandis, preset.lat, preset.lon, {
-      ...meta.ranking,
-      cost_per_km_per_quintal: costPerKm,
-    });
-  }, [meta, forecasts, mandis, preset, costPerKm]);
-
+  const preset = FARMER_PRESETS[presetIndex] ?? FARMER_PRESETS[0];
+  const policyResult = useMemo(
+    () =>
+      data
+        ? rankRecommendationCandidates(
+            data.forecasts,
+            data.mandis,
+            preset.lat,
+            preset.lon,
+            data.meta,
+            costPerKm,
+            maxRadiusKm
+          )
+        : null,
+    [data, preset, costPerKm, maxRadiusKm]
+  );
+  const ranked = policyResult?.rows ?? [];
   const top1MarketId = ranked[0]?.market_id;
+
+  if (state.status === "loading") {
+    return <LoadingState label="Loading recommendations, forecasts, and model evidence…" />;
+  }
+  if (state.status === "error") {
+    return <ErrorState message={state.error} onRetry={state.retry} />;
+  }
+
+  const { meta, mandis, forecasts, backtest } = state.data;
+  const noSourceData = mandis.length === 0 || forecasts.length === 0;
+  const noEligibleRows = !noSourceData && ranked.length === 0;
 
   return (
     <div className="space-y-6">
-      {meta && <SampleBanner asOfDate={meta.as_of_date} />}
+      <SampleBanner asOfDate={meta.snapshot_date} />
 
       <div>
-        <h1 className="text-xl font-bold mb-1">Mandi Recommendation</h1>
+        <h1 className="mb-1 text-xl font-bold">Mandi Recommendation</h1>
         <p className="text-sm text-gray-500">
-          Mandis ranked by risk-adjusted net price after transport cost. Slider
-          re-ranks instantly in the browser.
+          Mandis ranked by risk-adjusted net price after transport cost. Adjust the decision inputs
+          to re-rank eligible candidates instantly in the browser.
         </p>
       </div>
 
-      {/* Controls */}
-      <div className="bg-white border border-gray-200 rounded p-4 flex flex-wrap gap-6 items-end">
-        <div>
-          <label className="block text-xs text-gray-600 mb-1">Farmer location</label>
-          <select
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm"
-            value={presetIdx}
-            onChange={(e) => setPresetIdx(Number(e.target.value))}
-          >
-            {FARMER_PRESETS.map((p, i) => (
-              <option key={p.label} value={i}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <div className="text-xs text-gray-400 mt-0.5">
-            lat {preset.lat.toFixed(4)}, lon {preset.lon.toFixed(4)}
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-48">
-          <label className="block text-xs text-gray-600 mb-1">
-            Transport cost:{" "}
-            <span className="font-semibold">{costPerKm.toFixed(1)} INR/km/qtl</span>
-          </label>
-          <input
-            type="range"
-            min={1.0}
-            max={8.0}
-            step={0.5}
-            value={costPerKm}
-            onChange={(e) => setCostPerKm(parseFloat(e.target.value))}
-            className="w-full"
+      {noSourceData ? (
+        <EmptyState
+          title="No recommendation data is available"
+          detail="The snapshot loaded, but it contains no mandi or forecast rows to rank."
+        />
+      ) : (
+        <>
+          <RecommendationControls
+            meta={meta}
+            presetIndex={presetIndex}
+            onPresetIndexChange={setPresetIndex}
+            quantityQtl={quantityQtl}
+            onQuantityChange={setQuantityQtl}
+            costPerKm={costPerKm}
+            onCostPerKmChange={setCostPerKm}
+            maxRadiusKm={maxRadiusKm}
+            onMaxRadiusChange={setMaxRadiusKm}
           />
-          <div className="flex justify-between text-xs text-gray-400">
-            <span>1.0</span>
-            <span>default: {meta?.ranking.cost_per_km_per_quintal ?? 4.0}</span>
-            <span>8.0</span>
+
+          <div className="rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <p>
+              Recommendations use forecasts with <strong>as-of = {policyResult?.canonicalAsOfDate}</strong>,
+              a maximum road radius of {maxRadiusKm} km, and at most{" "}
+              {meta.ranking.max_alternatives} alternatives.
+            </p>
+            <p className="mt-1 text-xs text-blue-800">
+              {policyResult?.eligibleAsOfCount ?? 0} current candidates; {policyResult?.excludedStaleCount ?? 0}{" "}
+              stale forecasts and {policyResult?.excludedRadiusCount ?? 0} out-of-radius candidates excluded.
+            </p>
           </div>
-        </div>
+
+          {noEligibleRows ? (
+            <EmptyState
+              title="No eligible mandi candidates"
+              detail="Forecasts loaded, but none satisfy the canonical as-of date and transport-radius policy."
+            />
+          ) : (
+            <div>
+              <TopRecommendations
+                rows={ranked}
+                forecastHorizonDays={meta.forecast_horizon_days}
+                confidenceLevel={meta.confidence_level}
+                quantityQtl={quantityQtl}
+              />
+              <h2 className="mb-2 mt-6 text-sm font-semibold text-gray-700">
+                All eligible mandis
+              </h2>
+              <RecommendTable rows={ranked} canonicalAsOfDate={policyResult?.canonicalAsOfDate ?? meta.as_of_date} />
+              <p className="mt-1 text-xs text-gray-500">
+                Ranking: risk_adjusted_score DESC → net price DESC. Road km = haversine × 1.3 factor.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <h2 className="mb-2 text-sm font-semibold text-gray-700">Map</h2>
+            <MandiMap
+              mandis={mandis}
+              farmerLat={preset.lat}
+              farmerLon={preset.lon}
+              top1MarketId={top1MarketId}
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Blue = farmer location. Green = top-ranked eligible mandi.
+            </p>
+          </div>
+        </>
+      )}
+
+      <div className="rounded border border-gray-200 bg-white p-4">
+        <BacktestSummaryCard data={backtest} />
       </div>
-
-      {/* Recommendation table */}
-      {ranked.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">
-            Ranked mandis (risk-adjusted score = net price − uncertainty penalty)
-          </h2>
-          <RecommendTable rows={ranked} />
-          <p className="text-xs text-gray-500 mt-1">
-            Ranking: risk_adjusted_score DESC → net price DESC. Road km = haversine × 1.3 factor.
-          </p>
-        </div>
-      )}
-
-      {/* Map */}
-      {mandis.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">Map</h2>
-          <MandiMap
-            mandis={mandis}
-            farmerLat={preset.lat}
-            farmerLon={preset.lon}
-            top1MarketId={top1MarketId}
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Blue = farmer location. Green = top-ranked mandi.
-          </p>
-        </div>
-      )}
-
-      {/* Backtest summary */}
-      {backtest && (
-        <div className="bg-white border border-gray-200 rounded p-4">
-          <BacktestSummaryCard data={backtest} />
-        </div>
-      )}
     </div>
   );
 }

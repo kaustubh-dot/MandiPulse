@@ -22,6 +22,7 @@ export default function MandiMap({
 
   return (
     <MapContainer
+      aria-label="Map of mandi locations"
       center={[centerLat, centerLon]}
       zoom={7}
       style={{ height: 380, width: "100%", borderRadius: 6 }}

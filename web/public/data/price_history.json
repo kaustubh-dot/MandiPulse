@@ -2453,63 +2453,63 @@
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-24",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-25",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-26",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 168,
     "market_name": "Nasik",
     "date": "2025-10-27",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -3300,35 +3300,35 @@
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-08-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-08-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-08-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-08-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-08-24",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -3706,49 +3706,49 @@
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-17",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-18",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 169,
     "market_name": "Lasalgaon",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -4980,42 +4980,42 @@
     "market_id": 170,
     "market_name": "Pimpalgaon",
     "date": "2025-10-18",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 170,
     "market_name": "Pimpalgaon",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 170,
     "market_name": "Pimpalgaon",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 170,
     "market_name": "Pimpalgaon",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 170,
     "market_name": "Pimpalgaon",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 170,
     "market_name": "Pimpalgaon",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -7521,56 +7521,56 @@
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-24",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-25",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 176,
     "market_name": "Solapur",
     "date": "2025-10-26",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -8781,63 +8781,63 @@
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-18",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-24",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-25",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 575,
     "market_name": "Manmad",
     "date": "2025-10-26",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -10055,28 +10055,28 @@
     "market_id": 581,
     "market_name": "Chattrapati Sambhajinagar",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 581,
     "market_name": "Chattrapati Sambhajinagar",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 581,
     "market_name": "Chattrapati Sambhajinagar",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 581,
     "market_name": "Chattrapati Sambhajinagar",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -11329,42 +11329,42 @@
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-24",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-25",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -11399,7 +11399,7 @@
     "market_id": 1462,
     "market_name": "Satara",
     "date": "2025-10-30",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -12589,56 +12589,56 @@
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-24",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-25",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 2484,
     "market_name": "Lasalgaon(Niphad)",
     "date": "2025-10-26",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
@@ -16383,42 +16383,42 @@
     "market_id": 3108,
     "market_name": "Vashi New Mumbai",
     "date": "2025-10-18",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 3108,
     "market_name": "Vashi New Mumbai",
     "date": "2025-10-19",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 3108,
     "market_name": "Vashi New Mumbai",
     "date": "2025-10-20",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 3108,
     "market_name": "Vashi New Mumbai",
     "date": "2025-10-21",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 3108,
     "market_name": "Vashi New Mumbai",
     "date": "2025-10-22",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {
     "market_id": 3108,
     "market_name": "Vashi New Mumbai",
     "date": "2025-10-23",
-    "modal_price_inr_qtl": NaN,
+    "modal_price_inr_qtl": null,
     "is_imputed": false
   },
   {

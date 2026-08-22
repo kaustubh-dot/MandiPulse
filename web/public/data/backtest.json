@@ -1,6 +1,6 @@
 {
-  "mean_regret_at_1": 296.35,
-  "nearest_mandi_baseline_regret": 370.13,
+  "mean_regret_at_1": 296.3463,
+  "nearest_mandi_baseline_regret": 370.1341,
   "pct_beats_nearest": 74.4,
   "n_dates_evaluated": 90,
   "test_window_start": "2025-07-26",

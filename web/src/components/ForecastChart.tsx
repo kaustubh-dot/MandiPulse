@@ -16,6 +16,7 @@ import type { PriceHistoryRow, ForecastRow } from "@/lib/types";
 interface Props {
   history: PriceHistoryRow[]; // filtered to selected mandi, last 90 days
   forecast: ForecastRow | null;
+  forecastDate: string | null;
 }
 
 interface ChartPoint {
@@ -27,18 +28,18 @@ interface ChartPoint {
   upper?: number;
 }
 
-export default function ForecastChart({ history, forecast }: Props) {
+export default function ForecastChart({ history, forecast, forecastDate }: Props) {
   const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
 
   const points: ChartPoint[] = sorted.map((r) => ({
-    date: r.date.slice(5), // MM-DD display
-    actual: r.is_imputed ? undefined : r.modal_price_inr_qtl,
-    imputed: r.is_imputed ? r.modal_price_inr_qtl : undefined,
+    date: r.date,
+    actual: r.is_imputed ? undefined : (r.modal_price_inr_qtl ?? undefined),
+    imputed: r.is_imputed ? (r.modal_price_inr_qtl ?? undefined) : undefined,
   }));
 
-  if (forecast) {
+  if (forecast && forecastDate) {
     points.push({
-      date: "Forecast",
+      date: forecastDate,
       forecast: forecast.forecast_price_inr_qtl,
       lower: forecast.lower_bound_inr_qtl,
       upper: forecast.upper_bound_inr_qtl,
@@ -46,8 +47,21 @@ export default function ForecastChart({ history, forecast }: Props) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <ComposedChart data={points} margin={{ top: 4, right: 16, bottom: 4, left: 16 }}>
+    <div
+      className="h-[300px] w-full min-w-0"
+      role="img"
+      aria-label={
+        forecast && forecastDate
+          ? `Observed and imputed price history through ${forecast.as_of_date}, with a ${forecast.forecast_price_inr_qtl.toFixed(0)} INR per quintal forecast for ${forecastDate}.`
+          : "Price history chart"
+      }
+    >
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        initialDimension={{ width: 1, height: 1 }}
+      >
+        <ComposedChart data={points} margin={{ top: 4, right: 8, bottom: 4, left: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="date"
@@ -100,7 +114,8 @@ export default function ForecastChart({ history, forecast }: Props) {
           name="7-day forecast"
           strokeWidth={2}
         />
-      </ComposedChart>
-    </ResponsiveContainer>
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

@@ -8,8 +8,8 @@ import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { rankMandis } from "../src/lib/transport";
-import type { ForecastRow, MandiMeta, MetaRanking, RankedMandi } from "../src/lib/types";
+import { rankRecommendationCandidates } from "../src/lib/policy";
+import type { ForecastRow, MandiMeta, Meta, RankedMandi } from "../src/lib/types";
 
 const DATA = resolve(__dirname, "../public/data");
 
@@ -20,15 +20,20 @@ function load<T>(name: string): T {
 const TOLERANCE = 0.01; // INR/qtl
 
 describe("TS rankMandis parity with Python score_recommendations", () => {
-  const meta = load<{ default_farmer: { latitude: number; longitude: number }; ranking: MetaRanking }>(
-    "meta.json"
-  );
+  const meta = load<Meta>("meta.json");
   const mandis = load<MandiMeta[]>("mandis.json");
   const forecasts = load<ForecastRow[]>("forecasts.json");
   const pyRecs = load<RankedMandi[]>("recommendations.json");
 
   const { latitude, longitude } = meta.default_farmer;
-  const tsRecs = rankMandis(forecasts, mandis, latitude, longitude, meta.ranking);
+  const tsRecs = rankRecommendationCandidates(
+    forecasts,
+    mandis,
+    latitude,
+    longitude,
+    meta,
+    meta.ranking.cost_per_km_per_quintal
+  ).rows;
 
   it("same number of ranked mandis", () => {
     assert.strictEqual(tsRecs.length, pyRecs.length, "mandi count mismatch");
@@ -81,4 +86,30 @@ describe("TS rankMandis parity with Python score_recommendations", () => {
       );
     });
   }
+});
+
+describe("recommendation input policy", () => {
+  const meta = load<Meta>("meta.json");
+  const mandis = load<MandiMeta[]>("mandis.json");
+  const forecasts = load<ForecastRow[]>("forecasts.json");
+
+  it("applies a caller-selected radius and re-ranks the remaining rows", () => {
+    const result = rankRecommendationCandidates(
+      forecasts,
+      mandis,
+      meta.default_farmer.latitude,
+      meta.default_farmer.longitude,
+      meta,
+      meta.ranking.cost_per_km_per_quintal,
+      100
+    );
+
+    assert.ok(result.rows.length > 0);
+    assert.ok(result.rows.every((row) => row.road_distance_km <= 100));
+    assert.deepStrictEqual(
+      result.rows.map((row) => row.rank),
+      result.rows.map((_, index) => index + 1)
+    );
+    assert.strictEqual(result.excludedRadiusCount, 8);
+  });
 });

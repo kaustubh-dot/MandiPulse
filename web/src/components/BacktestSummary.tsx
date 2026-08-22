@@ -21,11 +21,11 @@ export default function BacktestSummaryCard({ data }: Props) {
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         Historical performance (recommendation backtest)
       </h3>
-      <div className="grid grid-cols-3 gap-4 mb-2">
+      <div className="mb-2 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {tiles.map((t) => (
           <div key={t.label} className="bg-white border border-gray-200 rounded p-3">
             <div className="text-xs text-gray-500 mb-1">{t.label}</div>
-            <div className="text-lg font-semibold">{t.value}</div>
+            <div className="break-words text-lg font-semibold">{t.value}</div>
           </div>
         ))}
       </div>
