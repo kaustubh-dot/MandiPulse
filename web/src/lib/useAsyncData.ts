@@ -17,7 +17,6 @@ export function useAsyncData<T>(loader: () => Promise<T>) {
 
   useEffect(() => {
     let cancelled = false;
-    setState({ status: "loading", data: null, error: null });
 
     void loader()
       .then((data) => {
@@ -37,6 +36,11 @@ export function useAsyncData<T>(loader: () => Promise<T>) {
     };
   }, [loader, attempt]);
 
-  const retry = useCallback(() => setAttempt((value) => value + 1), []);
+  const retry = useCallback(() => {
+    // Event-driven reset: shows loading immediately and bumps attempt so the
+    // effect refetches. The effect body itself never sets state synchronously.
+    setState({ status: "loading", data: null, error: null });
+    setAttempt((value) => value + 1);
+  }, []);
   return { ...state, retry };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import ForecastChart from "@/components/ForecastChart";
 import HonestResultsTable from "@/components/HonestResultsTable";
@@ -59,15 +59,18 @@ export default function ForecastPage() {
   const [selectedMarketId, setSelectedMarketId] = useState<number | null>(null);
   const data = state.status === "success" ? state.data : null;
 
-  useEffect(() => {
-    if (!data || data.forecasts.length === 0) return;
-    if (data.forecasts.some((row) => row.market_id === selectedMarketId)) return;
-    const preferred =
-      data.forecasts.find(
-        (row) => row.as_of_date === data.meta.candidate_policy.eligible_as_of_date
-      ) ?? data.forecasts[0];
-    setSelectedMarketId(preferred.market_id);
-  }, [data, selectedMarketId]);
+  // Auto-select a default mandi once per loaded bundle; user selection wins afterwards.
+  const [autoSelectSource, setAutoSelectSource] = useState<ForecastBundle | null>(null);
+  if (data && data !== autoSelectSource) {
+    setAutoSelectSource(data);
+    if (!data.forecasts.some((row) => row.market_id === selectedMarketId)) {
+      const preferred =
+        data.forecasts.find(
+          (row) => row.as_of_date === data.meta.candidate_policy.eligible_as_of_date
+        ) ?? data.forecasts[0];
+      if (preferred) setSelectedMarketId(preferred.market_id);
+    }
+  }
 
   const mandiById = useMemo(
     () => new Map((data?.mandis ?? []).map((mandi) => [mandi.market_id, mandi])),

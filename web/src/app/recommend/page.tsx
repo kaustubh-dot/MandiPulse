@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import SampleBanner from "@/components/SampleBanner";
@@ -46,11 +46,13 @@ export default function RecommendPage() {
   const [maxRadiusKm, setMaxRadiusKm] = useState(500);
   const data = state.status === "success" ? state.data : null;
 
-  useEffect(() => {
-    if (!data) return;
+  // Adopt artifact ranking config once per loaded bundle; editable afterwards.
+  const [configSource, setConfigSource] = useState<Meta | null>(null);
+  if (data && data.meta !== configSource) {
+    setConfigSource(data.meta);
     setCostPerKm(data.meta.ranking.cost_per_km_per_quintal);
     setMaxRadiusKm(data.meta.ranking.max_transport_radius_km);
-  }, [data]);
+  }
 
   const preset = FARMER_PRESETS[presetIndex] ?? FARMER_PRESETS[0];
   const policyResult = useMemo(
