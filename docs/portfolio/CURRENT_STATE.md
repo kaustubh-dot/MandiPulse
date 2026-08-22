@@ -18,10 +18,22 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F1 — transport-adjusted ranking contract alignment |
+| Active implementation phase | F2 — supported, audit-ready frontend foundation |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Execute F1 rename across Python/API/TS/schemas/docs, regenerate bundle, run parity gates |
+| Next action | Execute F2 controlled dependency migration (Next.js major + React 19), clear the production audit |
+
+### F1 outcome (2026-08-22)
+
+The public ranking contract is now transport-adjusted: `transport_adjusted_net_price_inr_qtl`
+numerically equals `expected_net_price_inr_qtl`; ranking sorts by expected net price
+descending with a deterministic market-id tie-break; `uncertainty_penalty_inr_qtl` remains as
+evidence-only because the global interval width is identical across candidates. Export bundle
+and JSON schemas bumped to v2.0.0 (schemas moved to `schemas/web_export/v2/`). Regenerated
+artifacts committed. Gates rerun on this branch: pytest 207 passed (74.90% coverage),
+ruff/black clean, export validation 8/8, npm test 52/52 passing against the new bundle,
+production build clean, and a repo-wide wording sweep leaves only rule/gate definitions and
+visibly qualified historical annotations.
 
 ### F0 incident record: locked artifact ACLs (2026-08-22)
 

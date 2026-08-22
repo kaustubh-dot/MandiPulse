@@ -13,11 +13,11 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F1 — Product and calculation truth
 
-- [ ] **F1-01:** Replace public risk-adjusted wording with transport-adjusted ranking terminology.
-- [ ] **F1-02:** Standardize the ranking field across Python, API, export, TypeScript, tests, reports, and copy.
-- [ ] **F1-03:** Keep uncertainty visible as evidence but separate from the current rank.
-- [ ] **F1-04:** Regenerate sample and web export artifacts and approve the contract diff.
-- [ ] **F1-05:** Rerun Python and TypeScript parity gates.
+- [x] **F1-01:** Replace public risk-adjusted wording with transport-adjusted ranking terminology.
+- [x] **F1-02:** Standardize the ranking field across Python, API, export, TypeScript, tests, reports, and copy.
+- [x] **F1-03:** Keep uncertainty visible as evidence but separate from the current rank.
+- [x] **F1-04:** Regenerate sample and web export artifacts and approve the contract diff.
+- [x] **F1-05:** Rerun Python and TypeScript parity gates.
 
 ## F2 — Dependency and security migration
 
