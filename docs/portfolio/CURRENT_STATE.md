@@ -18,10 +18,31 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F5 — complete Streamlit replacement |
+| Active implementation phase | F6 — release-grade automated verification |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Rebuild the Streamlit shell and three pages against `src/mandipulse/app/design.py`; then expand automated verification |
+| Next action | Add component, browser, accessibility, parity, and Streamlit smoke checks; pin them in CI |
+
+### F5 outcome (2026-08-23)
+
+The Streamlit experience was fully rebuilt under the Market Atlas system. The shell
+(`app/streamlit_app.py`) and renamed pages (`app/pages/1_Decision.py`, `2_Forecast.py`,
+`3_Coverage.py`) match the Next.js contract for navigation names, page order, snapshot
+label, units, defaults, and copy. Every page consumes `src/mandipulse/app/design.py`
+tokens, formatters, and the Plotly theme, and ranks through the shared Python ranking
+implementation via `data_access.py` — no calculation logic is duplicated in page code.
+The Decision workbench places inputs beside results on wide screens and in reading order
+on narrow screens; missing-artifact states name the absent file instead of rendering
+zeros, invalid inputs preserve entered values, and stale mandis warn while staying
+visible. In-browser verification from committed sample artifacts (no API key): every
+page loads, the map renders via WebGL tiles with the rank-1 dominant marker, the chart
+legend keeps the multi-signal distinction (Prediction interval / Observed / Imputed
+observation / 7-day forecast) with a data-driven interval label and conformal wording,
+coverage shows the full mandi range with definitions and a focus view, and the Pune
+parity fixture reproduces exactly (1,393 − 61 = 1,332 INR/qtl net re-rank). Console
+output contains only two documented benign classes: Streamlit direct-load health 404s
+and Plotly SVG-fallback noise. Gates: pytest 221 passed (75.89% coverage),
+ruff/black clean, keyboard and narrow-screen smoke review accepted.
 
 ### F4 outcome (2026-08-23)
 
@@ -172,7 +193,7 @@ The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source i
 |---|---|---|
 | P0 | Public ranking vocabulary overstates uncertainty behavior | RESOLVED in F1 — transport-adjusted contract shipped (v2.0.0 export) |
 | P0 | Three high-severity production dependency findings | RESOLVED in F2 — zero audit findings on supported Next.js 16/React 19 |
-| P0 | Both interfaces are explicitly non-final | Next.js replacement RESOLVED in F4; complete F5 for Streamlit under the locked design contracts |
+| P0 | Both interfaces are explicitly non-final | RESOLVED in F4 (Next.js) and F5 (Streamlit) — both surfaces rebuilt under the locked design contracts |
 | P0 | Frontend verification is logic-heavy and experience-light | Add component, browser, accessibility, responsive, and performance gates |
 | P0 | Active and historical docs contradict current repository state | Reconcile public docs before release |
 | P0 | Final public URLs and CI evidence do not exist | Deploy, verify signed out, and record the exact release commit |

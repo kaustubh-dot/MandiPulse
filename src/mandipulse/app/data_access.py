@@ -14,6 +14,7 @@ from mandipulse.paths import (  # noqa: E402
     clean_panel_path,
     feature_table_path,
     forecast_outputs_path,
+    metrics_dir,
     recommendation_backtest_path,
     recommendation_outputs_path,
     reports_modeling_dir,
@@ -93,6 +94,28 @@ def load_recommendation_backtest() -> pd.DataFrame | None:
     Falls back to the demo sample when the full artifact is absent.
     """
     path = _resolve_or_sample(recommendation_backtest_path(), "recommendation_backtest_7d.csv")
+    if not path.exists():
+        return None
+    return read_csv_via_duckdb(path)
+
+
+@st.cache_data(show_spinner=False)
+def load_baseline_sensitivity() -> pd.DataFrame | None:
+    """Load per-model validation/test metrics, or None when not yet generated.
+
+    Produced by ``scripts/train_baselines_7d.py`` (full pipeline only); the demo
+    sample bundle does not carry it, so absence is an expected, handled state.
+    """
+    path = metrics_dir() / "baseline_sensitivity_7d.csv"
+    if not path.exists():
+        return None
+    return read_csv_via_duckdb(path)
+
+
+@st.cache_data(show_spinner=False)
+def load_interval_metadata() -> pd.DataFrame | None:
+    """Load prediction-interval metadata, or None when not yet generated."""
+    path = metrics_dir() / "forecast_interval_metadata_7d.csv"
     if not path.exists():
         return None
     return read_csv_via_duckdb(path)

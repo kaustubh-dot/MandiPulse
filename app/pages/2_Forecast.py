@@ -1,3 +1,13 @@
+"""Forecast exploration page — Streamlit parity with the Next.js ``/forecast`` route.
+
+Follows ``docs/APP_FLOW.md`` section 5.2 content order exactly: mandi identity
+and forecast date, headline forecast price, prediction-interval bounds with a
+data-driven method label, history-plus-forecast chart, model-versus-baseline
+evidence, a missingness/data-quality note, and a closing action back to the
+Decision workbench. All presentation tokens, formatters, and the Plotly theme
+come exclusively from :mod:`mandipulse.app.design`.
+"""
+
 from __future__ import annotations
 
 import sys
@@ -13,179 +23,410 @@ from mandipulse.app.data_access import (  # noqa: E402
     add_staleness_days,
     available_mandis,
     history_for_mandi,
+    load_baseline_sensitivity,
     load_clean_panel,
     load_forecasts,
-    load_report_markdown,
+    load_mandi_metadata,
 )
-from mandipulse.policy import (  # noqa: E402
-    canonical_forecast_as_of,
-    cap_history_at_as_of,
-    forecast_target_date,
-    select_latest_forecast_for_market,
+from mandipulse.app.design import (  # noqa: E402
+    ACCENT_HEX,
+    ACCENT_INK_HEX,
+    EM_DASH,
+    FROZEN_NOTICE,
+    INK_HEX,
+    MUTED_HEX,
+    SNAPSHOT_LABEL,
+    format_date_iso,
+    format_inr_per_qtl,
+    format_interval,
+    format_pct,
+    inject_base_css,
+    plotly_theme,
 )
 
 st.set_page_config(page_title="Forecast · MandiPulse", layout="wide")
-st.title("7-Day Price Forecast")
-st.caption("Select a mandi to review its price history, 7-day forecast, and uncertainty interval.")
 
-with st.spinner("Loading data…"):
-    panel = load_clean_panel()
-    forecasts = add_staleness_days(load_forecasts())
+inject_base_css()
 
-mandis = available_mandis(forecasts)
-selected_mandi = st.selectbox("Select Mandi", mandis, index=0)
+SELECT_KEY = "forecast_mandi"
+HISTORY_WINDOW_DAYS = 90
 
-mandi_matches = forecasts.loc[forecasts["mandi"] == selected_mandi]
-market_id = int(mandi_matches["market_id"].iloc[0])
-mandi_row = select_latest_forecast_for_market(forecasts, market_id)
-
-history = cap_history_at_as_of(
-    history_for_mandi(panel, market_id),
-    mandi_row["as_of_date"],
+PANEL_REGEN_COMMANDS = (
+    "python scripts/build_clean_onion_panel.py\n"
+    "python scripts/build_feature_table.py\n"
+    "python scripts/train_baselines_7d.py\n"
+    "python scripts/train_lightgbm_7d.py\n"
+    "python scripts/build_forecast_intervals_7d.py\n"
+    "python scripts/build_recommendations_7d.py"
 )
 
-_max_as_of = canonical_forecast_as_of(forecasts)
-_staleness_days = int(mandi_row["staleness_days"])
-_target_date = forecast_target_date(
-    mandi_row["as_of_date"],
-    int(mandi_row["horizon_days"]),
-)
 
-# --- Forecast KPIs ---
-st.divider()
-col1, col2, col3, col4 = st.columns(4)
-col1.metric(
-    "Forecast Price (INR/qtl)",
-    f"₹{mandi_row['forecast_price_inr_qtl']:.0f}",
-)
-col2.metric(
-    "Lower Bound",
-    f"₹{mandi_row['lower_bound_inr_qtl']:.0f}",
-)
-col3.metric(
-    "Upper Bound",
-    f"₹{mandi_row['upper_bound_inr_qtl']:.0f}",
-)
-col4.metric(
-    "Confidence Level",
-    f"{mandi_row['confidence_level']:.0%}",
-)
+def _hex_to_rgba(hex_color: str, alpha: float) -> str:
+    """Convert an ``#rrggbb`` design token into an ``rgba()`` string."""
+    value = hex_color.lstrip("#")
+    red, green, blue = (int(value[i : i + 2], 16) for i in (0, 2, 4))
+    return f"rgba({red}, {green}, {blue}, {alpha})"
 
-_staleness_suffix = (
-    f" · ⚠️ **{_staleness_days}d older** than freshest mandi ({_max_as_of})"
-    if _staleness_days > 0
-    else " · ✅ freshest data"
-)
-st.caption(
-    f"As-of date: **{mandi_row['as_of_date']}**{_staleness_suffix} · "
-    f"Target date: **{_target_date.isoformat()}** · "
-    f"Model: `{mandi_row['model_name']}` · "
-    f"Horizon: {mandi_row['horizon_days']} days"
-)
 
-st.info(
-    f"**Shipped forecaster:** `{mandi_row['model_name']}` (7-day moving average). "
-    "LightGBM was trained but not shipped — it did not beat the moving-average baseline "
-    "(test MAE 188 vs 140 INR/quintal). The moving-average is the honest MVP forecaster.",
-    icon="ℹ️",
-)
+def _default_mandi_name(forecasts: pd.DataFrame) -> str | None:
+    """Pick the default mandi: freshest as-of date first, alphabetical tie-break."""
+    if forecasts.empty:
+        return None
+    dates = pd.to_datetime(forecasts["as_of_date"])
+    freshest = dates.max()
+    fresh_names = sorted(forecasts.loc[dates == freshest, "mandi"].tolist())
+    return str(fresh_names[0])
 
-# --- Historical price chart with forecast + interval ---
-st.markdown("### Price History + 7-Day Forecast")
 
-# Last 90 days of history for readability
-recent = history.tail(90)
+def _selected_forecast_row(forecasts: pd.DataFrame, mandi_name: str) -> pd.Series:
+    """Return the freshest forecast row for one mandi name."""
+    rows = forecasts[forecasts["mandi"] == mandi_name]
+    return rows.sort_values("as_of_date").iloc[-1]
 
-fig = go.Figure()
 
-# Historical actual prices
-fig.add_trace(
-    go.Scatter(
-        x=recent["date"],
-        y=recent["modal_price_inr_qtl"],
-        mode="lines",
-        name="Historical (modal)",
-        line=dict(color="#1E40AF", width=2),
-    )
-)
+def _load_panel_or_stop() -> pd.DataFrame:
+    """Load the clean daily panel, or stop with exact regeneration guidance."""
+    try:
+        return load_clean_panel()
+    except Exception as exc:  # noqa: BLE001 - surface any read failure as guidance
+        st.error(
+            f"**Clean price panel unavailable** ({exc}).\n\n"
+            "The Forecast page needs the cleaned daily onion-price panel "
+            "(`clean_mandi_prices.csv`). Regenerate the artifacts:\n"
+            f"```\n{PANEL_REGEN_COMMANDS}\n```\n"
+            "If the full snapshot is unavailable, the bundled sample is used automatically."
+        )
+        st.stop()
 
-# Imputed rows shown as lighter dots
-imputed_mask = recent["is_imputed"].fillna(False).astype(bool)
-if imputed_mask.any():
-    fig.add_trace(
+
+def _load_metadata_safe() -> pd.DataFrame | None:
+    """Load mandi metadata, returning None (not failing) when it cannot be read."""
+    try:
+        metadata = load_mandi_metadata()
+    except Exception:  # noqa: BLE001 - district names are optional context
+        return None
+    return None if metadata.empty else metadata
+
+
+def _district_for(metadata: pd.DataFrame | None, market_id: object) -> str:
+    """Resolve the district name for a market id, or an em dash when unknown."""
+    if metadata is None or "district_name" not in metadata.columns:
+        return EM_DASH
+    matches = metadata.loc[metadata["market_id"] == market_id, "district_name"]
+    if matches.empty:
+        return EM_DASH
+    value = str(matches.iloc[0])
+    return value if value.strip().lower() not in {"", "nan", "none"} else EM_DASH
+
+
+def _window_for_as_of(as_of: pd.Timestamp) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """Return the inclusive day bounds of the plotted history window."""
+    end = pd.Timestamp(as_of).normalize()
+    return end - pd.Timedelta(days=HISTORY_WINDOW_DAYS - 1), end
+
+
+def _imputed_mask(frame: pd.DataFrame) -> pd.Series:
+    """Return a boolean Series flagging imputed rows, tolerating missing flags."""
+    if "is_imputed" not in frame.columns:
+        return pd.Series(False, index=frame.index)
+    return frame["is_imputed"].fillna(False).astype(bool)
+
+
+def _build_forecast_figure(
+    history: pd.DataFrame,
+    forecast_value: float,
+    lower_bound: float,
+    upper_bound: float,
+    as_of: pd.Timestamp,
+    target: pd.Timestamp,
+) -> go.Figure:
+    """Compose the history + forecast chart with accessible series separation.
+
+    Observed, imputed, and forecast points differ by marker symbol AND color AND
+    legend label (never color alone); the interval renders as a shaded band.
+    """
+    figure = go.Figure()
+
+    figure.add_trace(
         go.Scatter(
-            x=recent.loc[imputed_mask, "date"],
-            y=recent.loc[imputed_mask, "modal_price_inr_qtl"],
-            mode="markers",
-            name="Imputed",
-            marker=dict(color="#D97706", size=4, symbol="circle-open"),
+            x=[as_of, target, target, as_of],
+            y=[lower_bound, lower_bound, upper_bound, upper_bound],
+            fill="toself",
+            fillcolor=_hex_to_rgba(ACCENT_HEX, 0.15),
+            line={"color": _hex_to_rgba(ACCENT_HEX, 0.0), "width": 0},
+            name="Prediction interval",
+            hovertemplate=(
+                "%{x|%d %b %Y}<br>Prediction interval bound: %{y:,.0f} INR/qtl"
+                "<extra>Prediction interval</extra>"
+            ),
         )
     )
 
-# Forecast point (horizon_days after this mandi's own as_of_date)
-as_of = pd.Timestamp(pd.to_datetime(mandi_row["as_of_date"]).date())
-forecast_date = pd.Timestamp(_target_date)
+    mask = _imputed_mask(history)
+    observed = history[~mask]
+    imputed = history[mask]
 
-fig.add_trace(
-    go.Scatter(
-        x=[forecast_date],
-        y=[mandi_row["forecast_price_inr_qtl"]],
-        mode="markers",
-        name="Forecast",
-        marker=dict(color="#D97706", size=12, symbol="diamond"),
-        error_y=dict(
-            type="data",
-            symmetric=False,
-            array=[mandi_row["upper_bound_inr_qtl"] - mandi_row["forecast_price_inr_qtl"]],
-            arrayminus=[mandi_row["forecast_price_inr_qtl"] - mandi_row["lower_bound_inr_qtl"]],
-            visible=True,
-            color="#D97706",
-        ),
+    figure.add_trace(
+        go.Scatter(
+            x=observed["date"],
+            y=observed["modal_price_inr_qtl"],
+            mode="lines+markers",
+            line={"color": INK_HEX, "width": 2},
+            marker={"symbol": "circle", "size": 5, "color": INK_HEX},
+            name="Observed",
+            connectgaps=False,
+            hovertemplate="%{x|%d %b %Y}<br>Observed: %{y:,.0f} INR/qtl<extra>Observed</extra>",
+        )
     )
-)
 
-# Confidence band (shaded area from last history date to forecast date)
-fig.add_trace(
-    go.Scatter(
-        x=[as_of, forecast_date, forecast_date, as_of],
-        y=[
-            mandi_row["forecast_price_inr_qtl"],
-            mandi_row["upper_bound_inr_qtl"],
-            mandi_row["lower_bound_inr_qtl"],
-            mandi_row["forecast_price_inr_qtl"],
-        ],
-        fill="toself",
-        fillcolor="rgba(217,119,6,0.12)",
-        line=dict(color="rgba(0,0,0,0)"),
-        showlegend=True,
-        name=f"{mandi_row['confidence_level']:.0%} interval",
+    if not imputed.empty:
+        figure.add_trace(
+            go.Scatter(
+                x=imputed["date"],
+                y=imputed["modal_price_inr_qtl"],
+                mode="markers",
+                marker={
+                    "symbol": "circle-open",
+                    "size": 9,
+                    "color": MUTED_HEX,
+                    "line": {"width": 1.5},
+                },
+                name="Imputed observation",
+                customdata=imputed["modal_price_inr_qtl"],
+                hovertemplate=(
+                    "%{x|%d %b %Y}<br>Imputed fill: %{customdata:,.0f} INR/qtl"
+                    "<extra>Imputed observation</extra>"
+                ),
+            )
+        )
+
+    figure.add_trace(
+        go.Scatter(
+            x=[as_of, target],
+            y=[forecast_value, forecast_value],
+            mode="lines+markers",
+            line={"color": ACCENT_HEX, "width": 2.5, "dash": "dash"},
+            marker={
+                "symbol": "diamond",
+                "size": 10,
+                "color": ACCENT_HEX,
+                "line": {"color": ACCENT_INK_HEX, "width": 1},
+            },
+            name="7-day forecast",
+            hovertemplate=(
+                "%{x|%d %b %Y}<br>Forecast: %{y:,.0f} INR/qtl<extra>7-day forecast</extra>"
+            ),
+        )
     )
+
+    figure.update_layout(**plotly_theme())
+    figure.update_layout(
+        height=440,
+        hovermode="closest",
+        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02},
+    )
+    figure.update_xaxes(title_text="Date")
+    figure.update_yaxes(title_text="Modal price (INR/qtl)")
+    return figure
+
+
+def _data_quality_note(panel: pd.DataFrame, market_id: object, as_of: pd.Timestamp) -> str:
+    """Summarize missingness for one mandi over an explicitly stated window."""
+    start, end = _window_for_as_of(as_of)
+    rows = panel[
+        (panel["market_id"] == market_id) & (panel["date"] >= start) & (panel["date"] <= end)
+    ]
+    scope = f"the last {HISTORY_WINDOW_DAYS} calendar days ending {format_date_iso(end)}"
+    if rows.empty:
+        rows = panel[panel["market_id"] == market_id]
+        scope = "the full committed series"
+        if rows.empty:
+            return f"No clean-panel records exist for this mandi ({scope}: none found)."
+
+    total = int(len(rows))
+    imputed_count = int(_imputed_mask(rows).sum())
+    unavailable_count = int(rows["modal_price_inr_qtl"].isna().sum())
+
+    parts = [f"Window used: {scope}. Of {total} daily records in the clean panel,"]
+    if unavailable_count > 0:
+        parts.append(
+            f" {unavailable_count} carry missing (null) modal prices and are omitted from the chart."
+        )
+    else:
+        parts.append(" every record carries a finite modal price.")
+    if imputed_count > 0:
+        parts.append(
+            f" {imputed_count} value{'s are' if imputed_count != 1 else ' is'} imputed fills,"
+            " drawn as hollow markers."
+        )
+    return "".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# Load mandatory artifacts (missing forecasts stop inside load_forecasts).
+# ---------------------------------------------------------------------------
+forecasts_raw = load_forecasts()
+if forecasts_raw.empty:
+    st.warning(
+        "The snapshot loaded successfully, but it contains no mandi forecast rows. "
+        "See the Coverage page for data provenance."
+    )
+    st.stop()
+
+forecast_frame = add_staleness_days(forecasts_raw)
+
+with st.spinner("Loading supporting artifacts…"):
+    panel = _load_panel_or_stop()
+    mandi_metadata = _load_metadata_safe()
+
+# ---------------------------------------------------------------------------
+# Mandi selection persisted across reruns in session state.
+# ---------------------------------------------------------------------------
+mandi_options = available_mandis(forecast_frame)
+freshness_reference = pd.to_datetime(forecast_frame["as_of_date"]).max()
+
+if SELECT_KEY not in st.session_state or st.session_state[SELECT_KEY] not in mandi_options:
+    default_name = _default_mandi_name(forecast_frame)
+    st.session_state[SELECT_KEY] = default_name if default_name is not None else mandi_options[0]
+
+selected_mandi: str = st.selectbox(
+    "Mandi",
+    options=mandi_options,
+    key=SELECT_KEY,
+    help=(
+        "As-of dates earlier than the freshness reference "
+        f"({format_date_iso(freshness_reference)}) are flagged below."
+    ),
 )
 
-fig.update_layout(
-    xaxis_title="Date",
-    yaxis_title="Modal Price (INR/quintal)",
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-    height=420,
-    plot_bgcolor="#F8FAFC",
-    paper_bgcolor="#F8FAFC",
-    hovermode="x unified",
-)
-st.plotly_chart(fig, use_container_width=True)
+row = _selected_forecast_row(forecast_frame, selected_mandi)
+as_of_ts = pd.Timestamp(row["as_of_date"])
+horizon_days = int(row["horizon_days"])
+target_ts = as_of_ts + pd.Timedelta(days=horizon_days)
+staleness_days = int(row["staleness_days"])
 
-# --- Baseline comparison from report ---
-st.markdown("### Baseline Model Metrics")
+# ---------------------------------------------------------------------------
+# Header: title, caption, compact snapshot framing.
+# ---------------------------------------------------------------------------
+st.title("Forecast exploration")
 st.caption(
-    "Lower MAE = better. `moving_average_7d` is the MVP production model for interval calibration."
+    "Inspect one Maharashtra onion mandi's recent wholesale prices beside its "
+    f"{horizon_days}-day forecast and prediction interval, with honest "
+    "model-versus-baseline evidence and data-quality notes. Prices are wholesale "
+    "modal prices in INR/quintal."
 )
-with st.expander("View full baseline metrics report"):
-    md = load_report_markdown("baseline_metrics_7d.md")
-    st.markdown(md)
+st.markdown(
+    f"""
+    <div class="mp-snapshot-label">{SNAPSHOT_LABEL}</div>
+    <p class="mp-frozen-note">{FROZEN_NOTICE}</p>
+    """,
+    unsafe_allow_html=True,
+)
 
-# --- Data notes ---
-st.info(
-    f"**{selected_mandi}** · market_id={market_id} · "
-    f"History available through {mandi_row['as_of_date']}: {len(history)} rows · "
-    f"Observed: {int(history['is_observed'].sum())} / Imputed: {int(history['is_imputed'].fillna(False).sum())}",
-    icon="ℹ️",
+if staleness_days > 0:
+    st.warning(
+        f"This mandi's forecast is {staleness_days} days old relative to the "
+        f"freshness reference ({format_date_iso(freshness_reference)}). It stays "
+        "visible for transparency."
+    )
+
+# --- 5.2 (a) Mandi identity and forecast date -----------------------------
+district = _district_for(mandi_metadata, row["market_id"])
+identity_col, dates_col = st.columns([3, 2])
+with identity_col:
+    st.subheader(selected_mandi)
+    district_line = f"{district} district, Maharashtra" if district != EM_DASH else "Maharashtra"
+    st.caption(district_line)
+with dates_col:
+    st.metric("As-of date", format_date_iso(as_of_ts))
+    st.metric("Target date", format_date_iso(target_ts))
+
+# --- 5.2 (b) Headline forecast price ---------------------------------------
+confidence_level = float(row["confidence_level"])
+interval_label = f"{confidence_level:.0%} prediction interval"
+price_col, interval_col = st.columns(2)
+with price_col:
+    st.metric(
+        f"{horizon_days}-day-ahead forecast price",
+        format_inr_per_qtl(row["forecast_price_inr_qtl"]),
+        help=f"As of {format_date_iso(as_of_ts)}, target {format_date_iso(target_ts)}.",
+    )
+with interval_col:
+    st.metric(
+        interval_label,
+        format_interval(row["lower_bound_inr_qtl"], row["upper_bound_inr_qtl"]),
+    )
+st.caption(
+    f"Method: split-conformal at the {format_pct(confidence_level * 100, 0)} nominal "
+    f"level. As-of {format_date_iso(as_of_ts)}, target {format_date_iso(target_ts)} "
+    f"(as-of + {horizon_days} days). A prediction interval is a calibrated range, "
+    "not a certainty."
+)
+
+# --- 5.2 (d) History + forecast chart --------------------------------------
+st.markdown(f"#### Price history and {horizon_days}-day forecast")
+
+history_full = history_for_mandi(panel, row["market_id"])
+window_start, window_end = _window_for_as_of(as_of_ts)
+history_window = history_full[
+    (history_full["date"] >= window_start) & (history_full["date"] <= window_end)
+].dropna(subset=["modal_price_inr_qtl"])
+
+if history_window.empty:
+    st.warning(
+        f"No plotted history: no finite observed prices exist in the "
+        f"{HISTORY_WINDOW_DAYS}-day window ending {format_date_iso(as_of_ts)} for "
+        "this mandi. Missing records remain flagged in the clean panel; see the "
+        "Coverage page for provenance."
+    )
+else:
+    figure = _build_forecast_figure(
+        history=history_window,
+        forecast_value=float(row["forecast_price_inr_qtl"]),
+        lower_bound=float(row["lower_bound_inr_qtl"]),
+        upper_bound=float(row["upper_bound_inr_qtl"]),
+        as_of=as_of_ts,
+        target=target_ts,
+    )
+    st.plotly_chart(figure, width="stretch")
+
+# --- 5.2 (e) Model-versus-baseline evidence ---------------------------------
+st.markdown("#### Model-versus-baseline evidence")
+st.markdown(f"Shipped forecaster: `{row['model_name']}` " f"(version `{row['model_version']}`).")
+st.caption(
+    "Interview note: LightGBM was trained honestly but did NOT beat the "
+    "moving-average baseline on held-out test dates (test MAE 188 vs 140 "
+    "INR/qtl), so the baseline ships."
+)
+
+sensitivity = load_baseline_sensitivity()
+if sensitivity is not None and not sensitivity.empty:
+    test_rows = sensitivity[sensitivity["split"] == "test"]
+    if {"model", "mae"}.issubset(test_rows.columns) and not test_rows.empty:
+        with st.expander("Baseline sensitivity — held-out test split"):
+            comparison = test_rows[["model", "mae"]].copy()
+            comparison["mae"] = comparison["mae"].map(lambda v: format_inr_per_qtl(v, 2))
+            st.dataframe(
+                comparison.rename(columns={"model": "Model", "mae": "Test MAE"}),
+                hide_index=True,
+                width="stretch",
+            )
+        st.caption("Lower test MAE wins. Only the best held-out performer ships to this page.")
+    else:
+        st.caption("Baseline-sensitivity artifact loaded, but holds no test-split rows.")
+else:
+    st.caption(
+        "Baseline-sensitivity table not generated yet. Run the pipeline (see the "
+        "commands above) to produce `baseline_sensitivity_7d.csv`."
+    )
+
+# --- 5.2 (f) Missingness / data-quality note --------------------------------
+st.markdown("#### Data quality")
+st.markdown(_data_quality_note(panel, row["market_id"], as_of_ts))
+
+# --- 5.2 (g) Closing action --------------------------------------------------
+st.page_link(
+    "pages/1_Decision.py",
+    label="Use this mandi in the Decision workbench",
+    icon=":material/arrow_forward:",
 )

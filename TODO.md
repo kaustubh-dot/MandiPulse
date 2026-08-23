@@ -45,10 +45,10 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F5 — Streamlit replacement
 
-- [ ] **F5-01:** Rebuild the global Streamlit shell and navigation.
-- [ ] **F5-02:** Rebuild Coverage, Forecast, and Recommendation pages.
-- [ ] **F5-03:** Match Next.js units, defaults, copy, states, and ranking semantics.
-- [ ] **F5-04:** Pass laptop, narrow-screen, keyboard, and sample-artifact smoke review.
+- [x] **F5-01:** Rebuild the global Streamlit shell and navigation.
+- [x] **F5-02:** Rebuild Coverage, Forecast, and Recommendation pages.
+- [x] **F5-03:** Match Next.js units, defaults, copy, states, and ranking semantics.
+- [x] **F5-04:** Pass laptop, narrow-screen, keyboard, and sample-artifact smoke review.
 
 ## F6 — Automated release verification
 

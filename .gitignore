@@ -180,3 +180,7 @@ web/.next/
 web/out/
 .tmp/
 web/.vercel/
+
+# Local verification artifacts (not release evidence)
+.playwright-mcp/
+/*.png
