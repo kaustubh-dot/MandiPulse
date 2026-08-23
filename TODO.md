@@ -30,18 +30,18 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 - [x] **F3-01:** Implement the locked tokens, typography, layout, focus, and motion system.
 - [x] **F3-02:** Build the Next.js application rail and mobile navigation sheet.
-- [ ] **F3-03:** Build reusable controls, evidence, data-state, table, and page-frame primitives.
+- [x] **F3-03:** Build reusable controls, evidence, data-state, table, and page-frame primitives.
 - [x] **F3-04:** Add shared Streamlit presentation and formatting helpers.
 - [x] **F3-05:** Accept the shell at 320, 768, 1024, 1440, and 1920 px.
 
 ## F4 — Next.js replacement
 
-- [ ] **F4-01:** Rebuild overview and method route.
-- [ ] **F4-02:** Rebuild the recommendation workbench and shareable decision state.
-- [ ] **F4-03:** Rebuild forecast exploration and chart semantics.
-- [ ] **F4-04:** Rebuild coverage and provenance view.
-- [ ] **F4-05:** Implement every loading, empty, missing, partial, stale, invalid, and error state.
-- [ ] **F4-06:** Pass responsive review and production static export.
+- [x] **F4-01:** Rebuild overview and method route.
+- [x] **F4-02:** Rebuild the recommendation workbench and shareable decision state.
+- [x] **F4-03:** Rebuild forecast exploration and chart semantics.
+- [x] **F4-04:** Rebuild coverage and provenance view.
+- [x] **F4-05:** Implement every loading, empty, missing, partial, stale, invalid, and error state.
+- [x] **F4-06:** Pass responsive review and production static export.
 
 ## F5 — Streamlit replacement
 

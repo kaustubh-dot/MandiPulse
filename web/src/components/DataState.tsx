@@ -1,50 +1,58 @@
+import type { ReactNode } from "react";
+import { StatusNotice, buttonClass } from "@/components/ui/primitives";
+
 interface LoadingStateProps {
   label: string;
 }
 
 export function LoadingState({ label }: LoadingStateProps) {
   return (
-    <div
-      className="rounded border border-blue-200 bg-blue-50 px-4 py-5 text-sm text-blue-800"
-      role="status"
-      aria-live="polite"
-    >
-      {label}
+    <div role="status" aria-live="polite" aria-busy="true" className="space-y-4">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-4">
+        <div className="h-10 w-3/4 max-w-xs animate-pulse rounded-control bg-paper-2" />
+        <div className="grid items-start gap-8 lg:grid-cols-12">
+          <div className="h-64 animate-pulse rounded-panel bg-paper-2 lg:col-span-4" />
+          <div className="h-96 animate-pulse rounded-panel bg-paper-2 lg:col-span-8" />
+        </div>
+      </div>
     </div>
   );
 }
 
 interface ErrorStateProps {
   message: string;
-  onRetry: () => void;
+  onRetry?: () => void;
+  hint?: ReactNode;
 }
 
-export function ErrorState({ message, onRetry }: ErrorStateProps) {
+export function ErrorState({ message, onRetry, hint }: ErrorStateProps) {
   return (
-    <div className="rounded border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800" role="alert">
-      <p className="font-semibold">Data could not be loaded.</p>
-      <p className="mt-1 break-words">{message}</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-3 rounded bg-red-700 px-3 py-1.5 font-medium text-white hover:bg-red-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
-      >
-        Retry
-      </button>
-    </div>
+    <StatusNotice tone="danger" title="Data could not be loaded">
+      <p className="break-words">{message}</p>
+      {hint ? <div className="mt-2">{hint}</div> : null}
+      {onRetry ? (
+        <button type="button" onClick={onRetry} className={`${buttonClass.secondary} mt-3`}>
+          Try again
+        </button>
+      ) : null}
+    </StatusNotice>
   );
 }
 
 interface EmptyStateProps {
   title: string;
   detail: string;
+  nextAction?: ReactNode;
 }
 
-export function EmptyState({ title, detail }: EmptyStateProps) {
+export function EmptyState({ title, detail, nextAction }: EmptyStateProps) {
   return (
-    <div className="rounded border border-gray-200 bg-white px-4 py-5 text-sm text-gray-600" role="status">
-      <p className="font-semibold text-gray-800">{title}</p>
-      <p className="mt-1">{detail}</p>
+    <div role="status" className="rounded-panel border border-rule bg-paper-2 p-4">
+      <p className="text-xs font-bold uppercase tracking-wide text-muted">Nothing to show</p>
+      <p className="mt-1 text-sm font-bold text-ink">{title}</p>
+      <p className="mt-1 text-sm leading-relaxed text-ink-2">{detail}</p>
+      {nextAction ? <div className="mt-3 text-sm">{nextAction}</div> : null}
     </div>
   );
 }

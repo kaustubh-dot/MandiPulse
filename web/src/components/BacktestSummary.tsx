@@ -1,38 +1,77 @@
-import type { BacktestSummary } from "@/lib/types";
+import { EvidenceBlock } from "@/components/ui/primitives";
+import { formatDateIso, formatInrPerQtl } from "@/lib/format";
+import type { HonestResult } from "@/lib/types";
 
-interface Props {
-  data: BacktestSummary;
+const MODEL_NAMES: Record<string, string> = {
+  moving_average_7d: "Moving average, 7-day",
+  ridge: "Ridge regression",
+  lightgbm: "LightGBM",
+  lightgbm_residual: "LightGBM residual",
+};
+
+function modelDisplayName(model: string): string {
+  return MODEL_NAMES[model] ?? model;
 }
 
-export default function BacktestSummaryCard({ data }: Props) {
-  const tiles = [
-    { label: "Mean regret@1", value: `${data.mean_regret_at_1.toFixed(1)} INR/qtl` },
-    {
-      label: "Nearest-mandi baseline regret",
-      value: `${data.nearest_mandi_baseline_regret.toFixed(1)} INR/qtl`,
-    },
-    {
-      label: "Beats nearest mandi",
-      value: `${data.pct_beats_nearest.toFixed(1)}% of dates`,
-    },
-  ];
+interface Props {
+  models: HonestResult[];
+  nDatesEvaluated: number;
+  testWindowStart: string;
+  testWindowEnd: string;
+}
+
+export default function BacktestSummary({
+  models,
+  nDatesEvaluated,
+  testWindowStart,
+  testWindowEnd,
+}: Props) {
+  if (models.length === 0) {
+    return (
+      <p className="text-sm leading-relaxed text-ink-2">
+        No held-out model results are present in this snapshot.
+      </p>
+    );
+  }
+
+  const shipped = models.find((model) => model.ships);
+
   return (
-    <div>
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">
-        Historical performance (recommendation backtest)
-      </h3>
-      <div className="mb-2 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        {tiles.map((t) => (
-          <div key={t.label} className="bg-white border border-gray-200 rounded p-3">
-            <div className="text-xs text-gray-500 mb-1">{t.label}</div>
-            <div className="break-words text-lg font-semibold">{t.value}</div>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-gray-500">
-        Evaluated on {data.n_dates_evaluated} held-out test dates (
-        {data.test_window_start} → {data.test_window_end}). Decision support
-        only — not a guaranteed-profit signal.
+    <div className="space-y-3">
+      <EvidenceBlock
+        title="Held-out evaluation (temporal split)"
+        rows={[
+          ...models.map((model) => ({
+            label: modelDisplayName(model.model),
+            value: (
+              <>
+                {formatInrPerQtl(model.test_mae, 2)}
+                <span
+                  className={`mt-0.5 block text-xs font-bold ${
+                    model.ships ? "text-success" : "text-muted"
+                  }`}
+                >
+                  {model.ships ? "Ships" : "Not shipping"}
+                </span>
+              </>
+            ),
+          })),
+          { label: "Held-out dates", value: <span className="numeric">{nDatesEvaluated}</span> },
+          {
+            label: "Test window",
+            value: `${formatDateIso(testWindowStart)} \u2013 ${formatDateIso(testWindowEnd)}`,
+          },
+        ]}
+      />
+      <p className="text-xs leading-relaxed text-muted">
+        Mean absolute error (MAE) on{" "}
+        <span className="numeric">{nDatesEvaluated}</span> held-out test dates (
+        {formatDateIso(testWindowStart)} to {formatDateIso(testWindowEnd)}) from a
+        temporal split — every training date precedes the test window.{" "}
+        {shipped
+          ? `The ${modelDisplayName(shipped.model).toLowerCase()} ships because it posted the lowest held-out error; the remaining models were trained but did not beat it.`
+          : "No model is marked as shipping in this snapshot."}{" "}
+        Lower MAE is better.
       </p>
     </div>
   );

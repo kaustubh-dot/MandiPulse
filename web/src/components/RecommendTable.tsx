@@ -1,3 +1,4 @@
+import { formatDateIso, formatInrPerQtl, formatKm } from "@/lib/format";
 import type { RankedMandi } from "@/lib/types";
 
 interface Props {
@@ -5,93 +6,96 @@ interface Props {
   canonicalAsOfDate: string;
 }
 
-const RISK_BADGE: Record<string, string> = {
-  low: "bg-green-100 text-green-800",
-  medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-red-100 text-red-800",
+const RISK_TEXT: Record<string, { word: string; cls: string }> = {
+  low: { word: "Low", cls: "text-success" },
+  medium: { word: "Medium", cls: "text-warning" },
+  high: { word: "High", cls: "text-danger" },
 };
+
+const HEAD_CLASS =
+  "whitespace-nowrap px-3 py-2 text-left text-xs font-bold text-muted";
+const NUM_HEAD_CLASS =
+  "whitespace-nowrap px-3 py-2 text-right text-xs font-bold text-muted";
+const CELL_CLASS = "px-3 py-2 align-top text-ink-2";
+const NUM_CELL_CLASS = "numeric px-3 py-2 text-right text-ink";
 
 export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
   return (
     <div
-      className="overflow-x-auto rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
       role="region"
-      aria-label="Ranked mandi recommendations"
+      aria-label="All eligible mandis, ranked comparison"
       tabIndex={0}
+      className="overflow-x-auto rounded-panel border border-rule bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
-      <table className="min-w-[1040px] w-full border-collapse text-sm">
+      <table className="w-full min-w-[900px] border-collapse text-sm">
         <caption className="sr-only">
-          Ranked eligible mandis for the canonical forecast as-of date {canonicalAsOfDate}
+          Eligible mandis ranked by transport-adjusted net expected price for the
+          forecast as-of date {formatDateIso(canonicalAsOfDate)}. The shaded row is the
+          rank-1 recommendation.
         </caption>
         <thead>
-          <tr className="bg-gray-100 text-left text-xs text-gray-600">
-            <th className="px-2 py-2 border border-gray-200">#</th>
-            <th className="px-2 py-2 border border-gray-200">Mandi</th>
-            <th className="px-2 py-2 border border-gray-200">Forecast as of</th>
-            <th className="px-2 py-2 border border-gray-200 text-right">
+          <tr className="border-b border-rule-strong bg-paper-2">
+            <th scope="col" className={NUM_HEAD_CLASS}>
+              Rank
+            </th>
+            <th scope="col" className={HEAD_CLASS}>
+              Mandi
+            </th>
+            <th scope="col" className={HEAD_CLASS}>
+              District
+            </th>
+            <th scope="col" className={HEAD_CLASS}>
+              As-of
+            </th>
+            <th scope="col" className={NUM_HEAD_CLASS}>
               Forecast (INR/qtl)
             </th>
-            <th className="px-2 py-2 border border-gray-200 text-right">Interval</th>
-            <th className="px-2 py-2 border border-gray-200 text-right">
+            <th scope="col" className={NUM_HEAD_CLASS}>
               Transport (INR/qtl)
             </th>
-            <th className="px-2 py-2 border border-gray-200 text-right">
-              Net Price (INR/qtl)
+            <th scope="col" className={NUM_HEAD_CLASS}>
+              Net price (INR/qtl)
             </th>
-            <th className="px-2 py-2 border border-gray-200 text-right">
-              Transport-adjusted Net Price (INR/qtl)
+            <th scope="col" className={NUM_HEAD_CLASS}>
+              Distance (road, km)
             </th>
-            <th className="px-2 py-2 border border-gray-200 text-right">
-              Uncertainty penalty
-            </th>
-            <th className="px-2 py-2 border border-gray-200 text-center">Risk</th>
-            <th className="px-2 py-2 border border-gray-200 text-right">
-              Road km
+            <th scope="col" className={HEAD_CLASS}>
+              Risk
             </th>
           </tr>
         </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.market_id} className={r.rank === 1 ? "bg-green-50 font-medium" : ""}>
-              <td className="px-2 py-2 border border-gray-200 text-center">{r.rank}</td>
-              <td className="px-2 py-2 border border-gray-200">
-                {r.mandi}
-                <span className="block text-xs text-gray-400">{r.district_name}</span>
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-xs text-gray-600">
-                {r.as_of_date}
-                <span className="mt-0.5 block font-medium text-green-700">Current snapshot</span>
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right">
-                {r.forecast_price_inr_qtl.toFixed(0)}
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right text-xs">
-                {r.lower_bound_inr_qtl.toFixed(0)}–{r.upper_bound_inr_qtl.toFixed(0)}
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right">
-                {r.estimated_transport_cost_inr_qtl.toFixed(0)}
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right font-medium">
-                {r.expected_net_price_inr_qtl.toFixed(0)}
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right">
-                {r.transport_adjusted_net_price_inr_qtl.toFixed(0)}
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right">
-                {r.uncertainty_penalty_inr_qtl.toFixed(0)}
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-center">
-                <span
-                  className={`px-2 py-0.5 rounded text-xs font-medium ${RISK_BADGE[r.risk_level] ?? ""}`}
-                >
-                  {r.risk_level}
-                </span>
-              </td>
-              <td className="px-2 py-2 border border-gray-200 text-right text-gray-500">
-                {r.road_distance_km.toFixed(0)}
-              </td>
-            </tr>
-          ))}
+        <tbody className="divide-y divide-rule">
+          {rows.map((row) => {
+            const risk =
+              RISK_TEXT[row.risk_level] ?? { word: "Unknown", cls: "text-ink-2" };
+            return (
+              <tr key={row.market_id} className={row.rank === 1 ? "bg-paper-2" : undefined}>
+                <td className={`${NUM_CELL_CLASS} font-bold`}>{row.rank}</td>
+                <td className={`${CELL_CLASS} font-bold text-ink`}>{row.mandi}</td>
+                <td className={CELL_CLASS}>{row.district_name}</td>
+                <td className={`${NUM_CELL_CLASS} whitespace-nowrap`}>
+                  {formatDateIso(row.as_of_date)}
+                </td>
+                <td className={NUM_CELL_CLASS}>
+                  {formatInrPerQtl(row.forecast_price_inr_qtl)}
+                </td>
+                <td className={NUM_CELL_CLASS}>
+                  {formatInrPerQtl(row.estimated_transport_cost_inr_qtl)}
+                </td>
+                <td className={`${NUM_CELL_CLASS} font-bold`}>
+                  {formatInrPerQtl(row.transport_adjusted_net_price_inr_qtl)}
+                </td>
+                <td className={NUM_CELL_CLASS}>{formatKm(row.road_distance_km, 0)}</td>
+                <td className={CELL_CLASS}>
+                  <span
+                    className={`inline-flex rounded-pill border border-rule px-2 py-0.5 text-xs font-bold ${risk.cls}`}
+                  >
+                    {risk.word}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

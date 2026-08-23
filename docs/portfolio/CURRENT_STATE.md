@@ -18,10 +18,33 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F4 — complete Next.js replacement |
+| Active implementation phase | F5 — complete Streamlit replacement |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Rebuild the four routes under the Market Atlas system; then Streamlit parity rebuild |
+| Next action | Rebuild the Streamlit shell and three pages against `src/mandipulse/app/design.py`; then expand automated verification |
+
+### F4 outcome (2026-08-23)
+
+All four Next.js routes were rebuilt under the Market Atlas system on top of
+`web/src/components/ui/primitives.tsx`. The overview route (`/`) is now a
+decision-first technical overview: thesis, live decision preview at artifact
+defaults (input summary, dominant recommendation, two alternatives), evaluation
+facts traced to committed artifacts (shipped moving-average policy and MAE,
+unshipped model comparison, interval level vs observed coverage, regret@1 vs
+nearest-mandi), a four-step ranking pipeline, and an anchored method section
+(`#method`) disclosing scope, temporal evaluation, uncertainty policy, and
+explicit non-goals. The workbench serializes all five decision inputs to URL
+query parameters with per-field validation that preserves entered values;
+forecast separates observed/imputed/forecast values by label, stroke, marker,
+and color; coverage compares mandis without a KPI wall and names missing
+artifacts instead of rendering zeros. Cross-route `/​#method` links scroll
+correctly after the async bundle commits. Corrective fixes during verification:
+a duplicated percent in the interval label (`90%%` → `90%`). Gates:
+lint/typecheck clean, npm test 52/52, production static export 7/7 routes;
+in-browser verification from the export server: zero console errors across all
+routes and full navigation, no horizontal overflow at 320/768/1024/1440/1920 px,
+dark toggle persists, mobile sheet opens as an accessible dialog with Escape
+restoring focus, and a Pune location change re-ranks with URL state serialized.
 
 ### F3 outcome (2026-08-23)
 
@@ -149,7 +172,7 @@ The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source i
 |---|---|---|
 | P0 | Public ranking vocabulary overstates uncertainty behavior | RESOLVED in F1 — transport-adjusted contract shipped (v2.0.0 export) |
 | P0 | Three high-severity production dependency findings | RESOLVED in F2 — zero audit findings on supported Next.js 16/React 19 |
-| P0 | Both interfaces are explicitly non-final | Complete F3-F5 under the locked design and flow contracts |
+| P0 | Both interfaces are explicitly non-final | Next.js replacement RESOLVED in F4; complete F5 for Streamlit under the locked design contracts |
 | P0 | Frontend verification is logic-heavy and experience-light | Add component, browser, accessibility, responsive, and performance gates |
 | P0 | Active and historical docs contradict current repository state | Reconcile public docs before release |
 | P0 | Final public URLs and CI evidence do not exist | Deploy, verify signed out, and record the exact release commit |

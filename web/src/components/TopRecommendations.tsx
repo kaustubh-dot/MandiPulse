@@ -1,4 +1,14 @@
 import { addDaysIso } from "@/lib/policy";
+import {
+  formatDateIso,
+  formatInr,
+  formatInrPerQtl,
+  formatInterval,
+  formatKm,
+  formatPct,
+  formatQuantity,
+} from "@/lib/format";
+import { SectionHeading } from "@/components/ui/primitives";
 import type { RankedMandi } from "@/lib/types";
 
 interface Props {
@@ -8,18 +18,13 @@ interface Props {
   quantityQtl: number;
 }
 
-const RISK_BADGE: Record<string, string> = {
-  low: "bg-green-100 text-green-800",
-  medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-red-100 text-red-800",
+const RISK_TEXT: Record<string, { word: string; cls: string }> = {
+  low: { word: "Low", cls: "text-success" },
+  medium: { word: "Medium", cls: "text-warning" },
+  high: { word: "High", cls: "text-danger" },
 };
 
-function rankReason(rank: number): string {
-  if (rank === 1) {
-    return "Rank 1: highest transport-adjusted net price among the eligible mandis.";
-  }
-  return `Rank ${rank}: next-best transport-adjusted net price after transport cost.`;
-}
+const FALLBACK_RISK = { word: "Uncertain", cls: "text-ink-2" };
 
 export default function TopRecommendations({
   rows,
@@ -27,87 +32,146 @@ export default function TopRecommendations({
   confidenceLevel,
   quantityQtl,
 }: Props) {
-  const topRows = rows.slice(0, 3);
-  if (topRows.length === 0) return null;
+  const top = rows[0];
+  if (!top) return null;
+
+  const alternates = rows.slice(1, 3);
+  const targetDate = addDaysIso(top.as_of_date, forecastHorizonDays);
+  const netPerQtl = top.transport_adjusted_net_price_inr_qtl;
+  const lotNet = netPerQtl * quantityQtl;
+  const staleDays = top.staleness_days ?? 0;
+  const risk = RISK_TEXT[top.risk_level] ?? FALLBACK_RISK;
+  const intervalLabel = `${formatPct(confidenceLevel * 100, 0)} interval`;
 
   return (
-    <section
-      aria-labelledby="top-recommendations-heading"
-      aria-live="polite"
-      className="space-y-3"
-    >
-      <div>
-        <h2 id="top-recommendations-heading" className="text-lg font-semibold text-gray-900">
-          Top recommendations
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Ranked by expected net price after transport cost. The uncertainty penalty is identical
-          across candidates (evidence only) and never affects rank. Prices are per quintal;
-          lot estimates use {quantityQtl.toLocaleString()} qtl.
+    <section aria-labelledby="recommended-mandi-heading" className="space-y-4">
+      <SectionHeading id="recommended-mandi-heading">Recommended mandi</SectionHeading>
+
+      <article className="space-y-5 rounded-panel border border-l-4 border-rule border-l-accent bg-surface-raised p-5 shadow-whisper">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-muted">Rank 1 of {rows.length}</p>
+            <h3 className="mt-1 font-display text-3xl leading-tight text-ink">{top.mandi}</h3>
+            <p className="mt-1 text-sm text-ink-2">{top.district_name}</p>
+          </div>
+          <span
+            className={`inline-flex items-center rounded-pill border border-rule-strong px-3 py-1 text-xs font-bold ${risk.cls}`}
+          >
+            {risk.word} risk
+          </span>
+        </div>
+
+        <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
+          <div>
+            <dt className="text-xs text-muted">Sale target date</dt>
+            <dd className="numeric font-bold text-ink">{formatDateIso(targetDate)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Forecast as-of</dt>
+            <dd className="numeric font-bold text-ink">{formatDateIso(top.as_of_date)}</dd>
+          </div>
+        </dl>
+
+        {staleDays > 0 ? (
+          <p className="text-sm font-bold text-warning">
+            This forecast is {staleDays} {staleDays === 1 ? "day" : "days"} behind the
+            current snapshot window.
+          </p>
+        ) : null}
+
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs text-muted">Forecast price</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatInrPerQtl(top.forecast_price_inr_qtl)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">{intervalLabel}</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatInterval(top.lower_bound_inr_qtl, top.upper_bound_inr_qtl)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Transport cost</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatInrPerQtl(top.estimated_transport_cost_inr_qtl)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Expected net price</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatInrPerQtl(top.expected_net_price_inr_qtl)}
+            </dd>
+            <dd className="text-xs text-muted">Forecast minus transport cost</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Transport-adjusted net price</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatInrPerQtl(netPerQtl)}
+            </dd>
+            <dd className="text-xs text-muted">Basis of the ranking</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Lot net estimate</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">{formatInr(lotNet, 0)}</dd>
+            <dd className="text-xs text-muted">For {formatQuantity(quantityQtl)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Road distance</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatKm(top.road_distance_km)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted">Air distance</dt>
+            <dd className="numeric mt-0.5 font-bold text-ink">
+              {formatKm(top.air_distance_km)}
+            </dd>
+          </div>
+        </dl>
+
+        <p className="border-t border-rule pt-3 text-sm leading-relaxed text-ink-2">
+          Highest expected price after subtracting estimated transport from the frozen
+          forecast.
         </p>
-      </div>
+      </article>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {topRows.map((row) => {
-          const targetDate = addDaysIso(row.as_of_date, forecastHorizonDays);
-          return (
-            <article
-              key={row.market_id}
-              className={`mp-panel ${row.rank === 1 ? "border-green-400 ring-1 ring-green-200" : ""}`}
-              aria-label={`Recommendation ${row.rank}: ${row.mandi}`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    #{row.rank} recommendation
-                  </p>
-                  <h3 className="mt-1 text-base font-semibold text-gray-900">{row.mandi}</h3>
-                  <p className="text-xs text-gray-500">{row.district_name}</p>
-                </div>
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-semibold ${RISK_BADGE[row.risk_level] ?? "bg-gray-100 text-gray-800"}`}
+      {alternates.length > 0 ? (
+        <div className="rounded-panel border border-rule bg-surface p-4">
+          <h3 className="text-sm font-bold text-ink">Next best options</h3>
+          <ul className="mt-2 divide-y divide-rule">
+            {alternates.map((alt) => {
+              const diff = alt.transport_adjusted_net_price_inr_qtl - netPerQtl;
+              const altRisk = RISK_TEXT[alt.risk_level] ?? FALLBACK_RISK;
+              return (
+                <li
+                  key={alt.market_id}
+                  className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3 first:pt-0 last:pb-0"
                 >
-                  {row.risk_level} risk
-                </span>
-              </div>
-
-              <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                <div>
-                  <dt className="text-xs text-gray-500">Forecast</dt>
-                  <dd className="font-semibold">{row.forecast_price_inr_qtl.toFixed(0)} INR/qtl</dd>
-                  <dd className="text-xs text-gray-500">
-                    target {targetDate} · as-of {row.as_of_date}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-gray-500">{(confidenceLevel * 100).toFixed(0)}% interval</dt>
-                  <dd className="font-semibold">
-                    {row.lower_bound_inr_qtl.toFixed(0)}–{row.upper_bound_inr_qtl.toFixed(0)}
-                  </dd>
-                  <dd className="text-xs text-gray-500">not a guarantee</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-gray-500">Transport</dt>
-                  <dd className="font-semibold">{row.estimated_transport_cost_inr_qtl.toFixed(0)} INR/qtl</dd>
-                  <dd className="text-xs text-gray-500">{row.road_distance_km.toFixed(0)} road km</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-gray-500">Net estimate</dt>
-                  <dd className="font-semibold">{row.expected_net_price_inr_qtl.toFixed(0)} INR/qtl</dd>
-                  <dd className="text-xs text-gray-500">
-                    {Math.round(row.expected_net_price_inr_qtl * quantityQtl).toLocaleString()} INR/lot
-                  </dd>
-                </div>
-                <div className="col-span-2 border-t border-gray-100 pt-3">
-                  <dt className="text-xs text-gray-500">Uncertainty penalty</dt>
-                  <dd className="font-semibold">{row.uncertainty_penalty_inr_qtl.toFixed(0)} INR/qtl</dd>
-                </div>
-              </dl>
-              <p className="mt-4 text-xs leading-5 text-gray-600">{rankReason(row.rank)}</p>
-            </article>
-          );
-        })}
-      </div>
+                  <div>
+                    <p className="text-base font-bold text-ink">
+                      <span className="numeric mr-2">{alt.rank}</span>
+                      {alt.mandi}
+                    </p>
+                    <p className="text-xs text-muted">{alt.district_name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="numeric text-base font-bold text-ink">
+                      {formatInrPerQtl(alt.transport_adjusted_net_price_inr_qtl)}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {formatInrPerQtl(diff)} vs rank 1 &middot;{" "}
+                      {formatKm(alt.road_distance_km, 0)} road &middot;{" "}
+                      <span className={`font-bold ${altRisk.cls}`}>{altRisk.word} risk</span>
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }
