@@ -18,10 +18,26 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F2 — supported, audit-ready frontend foundation |
+| Active implementation phase | F4 — complete Next.js replacement |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Implement Market Atlas tokens/shells (F3), then route rebuilds (F4) |
+| Next action | Rebuild the four routes under the Market Atlas system; then Streamlit parity rebuild |
+
+### F3 outcome (2026-08-23)
+
+The Market Atlas Workbench foundations shipped on both surfaces. Next.js carries the full
+light+dark OKLCH token set through Tailwind v4 `@theme inline` (semantic tokens only),
+the three brand fonts via `next/font`, the desktop decision rail with mobile top bar and
+navigation sheet (Escape closes, focus restores), a no-flash theme initializer with an
+accessible toggle, and numeric formatters mirroring the Python module. Streamlit gained
+`src/mandipulse/app/design.py` as its single presentation source (tokens with documented
+hex approximations, formatters, Plotly theme, one scoped CSS injection) plus a token-derived
+`.streamlit/config.toml`. A static-export RSC path mismatch (vercel/next.js#85374) is worked
+around by a documented build adapter until the upstream fix ships. In-browser verification
+from the production export: zero console errors across all routes and full navigation,
+no horizontal overflow at 320/768/1024/1440/1920 px, dark theme persists via the toggle,
+and the mobile sheet behaves as an accessible dialog. Gates: pytest 221 passed
+(76.35% coverage), ruff/black clean, npm test 52/52, lint/typecheck/build clean.
 
 ### F2 outcome (2026-08-22)
 

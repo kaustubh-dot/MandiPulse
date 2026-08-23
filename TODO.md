@@ -28,11 +28,11 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F3 — Shared design foundations
 
-- [ ] **F3-01:** Implement the locked tokens, typography, layout, focus, and motion system.
-- [ ] **F3-02:** Build the Next.js application rail and mobile navigation sheet.
+- [x] **F3-01:** Implement the locked tokens, typography, layout, focus, and motion system.
+- [x] **F3-02:** Build the Next.js application rail and mobile navigation sheet.
 - [ ] **F3-03:** Build reusable controls, evidence, data-state, table, and page-frame primitives.
-- [ ] **F3-04:** Add shared Streamlit presentation and formatting helpers.
-- [ ] **F3-05:** Accept the shell at 320, 768, 1024, 1440, and 1920 px.
+- [x] **F3-04:** Add shared Streamlit presentation and formatting helpers.
+- [x] **F3-05:** Accept the shell at 320, 768, 1024, 1440, and 1920 px.
 
 ## F4 — Next.js replacement
 
