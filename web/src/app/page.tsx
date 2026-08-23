@@ -77,8 +77,9 @@ export default function Home() {
           Choose the mandi with the best transport-adjusted net price.
         </h1>
         <p className="max-w-3xl text-base leading-7 text-gray-600">
-          Enter the lot and transport assumptions below. MandiPulse ranks the frozen snapshot by
-          forecast price minus transport cost and an explicit uncertainty penalty.
+          Enter the lot and transport assumptions below. MandiPulse ranks the frozen
+          snapshot by expected net price: forecast minus estimated transport cost.
+          Forecast uncertainty is shown as separate evidence and does not change the order.
         </p>
       </section>
 
