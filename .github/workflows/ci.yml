@@ -71,6 +71,18 @@ jobs:
         working-directory: web
         run: npm test
 
+      - name: Component tests
+        working-directory: web
+        run: npm run test:components
+
       - name: Static build
         working-directory: web
         run: npm run build
+
+      - name: Install Playwright browser
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser and accessibility tests
+        working-directory: web
+        run: npx playwright test

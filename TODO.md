@@ -52,12 +52,12 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F6 — Automated release verification
 
-- [ ] **F6-01:** Add frontend unit tests for validation, formatting, schema, and URL state.
-- [ ] **F6-02:** Add component/integration tests for primary UI and all data states.
-- [ ] **F6-03:** Add desktop/mobile browser tests for every route and primary flow.
-- [ ] **F6-04:** Add automated accessibility checks.
-- [ ] **F6-05:** Add final cross-surface parity and Streamlit smoke checks.
-- [ ] **F6-06:** Run all required checks in CI without private secrets.
+- [x] **F6-01:** Add frontend unit tests for validation, formatting, schema, and URL state.
+- [x] **F6-02:** Add component/integration tests for primary UI and all data states.
+- [x] **F6-03:** Add desktop/mobile browser tests for every route and primary flow.
+- [x] **F6-04:** Add automated accessibility checks.
+- [x] **F6-05:** Add final cross-surface parity and Streamlit smoke checks.
+- [x] **F6-06:** Run all required checks in CI without private secrets.
 
 ## F7 — Acceptance
 

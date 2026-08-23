@@ -70,7 +70,11 @@ function ThemeToggle() {
 }
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const pathname =
+    rawPathname !== "/" && rawPathname.endsWith("/")
+      ? rawPathname.slice(0, -1)
+      : rawPathname;
   return (
     <nav aria-label="Primary">
       <ul className="flex flex-col gap-1">

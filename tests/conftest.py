@@ -9,6 +9,13 @@ import pytest
 GOLDEN_DIR = Path(__file__).parent / "golden"
 
 
+def pytest_configure(config) -> None:
+    config.addinivalue_line(
+        "markers",
+        "streamlit_smoke: boots the Streamlit app on localhost against committed artifacts",
+    )
+
+
 @pytest.fixture()
 def golden_clean_panel() -> pd.DataFrame:
     df = pd.read_csv(GOLDEN_DIR / "clean_mandi_prices.csv")

@@ -18,10 +18,37 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F6 — release-grade automated verification |
+| Active implementation phase | F7 — visual, accessibility, and performance acceptance |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Add component, browser, accessibility, parity, and Streamlit smoke checks; pin them in CI |
+| Next action | Two-pass structural and refinement visual review; freeze reference screenshots |
+
+### F6 outcome (2026-08-23)
+
+Release-grade automated verification now covers every layer. Web unit tests (113
+node:test assertions via tsx) lock formatters, decision URL-state encode/decode
+round-trips, validation matrices, schema guards, and date/rounding edge cases.
+Component/integration tests (34 jsdom suites) cover the shell, controls, tables,
+charts, and every data state — loading, error/retry, empty, missing-artifact with
+recovery, partial/imputed, stale exclusion, and invalid-input preservation. Playwright
+end-to-end specs run Chromium at 1440×900 and 390×844 against the production static
+export: all routes hydrate with zero console errors, the primary decision flow re-ranks
+on a mandi change, serializes to `?lat&lon&q&r&rad`, restores identically after reload,
+copies a reproducible link, the mobile sheet behaves as an accessible dialog, and axe
+(wcag2a/2aa/21a/21aa) reports no critical or serious violations outside four explicit,
+pair-keyed semantic-token contrast allowances recorded for F7 refinement. Streamlit is
+verified by nine pytest smoke tests that launch the real app on an ephemeral port,
+poll health, execute each page module in-process under bare mode against committed
+artifacts, and assert the Pune(Pimpri) golden parity fixture. CI runs lint, typecheck,
+parity, component tests, static build, and the browser/accessibility suite with no
+private secrets. Gate evidence: full suite green twice from clean processes
+(pytest 230 passed, 77.85% coverage; web unit 113, components 34, e2e 17 passed /
+3 viewport-scoped skips); an intentional golden-fixture mutation was detected as a
+failure and restored. Known observations deferred to F7: four WCAG-AA token contrast
+debts in `web/src/components/ui/primitives.tsx` (4.15–3.33 ratios), an AppShell
+trailing-slash `aria-current` defect found by e2e and fixed during this phase, and two
+minor display-edge findings (`formatDateIso` accepts impossible day-month pairs;
+radius-exclusion caption counts only as-of-eligible rows).
 
 ### F5 outcome (2026-08-23)
 
@@ -194,7 +221,7 @@ The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source i
 | P0 | Public ranking vocabulary overstates uncertainty behavior | RESOLVED in F1 — transport-adjusted contract shipped (v2.0.0 export) |
 | P0 | Three high-severity production dependency findings | RESOLVED in F2 — zero audit findings on supported Next.js 16/React 19 |
 | P0 | Both interfaces are explicitly non-final | RESOLVED in F4 (Next.js) and F5 (Streamlit) — both surfaces rebuilt under the locked design contracts |
-| P0 | Frontend verification is logic-heavy and experience-light | Add component, browser, accessibility, responsive, and performance gates |
+| P0 | Frontend verification is logic-heavy and experience-light | RESOLVED in F6 — component, browser, accessibility, responsive, and Streamlit smoke gates are automated and pinned in CI |
 | P0 | Active and historical docs contradict current repository state | Reconcile public docs before release |
 | P0 | Final public URLs and CI evidence do not exist | Deploy, verify signed out, and record the exact release commit |
 

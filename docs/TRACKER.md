@@ -1,4 +1,4 @@
-# MandiPulse Tracker
+﻿# MandiPulse Tracker
 
 ## Canonical Portfolio Documents
 
@@ -28,7 +28,7 @@ regions, horizons, and infrastructure remain deferred.
 |---|---|---|
 | Python MVP pipeline | Done | Clean panel, feature table, baselines, LightGBM comparison, intervals, recommendations, backtest |
 | Product/calculation contract | Correction required | Public ranking must be described as transport-adjusted; uncertainty remains separate evidence |
-| Streamlit dashboard | Replacement pending | Functional and clone-runnable, but its complete UI/UX replacement is part of F5 |
+| Streamlit dashboard | Replaced (F5, 2026-08-23) | Decision workbench, forecast exploration, and coverage provenance rebuilt under the shared design system |
 | FastAPI additive surface | Done | `/health`, `/forecast`, `/recommend`; tested via TestClient |
 | Next.js static frontend | Replacement pending | Current local package passes tests/build but is intentionally uncommitted and will be rebuilt under F2-F4 |
 | Frontend dependencies | Release blocker | Current production audit reports three high-severity findings; controlled migration required |
@@ -67,8 +67,8 @@ approved.
 | F2 | Done (2026-08-22) | Migrate the frontend to supported dependencies and clear the production security gate |
 | F3 | Pending | Implement the shared design system, shell, controls, formatting, and data states |
 | F4 | Pending | Replace the complete Next.js interface |
-| F5 | Pending | Replace the complete Streamlit interface |
-| F6 | Pending | Add component, browser, accessibility, parity, and Streamlit smoke verification |
+| F5 | Done 2026-08-23 | Replaced the complete Streamlit interface (commit 7120c7c) |
+| F6 | Done 2026-08-23 | Added component, browser, accessibility, parity, and Streamlit smoke verification |
 | F7 | Pending | Complete two-pass visual, responsive, accessibility, and performance acceptance |
 | F8 | Pending | Reconcile docs, deploy both interfaces, verify public URLs, and record the release |
 
