@@ -50,6 +50,21 @@ REC_KWARGS: dict = dict(
     candidate_state="maharashtra",
 )
 
+# Scenario C (RG-09 cross-surface parity): farmer at Nagpur, 60 qtl load.
+# Exercises a far-haul distance regime; every eligible candidate sits beyond
+# the 500 km display radius, so parity is asserted on the radius-free engine
+# ordering shared with web/test/scenario-c.parity.test.ts.
+SCENARIO_C_KWARGS: dict = dict(
+    farmer_latitude=21.1458,
+    farmer_longitude=79.0882,
+    cost_per_km_per_quintal=4.0,
+    road_distance_factor=1.3,
+    uncertainty_penalty_weight=0.3,
+    low_max_interval_pct=0.10,
+    high_min_interval_pct=0.25,
+    candidate_state="maharashtra",
+)
+
 # Streamlit discovers multipage apps by filename; each page runs its full
 # top-level body here in bare mode, where widgets return their defaults.
 PAGE_EXPECTED_NAMES: dict[str, tuple[str, ...]] = {
@@ -214,14 +229,18 @@ class TestPageModules:
 
 
 class TestRecommendationFixtureParity:
+    @staticmethod
+    def _score(golden_forecasts: pd.DataFrame, kwargs: dict) -> pd.DataFrame:
+        candidates = select_recommendation_candidates(add_staleness_days(golden_forecasts))
+        mandis = pd.read_csv(MANDIS_PATH).dropna(subset=["latitude", "longitude"])
+        return score_recommendations(candidates, mandis, **kwargs)
+
     def test_pune_pimpri_net_price_arithmetic(
         self,
         golden_forecasts: pd.DataFrame,
         golden_recommendations: pd.DataFrame,
     ) -> None:
-        candidates = select_recommendation_candidates(add_staleness_days(golden_forecasts))
-        mandis = pd.read_csv(MANDIS_PATH).dropna(subset=["latitude", "longitude"])
-        recs = score_recommendations(candidates, mandis, **REC_KWARGS)
+        recs = self._score(golden_forecasts, REC_KWARGS)
 
         pimpri = recs.loc[recs["mandi"] == "Pune(Pimpri)"]
         assert len(pimpri) == 1
@@ -247,8 +266,47 @@ class TestRecommendationFixtureParity:
         self,
         golden_forecasts: pd.DataFrame,
     ) -> None:
-        candidates = select_recommendation_candidates(add_staleness_days(golden_forecasts))
-        mandis = pd.read_csv(MANDIS_PATH).dropna(subset=["latitude", "longitude"])
-        recs = score_recommendations(candidates, mandis, **REC_KWARGS)
+        recs = self._score(golden_forecasts, REC_KWARGS)
         nets = recs["transport_adjusted_net_price_inr_qtl"].tolist()
         assert nets == sorted(nets, reverse=True)
+
+    def test_scenario_c_nagpur_rank_1_matches_golden(
+        self,
+        golden_forecasts: pd.DataFrame,
+        golden_scenario_c_recommendations: pd.DataFrame,
+    ) -> None:
+        recs = self._score(golden_forecasts, SCENARIO_C_KWARGS)
+        top = recs.loc[recs["rank"] == 1].iloc[0]
+        golden_top = golden_scenario_c_recommendations.loc[
+            golden_scenario_c_recommendations["rank"] == 1
+        ].iloc[0]
+
+        assert int(top["market_id"]) == 581
+        assert str(top["mandi_id"]) == "maharashtra__chattrapati_sambhajinagar"
+        assert "Chattrapati Sambhajinagar" in str(top["mandi"])
+        assert str(golden_top["mandi_id"]) == str(top["mandi_id"])
+        assert float(top["expected_net_price_inr_qtl"]) == pytest.approx(
+            float(golden_top["expected_net_price_inr_qtl"]), rel=1e-9
+        )
+        # Scenario context is recorded in the fixture header columns.
+        assert float(golden_top["farmer_latitude"]) == pytest.approx(21.1458)
+        assert float(golden_top["quantity_quintal"]) == pytest.approx(60.0)
+
+    def test_scenario_c_full_candidate_ordering_matches_golden(
+        self,
+        golden_forecasts: pd.DataFrame,
+        golden_scenario_c_recommendations: pd.DataFrame,
+    ) -> None:
+        recs = self._score(golden_forecasts, SCENARIO_C_KWARGS).set_index("market_id")
+        golden = golden_scenario_c_recommendations.set_index("market_id")
+
+        assert list(recs.index) == list(golden.index)
+        assert recs["rank"].tolist() == list(range(1, len(recs) + 1))
+        assert golden["rank"].tolist() == recs["rank"].tolist()
+        for column in (
+            "estimated_transport_cost_inr_qtl",
+            "expected_net_price_inr_qtl",
+            "transport_adjusted_net_price_inr_qtl",
+        ):
+            diff = (recs[column] - golden[column]).abs().max()
+            assert diff < 1e-6, f"{column} deviates by {diff}"

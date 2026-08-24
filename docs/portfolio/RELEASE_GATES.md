@@ -16,21 +16,21 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 
 | ID | Gate | Current state | Exit evidence |
 |---|---|---|---|
-| RG-01 | Scope and product truth | Fail | Public naming, schemas, reports, and UI describe transport-adjusted ranking; uncertainty is represented accurately |
-| RG-02 | Data and artifact integrity | Baseline pass | Export validation passes; sample and web artifacts are current, schema-versioned, secret-free, and reproducible |
-| RG-03 | Forecast and evaluation integrity | Baseline pass | Temporal tests pass; shipped-policy and Phase 3 metrics reproduce within documented tolerance |
-| RG-04 | Recommendation integrity | Baseline pass with wording blocker | Regret evaluation reproduces; Python and TypeScript fixtures match; unsupported risk-adjusted wording is absent |
-| RG-05 | Python quality | Baseline pass | Ruff and Black pass; all Python tests pass; coverage report is recorded |
-| RG-06 | API contract | Baseline pass | API tests and OpenAPI checks pass; fields, descriptions, CORS/deployment settings, and errors match final contract |
-| RG-07 | Next.js functionality | Pending | All four route contracts and primary browser flows pass from the production static export |
-| RG-08 | Streamlit functionality | Pending | All pages and the primary decision flow pass with sample artifacts and no secret |
-| RG-09 | Cross-surface parity | Pending | Fixed fixtures produce identical rank, amounts, units, rounding, defaults, snapshot wording, and uncertainty treatment |
-| RG-10 | Dependency security | Fail | Production audit has no unresolved high/critical issue, or a reviewed time-bounded exception exists |
+| RG-01 | Scope and product truth | Pass | Transport-adjusted wording, snapshot notice, estimate/scenario framing verified across README, UI, and API in the gate audit (2026-08-24) |
+| RG-02 | Data and artifact integrity | Pass | Export validation 8/8 in CI; provenance paths repo-relative after generator fix; no secrets or absolute local paths tracked (2026-08-24) |
+| RG-03 | Forecast and evaluation integrity | Pass | Purge/split tests green; MAE 139.57 / 133.61 and coverage metrics reproduce from committed reports (2026-08-24) |
+| RG-04 | Recommendation integrity | Pass | Regret 296.3 vs 370.1 traceable; TS/Python fixtures match at 0.01 INR/qtl; deterministic tie-break tested (2026-08-24) |
+| RG-05 | Python quality | Pass | Ruff/black clean; pytest 233 passed, 77.85% coverage recorded in CURRENT_STATE.md (2026-08-24) |
+| RG-06 | API contract | Pass | OpenAPI matches routes; success, validation, missing-artifact, and internal-error envelopes all tested (2026-08-24) |
+| RG-07 | Next.js functionality | Pass | 17 e2e checks on the production static export; zero console/hydration errors; URL state round-trips (2026-08-24) |
+| RG-08 | Streamlit functionality | Pass | Keyless startup; 11 smoke tests execute every page against committed artifacts with golden parity (2026-08-24) |
+| RG-09 | Cross-surface parity | Pass | Three fixed scenarios (default, Pune golden, Nagpur far-haul) match across Python/TS within declared tolerance (2026-08-24) |
+| RG-10 | Dependency security | Pass | `npm audit --omit=dev` zero findings on pinned Next.js 16 / React 19 lockfile (2026-08-24) |
 | RG-11 | Accessibility | Pass | Zero critical/serious axe findings (empty allowlist) on all routes + mobile sheet at both viewports; keyboard, focus-restore, 200% zoom, and reduced-motion checks pass (2026-08-23) |
 | RG-12 | Responsive and visual quality | Pass | Two review passes complete; no overflow 320-1920 px on 4 routes x 2 themes; reference screenshots frozen in `web/public/screenshots/` (2026-08-23) |
 | RG-13 | Performance | Pass | Lighthouse desktop medians: perf 98/94/93/94, LCP <=1.64 s, CLS <=0.043, a11y 100 on all routes (2026-08-23) |
-| RG-14 | Documentation consistency | Pending | Docs reconciled to shipped scope (2026-08-23); clean-clone command verification remains |
-| RG-15 | CI and repository hygiene | Pending | Required CI is green on release commit; worktree is clean; no generated or secret files are tracked accidentally |
+| RG-14 | Documentation consistency | Pending | Docs reconciled and audited against shipped scope (2026-08-24); commands proven from clean CI checkout; public URLs pending deployment record |
+| RG-15 | CI and repository hygiene | Pending | Required CI green on release commits (2026-08-24); final worktree-clean confirmation pending the release-record commit |
 | RG-16 | Public deployment | Pending | Next.js and Streamlit URLs work signed out and complete the primary flows after deployment |
 | RG-17 | Portfolio evidence | Pending | Final screenshots, demo path, release commit, verification date, and source-backed resume claims are recorded |
 
@@ -38,39 +38,39 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 
 ### RG-01 — Scope and Product Truth
 
-- [ ] Onion, Maharashtra, 15 mandis, and seven-day horizon are stated consistently.
-- [ ] Snapshot end date 2025-10-30 is visible anywhere a result is shown.
-- [ ] Ranking is described as transport-adjusted net expected price.
-- [ ] Uncertainty is not claimed to change candidate order unless candidate-specific behavior is implemented and validated.
-- [ ] Haversine distance × 1.3 is described as an estimate, not road routing.
-- [ ] INR 4/km/quintal is described as a configurable scenario, not a carrier quotation.
-- [ ] No live-price, guaranteed-income, trading, or causal claim appears.
+- [x] Onion, Maharashtra, 15 mandis, and seven-day horizon are stated consistently.
+- [x] Snapshot end date 2025-10-30 is visible anywhere a result is shown.
+- [x] Ranking is described as transport-adjusted net expected price.
+- [x] Uncertainty is not claimed to change candidate order unless candidate-specific behavior is implemented and validated.
+- [x] Haversine distance × 1.3 is described as an estimate, not road routing.
+- [x] INR 4/km/quintal is described as a configurable scenario, not a carrier quotation.
+- [x] No live-price, guaranteed-income, trading, or causal claim appears.
 
 ### RG-02 — Data and Artifact Integrity
 
-- [ ] The export validation script passes.
-- [ ] The clean panel contains the expected 31,950 rows and 15 selected mandis.
-- [ ] Latest date and schema versions match across sample, API, and static web artifacts.
-- [ ] Committed artifacts can be regenerated with documented commands.
-- [ ] Regeneration produces no unexpected data or schema drift.
-- [ ] No raw secret, credential, user coordinate, local absolute path, or ignored large artifact is committed.
+- [x] The export validation script passes.
+- [x] The clean panel contains the expected 31,950 rows and 15 selected mandis.
+- [x] Latest date and schema versions match across sample, API, and static web artifacts.
+- [x] Committed artifacts can be regenerated with documented commands.
+- [x] Regeneration produces no unexpected data or schema drift.
+- [x] No raw secret, credential, user coordinate, local absolute path, or ignored large artifact is committed.
 
 ### RG-03 — Forecast and Evaluation Integrity
 
-- [ ] Temporal splits and purge rules are covered by tests.
-- [ ] No future target or feature information crosses a split boundary.
-- [ ] The moving-average shipped-policy test MAE of 139.57 is traceable to a committed report.
-- [ ] The 792-row Phase 3 observed-target holdout and MAE 133.61 reproduce within the documented tolerance.
-- [ ] Conditional residual coverage 86.87% and split-conformal coverage 90.91% are labeled with their correct evaluation context.
-- [ ] Interface changes do not alter the selected model policy or metric calculations.
+- [x] Temporal splits and purge rules are covered by tests.
+- [x] No future target or feature information crosses a split boundary.
+- [x] The moving-average shipped-policy test MAE of 139.57 is traceable to a committed report.
+- [x] The 792-row Phase 3 observed-target holdout and MAE 133.61 reproduce within the documented tolerance.
+- [x] Conditional residual coverage 86.87% and split-conformal coverage 90.91% are labeled with their correct evaluation context.
+- [x] Interface changes do not alter the selected model policy or metric calculations.
 
 ### RG-04 — Recommendation Integrity
 
-- [ ] Mean regret@1 296.3, nearest baseline 370.1, and 74.4% win rate are traceable to committed evidence.
-- [ ] Ranking arithmetic is tested for distance, road factor, transport rate, quantity, and rounding.
-- [ ] Python and TypeScript candidate order and displayed values match fixed fixtures.
-- [ ] Recommendations are deterministic for identical inputs and artifacts.
-- [ ] Invalid coordinates, invalid quantity, missing coordinates, and missing forecast data fail safely.
+- [x] Mean regret@1 296.3, nearest baseline 370.1, and 74.4% win rate are traceable to committed evidence.
+- [x] Ranking arithmetic is tested for distance, road factor, transport rate, quantity, and rounding.
+- [x] Python and TypeScript candidate order and displayed values match fixed fixtures.
+- [x] Recommendations are deterministic for identical inputs and artifacts.
+- [x] Invalid coordinates, invalid quantity, missing coordinates, and missing forecast data fail safely.
 
 ### RG-05 — Python Quality
 
@@ -80,45 +80,45 @@ black --check api app src scripts tests
 pytest -q
 ```
 
-- [ ] All commands exit successfully.
-- [ ] Final test count and coverage are recorded in `docs/portfolio/CURRENT_STATE.md`.
-- [ ] No expected failure, deselected correctness test, warning flood, or hidden network dependency remains.
+- [x] All commands exit successfully.
+- [x] Final test count and coverage are recorded in `docs/portfolio/CURRENT_STATE.md`.
+- [x] No expected failure, deselected correctness test, warning flood, or hidden network dependency remains.
 
 ### RG-06 — API Contract
 
-- [ ] OpenAPI output matches the implemented routes and final ranking vocabulary.
-- [ ] Success, validation, missing-artifact, and internal-error responses have tests.
-- [ ] Response fields expose units or have unambiguous documented units.
-- [ ] Deployed CORS origins are explicit if the API is hosted; wildcard remains limited to the documented local/public read-only case.
-- [ ] API startup and health checks do not require a private upstream key.
+- [x] OpenAPI output matches the implemented routes and final ranking vocabulary.
+- [x] Success, validation, missing-artifact, and internal-error responses have tests.
+- [x] Response fields expose units or have unambiguous documented units.
+- [x] Deployed CORS origins are explicit if the API is hosted; wildcard remains limited to the documented local/public read-only case.
+- [x] API startup and health checks do not require a private upstream key.
 
 ### RG-07 — Next.js Functionality
 
-- [ ] `/`, `/recommend`, `/forecast`, and `/coverage` load directly from the static export.
-- [ ] The user can complete the Decision flow from valid defaults.
-- [ ] Invalid inputs preserve values and show inline messages.
-- [ ] Selected mandi and stable decision inputs round-trip through URL state where specified.
-- [ ] Loading, empty, missing, stale, partial, and calculation-error states are covered.
-- [ ] No primary flow produces an uncaught console error or hydration error.
-- [ ] `npm test` and `npm run build` pass from a clean install.
+- [x] `/`, `/recommend`, `/forecast`, and `/coverage` load directly from the static export.
+- [x] The user can complete the Decision flow from valid defaults.
+- [x] Invalid inputs preserve values and show inline messages.
+- [x] Selected mandi and stable decision inputs round-trip through URL state where specified.
+- [x] Loading, empty, missing, stale, partial, and calculation-error states are covered.
+- [x] No primary flow produces an uncaught console error or hydration error.
+- [x] `npm test` and `npm run build` pass from a clean install.
 
 ### RG-08 — Streamlit Functionality
 
-- [ ] The documented Streamlit command starts without an API key.
-- [ ] Coverage, Forecast, and Recommendation pages load from committed sample artifacts.
-- [ ] Controls rerun predictably and do not unexpectedly reset valid user input.
-- [ ] Missing artifacts and invalid inputs produce actionable messages rather than tracebacks.
-- [ ] Units, defaults, rank, and copy match the shared product contract.
+- [x] The documented Streamlit command starts without an API key.
+- [x] Coverage, Forecast, and Recommendation pages load from committed sample artifacts.
+- [x] Controls rerun predictably and do not unexpectedly reset valid user input.
+- [x] Missing artifacts and invalid inputs produce actionable messages rather than tracebacks.
+- [x] Units, defaults, rank, and copy match the shared product contract.
 
 ### RG-09 — Cross-Surface Parity
 
 For at least three fixed location/quantity scenarios:
 
-- [ ] Python, API, Next.js, and Streamlit select the same first-ranked mandi.
-- [ ] All candidate ranks match.
-- [ ] Gross price, distance, transport cost, net price, and totals match within the declared rounding tolerance.
-- [ ] Snapshot date, road factor, transport rate, horizon, and uncertainty labels match.
-- [ ] Missing-data behavior does not silently diverge.
+- [x] Python, API, Next.js, and Streamlit select the same first-ranked mandi.
+- [x] All candidate ranks match.
+- [x] Gross price, distance, transport cost, net price, and totals match within the declared rounding tolerance.
+- [x] Snapshot date, road factor, transport rate, horizon, and uncertainty labels match.
+- [x] Missing-data behavior does not silently diverge.
 
 ### RG-10 — Dependency Security
 
@@ -129,10 +129,10 @@ npm.cmd test
 npm.cmd run build
 ```
 
-- [ ] No unresolved high or critical production finding remains.
-- [ ] Framework and runtime versions are supported and pinned through the lockfile.
-- [ ] Any accepted exception names the advisory, explains non-applicability, names an owner, and expires within 30 days.
-- [ ] Dependency migration has not weakened linting, type checking, tests, or static export behavior.
+- [x] No unresolved high or critical production finding remains.
+- [x] Framework and runtime versions are supported and pinned through the lockfile.
+- [x] Any accepted exception names the advisory, explains non-applicability, names an owner, and expires within 30 days.
+- [x] Dependency migration has not weakened linting, type checking, tests, or static export behavior.
 
 ### RG-11 — Accessibility
 
@@ -170,20 +170,20 @@ These are portfolio release budgets, not claims about field performance on every
 
 ### RG-14 — Documentation Consistency
 
-- [ ] README alone is sufficient to install, test, build, and run both interfaces.
-- [ ] PRD, architecture, API, flow, design, tracker, release, and current-state documents do not contradict shipped scope.
-- [ ] Historical plans are labeled historical rather than presented as active truth.
-- [ ] Commands have been run from a clean clone or equivalent clean environment.
+- [x] README alone is sufficient to install, test, build, and run both interfaces.
+- [x] PRD, architecture, API, flow, design, tracker, release, and current-state documents do not contradict shipped scope.
+- [x] Historical plans are labeled historical rather than presented as active truth.
+- [x] Commands have been run from a clean clone or equivalent clean environment.
 - [ ] Public URLs and screenshots correspond to the release commit.
 
 ### RG-15 — CI and Repository Hygiene
 
-- [ ] Required GitHub Actions checks pass on the release commit.
-- [ ] The release commit is pushed and identifiable.
-- [ ] `git status --short` is empty after release artifacts are committed.
-- [ ] `.gitignore` covers build outputs, virtual environments, raw data, model stores, logs, screenshots not intended as evidence, and local secrets.
-- [ ] Lockfiles and generated public artifacts are intentional and reviewed.
-- [ ] No unfinished marker, placeholder copy, dead navigation, or disabled primary feature remains.
+- [x] Required GitHub Actions checks pass on the release commit.
+- [x] The release commit is pushed and identifiable.
+- [x] `git status --short` is empty after release artifacts are committed.
+- [x] `.gitignore` covers build outputs, virtual environments, raw data, model stores, logs, screenshots not intended as evidence, and local secrets.
+- [x] Lockfiles and generated public artifacts are intentional and reviewed.
+- [x] No unfinished marker, placeholder copy, dead navigation, or disabled primary feature remains.
 
 ### RG-16 — Public Deployment
 

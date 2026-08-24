@@ -20,8 +20,24 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
 | Active implementation phase | F8 — documentation and release |
 | Last approved analytical checkpoint | CP-003 |
-| Next release checkpoint | Pending |
-| Next action | Push the release commit, deploy both surfaces, verify signed-out, and record the release record |
+| Next release checkpoint | Pending public deployment verification (RG-16) |
+| Next action | Deploy both surfaces from `finish/portfolio-release`, verify signed-out at desktop and mobile sizes, record URLs in the release record, tag the release commit |
+
+### F8 progress (2026-08-24)
+
+Documentation was reconciled with shipped scope and independently audited (four defects
+found and fixed: stale test counts in PRODUCT.md, a stale README cross-reference, a
+dropped fetch-step command, and the deployment branch pointer). The release branch is
+pushed with required CI green on the exact commits. A full release-gate audit against
+`RELEASE_GATES.md` found and fixed three evidence defects before flipping RG-01–RG-10 to
+Pass: committed Phase 3 reports leaked local absolute paths (the generator now emits
+repo-relative provenance paths and the reports were regenerated through it), no test
+exercised the API internal-error envelope (added), and cross-surface parity had only two
+committed scenarios (a third fixed far-haul scenario, Nagpur 60 qtl, now has a shared
+golden fixture asserted by both the Python smoke suite and a TypeScript unit test).
+Gates: pytest 233 passed (77.85% coverage), web unit 137, components 34, e2e 17 passed,
+ruff/black clean. Remaining for release: deploy both surfaces, verify signed out,
+record URLs, tag.
 
 ### F7 outcome (2026-08-23)
 

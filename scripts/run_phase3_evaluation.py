@@ -37,6 +37,20 @@ from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
 
 
+def _repo_relative_posix(path: Path) -> str:
+    """Record provenance paths relative to the repository root.
+
+    Committed reports must not leak local absolute paths; when a path lives
+    outside the repository it is kept verbatim.
+    """
+
+    root = Path(__file__).resolve().parents[1]
+    try:
+        return path.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the deterministic Phase 3 leakage, holdout, interval, and recommendation evaluation."
@@ -345,9 +359,18 @@ def main() -> int:
             "horizon_days": args.horizon_days,
             "source_max_date": str(pd.to_datetime(panel["date"]).max().date()),
         },
-        "source_data": {"path": panel_path.as_posix(), "sha256": sha256_file(panel_path)},
-        "feature_table": {"path": feature_path.as_posix(), "sha256": sha256_file(feature_path)},
-        "coordinates": {"path": mandis_path.as_posix(), "sha256": sha256_file(mandis_path)},
+        "source_data": {
+            "path": _repo_relative_posix(panel_path),
+            "sha256": sha256_file(panel_path),
+        },
+        "feature_table": {
+            "path": _repo_relative_posix(feature_path),
+            "sha256": sha256_file(feature_path),
+        },
+        "coordinates": {
+            "path": _repo_relative_posix(mandis_path),
+            "sha256": sha256_file(mandis_path),
+        },
         "transport": {
             "road_distance_factor": float(transport.get("road_distance_factor", 1.3)),
             "base_cost_per_km_per_quintal": float(transport.get("cost_per_km_per_quintal", 4.0)),
@@ -377,7 +400,10 @@ def main() -> int:
             "final_holdout_days": args.final_holdout_days,
             "horizon_days": args.horizon_days,
         },
-        "configuration": {"path": config_path.as_posix(), "sha256": sha256_file(config_path)},
+        "configuration": {
+            "path": _repo_relative_posix(config_path),
+            "sha256": sha256_file(config_path),
+        },
     }
     provenance_id = canonical_hash(provenance)
     interval_comparison["provenance_id"] = provenance_id

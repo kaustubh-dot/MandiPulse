@@ -40,6 +40,11 @@ def golden_recommendations() -> pd.DataFrame:
     return pd.read_csv(GOLDEN_DIR / "recommendation_outputs_7d.csv")
 
 
+@pytest.fixture()
+def golden_scenario_c_recommendations() -> pd.DataFrame:
+    return pd.read_csv(GOLDEN_DIR / "recommendation_outputs_7d_nagpur.csv")
+
+
 def _make_mandi_panel(market_id: int, market_name: str, n_days: int = 80) -> pd.DataFrame:
     rng = np.random.default_rng(seed=market_id)
     dates = pd.date_range("2022-01-01", periods=n_days, freq="D")

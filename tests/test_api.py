@@ -300,3 +300,28 @@ class TestUnavailableData:
         r = client.post("/forecast", json=TestForecast._VALID)
         assert r.status_code == 503
         assert r.json()["error"]["code"] == "DATA_NOT_AVAILABLE"
+
+
+class TestInternalErrorEnvelope:
+    """RG-06: the 500 handler must render the standard error envelope."""
+
+    def test_unhandled_exception_returns_internal_error_envelope(self) -> None:
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        from api.errors import internal_error_handler
+
+        probe = FastAPI()
+        probe.add_exception_handler(Exception, internal_error_handler)
+
+        @probe.get("/boom")
+        def _boom() -> dict:
+            raise RuntimeError("boom")
+
+        probe_client = TestClient(probe, raise_server_exceptions=False)
+        r = probe_client.get("/boom")
+        assert r.status_code == 500
+        body = r.json()
+        assert body["error"]["code"] == "INTERNAL_ERROR"
+        assert body["error"]["message"] == "An unexpected internal error occurred."
+        assert "details" not in body["error"]

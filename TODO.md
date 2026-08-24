@@ -70,7 +70,7 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 - [x] **F8-01:** Reconcile README, PRD, architecture, API, release, and historical plan wording.
 - [x] **F8-02:** Add final screenshots, evidence-backed metrics, limitations, and demo path.
-- [ ] **F8-03:** Push and obtain green CI on the exact release commit.
+- [x] **F8-03:** Push and obtain green CI on the exact release commit.
 - [ ] **F8-04:** Deploy and verify Next.js and Streamlit in signed-out browsers.
 - [ ] **F8-05:** Record URLs, release commit, verification date, and final gate results.
 - [ ] **F8-06:** Confirm clean worktree and mark the portfolio release complete.
