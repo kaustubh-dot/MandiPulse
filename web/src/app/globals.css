@@ -1,10 +1,5 @@
 @import "tailwindcss";
-
-/* ---------------------------------------------------------------------------
-   Market Atlas Workbench — canonical design tokens.
-   Components must reference named tokens only; no raw color values anywhere.
-   Light theme is the :root default; dark ships via [data-theme="dark"].
---------------------------------------------------------------------------- */
+@import "../styles/tokens.css";
 
 @theme inline {
   --color-paper: var(--mp-paper);
@@ -17,16 +12,19 @@
   --color-rule: var(--mp-rule);
   --color-rule-strong: var(--mp-rule-strong);
   --color-accent: var(--mp-accent);
+  --color-accent-soft: var(--mp-accent-soft);
   --color-accent-ink: var(--mp-accent-ink);
+  --color-atlas: var(--mp-atlas);
+  --color-atlas-soft: var(--mp-atlas-soft);
   --color-focus: var(--mp-focus);
   --color-success: var(--mp-success);
   --color-warning: var(--mp-warning);
   --color-danger: var(--mp-danger);
   --color-info: var(--mp-info);
 
-  --font-display: var(--font-barlow), "Arial Narrow", sans-serif;
-  --font-body: var(--font-plex-sans), Arial, sans-serif;
-  --font-numeric: var(--font-plex-mono), ui-monospace, monospace;
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-body: var(--font-manrope), "Segoe UI", sans-serif;
+  --font-numeric: var(--font-plex-mono), "Cascadia Mono", monospace;
 
   --radius-control: 0.375rem;
   --radius-panel: 0.5rem;
@@ -45,52 +43,6 @@
   --z-modal: 400;
   --z-toast: 500;
   --z-tooltip: 600;
-}
-
-:root {
-  color-scheme: light;
-
-  --mp-paper: oklch(97.2% 0.008 235);
-  --mp-paper-2: oklch(94.5% 0.014 235);
-  --mp-surface: oklch(99% 0.006 235);
-  --mp-surface-raised: oklch(100% 0.004 235);
-  --mp-ink: oklch(21% 0.035 248);
-  --mp-ink-2: oklch(42% 0.035 248);
-  --mp-muted: oklch(52% 0.028 248);
-  --mp-rule: oklch(82% 0.018 240);
-  --mp-rule-strong: oklch(68% 0.025 245);
-  --mp-accent: oklch(69% 0.17 70);
-  --mp-accent-ink: oklch(21% 0.04 60);
-  --mp-focus: oklch(57% 0.19 255);
-  --mp-success: oklch(51% 0.14 150);
-  --mp-warning: oklch(53% 0.16 70);
-  --mp-danger: oklch(55% 0.19 28);
-  --mp-info: oklch(52.5% 0.15 250);
-
-  --dur-micro: 120ms;
-  --dur-short: 220ms;
-  --dur-long: 420ms;
-}
-
-[data-theme="dark"] {
-  color-scheme: dark;
-
-  --mp-paper: oklch(15% 0.018 248);
-  --mp-paper-2: oklch(18.5% 0.021 248);
-  --mp-surface: oklch(21.5% 0.023 248);
-  --mp-surface-raised: oklch(24.5% 0.025 248);
-  --mp-ink: oklch(94% 0.01 240);
-  --mp-ink-2: oklch(78% 0.018 240);
-  --mp-muted: oklch(68% 0.022 240);
-  --mp-rule: oklch(34% 0.025 245);
-  --mp-rule-strong: oklch(48% 0.03 245);
-  --mp-accent: oklch(76% 0.145 76);
-  --mp-accent-ink: oklch(18% 0.035 60);
-  --mp-focus: oklch(72% 0.15 250);
-  --mp-success: oklch(70% 0.13 150);
-  --mp-warning: oklch(76% 0.14 76);
-  --mp-danger: oklch(70% 0.16 28);
-  --mp-info: oklch(72% 0.13 250);
 }
 
 @layer base {

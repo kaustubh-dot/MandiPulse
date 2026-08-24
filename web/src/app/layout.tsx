@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Cormorant_Garamond, IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/shell/AppShell";
 
-const barlowCondensed = Barlow_Condensed({
+const cormorant = Cormorant_Garamond<"--font-cormorant">({
   subsets: ["latin"],
-  weight: "700",
-  variable: "--font-barlow",
+  weight: ["400", "600"],
   display: "swap",
 });
 
-const plexSans = IBM_Plex_Sans({
+const manrope = Manrope<"--font-manrope">({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-plex-sans",
+  weight: ["400", "600", "700"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
+const plexMono = IBM_Plex_Mono<"--font-plex-mono">({
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["400", "600"],
   variable: "--font-plex-mono",
   display: "swap",
 });
@@ -42,7 +41,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme="light"
-      className={`${barlowCondensed.variable} ${plexSans.variable} ${plexMono.variable}`}
+      className={`${cormorant.variable} ${manrope.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
       <head>
