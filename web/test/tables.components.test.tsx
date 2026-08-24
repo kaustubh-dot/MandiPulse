@@ -84,6 +84,21 @@ describe("TopRecommendations with real artifact ranking", () => {
     );
     assert.equal(container.childElementCount, 0);
   });
+
+  it("renders one editorial primary result and a separate alternatives list", () => {
+    renderWithRouter(
+      <TopRecommendations
+        rows={ranked}
+        forecastHorizonDays={meta.forecast_horizon_days}
+        confidenceLevel={meta.confidence_level}
+        quantityQtl={100}
+      />
+    );
+    const primary = screen.getByRole("article", { name: /rank 1 recommendation/i });
+    assert.equal(primary.querySelectorAll("h3").length, 1);
+    assert.ok(screen.getByRole("list", { name: "Alternative recommendations" }));
+    assert.equal(primary.className.includes("border-l-4"), false);
+  });
 });
 
 describe("RecommendTable with real artifact ranking", () => {
@@ -130,6 +145,14 @@ describe("RecommendTable with real artifact ranking", () => {
     assert.deepEqual(ranks, narrowed.map((_, index) => index + 1));
     assert.ok(narrowed.every((row) => row.road_distance_km <= 100));
     assert.ok(narrowed.length > 0 && narrowed.length < ranked.length);
+  });
+
+  it("provides a mobile record list and a desktop comparison table", () => {
+    renderWithRouter(
+      <RecommendTable rows={ranked} canonicalAsOfDate={meta.candidate_policy.eligible_as_of_date} />
+    );
+    assert.ok(screen.getByRole("list", { name: "Eligible mandis as records" }));
+    assert.ok(screen.getByRole("region", { name: "All eligible mandis, ranked comparison" }));
   });
 });
 

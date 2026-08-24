@@ -1,4 +1,4 @@
-﻿import type { Meta } from "@/lib/types";
+import type { Meta } from "@/lib/types";
 import { Panel, SelectField, TextField, buttonClass } from "@/components/ui/primitives";
 
 export const FARMER_PRESETS = [
@@ -145,9 +145,9 @@ export default function RecommendationControls({
         className="space-y-4"
       >
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">
+          <h2 className="font-display text-2xl font-normal text-ink">
             Decision inputs
-          </p>
+          </h2>
           <p className="mt-1 text-sm leading-snug text-ink-2">
             Coordinates are expert input. There is no geocoding step.
           </p>
@@ -242,9 +242,9 @@ export default function RecommendationControls({
       </form>
 
       <div className="border-t border-rule pt-4">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted">
+        <h3 className="font-display text-xl font-normal text-ink">
           Transport assumptions
-        </p>
+        </h3>
         <dl className="mt-2 space-y-2 text-sm">
           {[
             ["Forecast horizon", `${horizonDays}-day-ahead price target`],
