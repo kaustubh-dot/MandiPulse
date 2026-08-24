@@ -1,4 +1,4 @@
-"""MandiPulse "Market Atlas Workbench" design foundations for Streamlit surfaces.
+"""MandiPulse Quiet Exchange design foundations for Streamlit surfaces.
 
 This module is the SINGLE source of presentation helpers for every Streamlit
 surface (shell and pages). Pages must import tokens, formatters, the Plotly
@@ -27,44 +27,44 @@ import streamlit as st
 # Color tokens (light theme, default)
 # ---------------------------------------------------------------------------
 LIGHT_TOKENS: dict[str, dict[str, str]] = {
-    "paper": {"oklch": "oklch(97.2% 0.008 235)", "hex": "#f1f7fa"},
-    "paper-2": {"oklch": "oklch(94.5% 0.014 235)", "hex": "#e4eff5"},
-    "surface": {"oklch": "oklch(99% 0.006 235)", "hex": "#f8fcff"},
-    "surface-raised": {"oklch": "oklch(100% 0.004 235)", "hex": "#fdffff"},
-    "ink": {"oklch": "oklch(21% 0.035 248)", "hex": "#0a1a28"},
-    "ink-2": {"oklch": "oklch(42% 0.035 248)", "hex": "#3e4f60"},
-    "muted": {"oklch": "oklch(52% 0.028 248)", "hex": "#5d6b79"},
-    "rule": {"oklch": "oklch(82% 0.018 240)", "hex": "#bac6cf"},
-    "rule-strong": {"oklch": "oklch(68% 0.025 245)", "hex": "#8c9aa7"},
-    "accent": {"oklch": "oklch(69% 0.17 70)", "hex": "#dc8400"},
-    "accent-ink": {"oklch": "oklch(21% 0.04 60)", "hex": "#251304"},
-    "focus": {"oklch": "oklch(57% 0.19 255)", "hex": "#0074e3"},
-    "success": {"oklch": "oklch(51% 0.14 150)", "hex": "#017b37"},
-    "warning": {"oklch": "oklch(53% 0.16 70)", "hex": "#a45500"},
-    "danger": {"oklch": "oklch(55% 0.19 28)", "hex": "#c93029"},
-    "info": {"oklch": "oklch(52.5% 0.15 250)", "hex": "#006cbc"},
+    "paper": {"oklch": "oklch(96% 0.012 75)", "hex": "#f7f1e9"},
+    "paper-2": {"oklch": "oklch(92% 0.016 75)", "hex": "#ebe3d9"},
+    "surface": {"oklch": "oklch(98% 0.008 75)", "hex": "#fcf8f3"},
+    "surface-raised": {"oklch": "oklch(99% 0.006 75)", "hex": "#fefbf7"},
+    "ink": {"oklch": "oklch(20% 0.012 55)", "hex": "#1a1511"},
+    "ink-2": {"oklch": "oklch(38% 0.012 55)", "hex": "#48413c"},
+    "muted": {"oklch": "oklch(45% 0.012 55)", "hex": "#5b544f"},
+    "rule": {"oklch": "oklch(82% 0.012 70)", "hex": "#c9c3bc"},
+    "rule-strong": {"oklch": "oklch(68% 0.018 70)", "hex": "#a0978d"},
+    "accent": {"oklch": "oklch(38% 0.13 18)", "hex": "#781827"},
+    "accent-ink": {"oklch": "oklch(96% 0.012 75)", "hex": "#f7f1e9"},
+    "focus": {"oklch": "oklch(48% 0.15 18)", "hex": "#a12e3c"},
+    "success": {"oklch": "oklch(45% 0.13 145)", "hex": "#146720"},
+    "warning": {"oklch": "oklch(48% 0.13 70)", "hex": "#8a4c00"},
+    "danger": {"oklch": "oklch(48% 0.15 18)", "hex": "#a12e3c"},
+    "info": {"oklch": "oklch(45% 0.06 235)", "hex": "#315b72"},
 }
 
 # Dark-theme equivalents (deep blue-black surfaces, near-white ink). Derived
 # from the locked direction ("surfaces start oklch(15% 0.018 248), ink becomes
 # oklch(94% ...)"); non-surface roles are brightened for dark-ground contrast.
 DARK_TOKENS: dict[str, dict[str, str]] = {
-    "paper": {"oklch": "oklch(15% 0.018 248)", "hex": "#060c12"},
-    "paper-2": {"oklch": "oklch(18% 0.02 248)", "hex": "#0a121a"},
-    "surface": {"oklch": "oklch(21% 0.022 248)", "hex": "#101922"},
-    "surface-raised": {"oklch": "oklch(24% 0.024 248)", "hex": "#16202a"},
-    "ink": {"oklch": "oklch(94% 0.012 248)", "hex": "#e5ecf3"},
-    "ink-2": {"oklch": "oklch(78% 0.015 248)", "hex": "#b0b8c1"},
-    "muted": {"oklch": "oklch(64% 0.02 248)", "hex": "#838e98"},
-    "rule": {"oklch": "oklch(32% 0.022 245)", "hex": "#2a343e"},
-    "rule-strong": {"oklch": "oklch(46% 0.028 245)", "hex": "#4b5a67"},
-    "accent": {"oklch": "oklch(69% 0.17 70)", "hex": "#dc8400"},
-    "accent-ink": {"oklch": "oklch(21% 0.04 60)", "hex": "#251304"},
-    "focus": {"oklch": "oklch(72% 0.16 255)", "hex": "#59a6ff"},
-    "success": {"oklch": "oklch(68% 0.14 150)", "hex": "#4eb068"},
-    "warning": {"oklch": "oklch(75% 0.14 70)", "hex": "#e69c3a"},
-    "danger": {"oklch": "oklch(65% 0.18 28)", "hex": "#e8594d"},
-    "info": {"oklch": "oklch(68% 0.13 250)", "hex": "#549de5"},
+    "paper": {"oklch": "oklch(16% 0.012 55)", "hex": "#110c08"},
+    "paper-2": {"oklch": "oklch(20% 0.014 55)", "hex": "#1b1410"},
+    "surface": {"oklch": "oklch(24% 0.012 55)", "hex": "#241e1a"},
+    "surface-raised": {"oklch": "oklch(28% 0.014 55)", "hex": "#2f2722"},
+    "ink": {"oklch": "oklch(94% 0.012 75)", "hex": "#f0eae3"},
+    "ink-2": {"oklch": "oklch(78% 0.012 75)", "hex": "#bcb6af"},
+    "muted": {"oklch": "oklch(68% 0.014 55)", "hex": "#9f9690"},
+    "rule": {"oklch": "oklch(34% 0.018 55)", "hex": "#40362f"},
+    "rule-strong": {"oklch": "oklch(48% 0.02 55)", "hex": "#675b53"},
+    "accent": {"oklch": "oklch(72% 0.12 18)", "hex": "#e68488"},
+    "accent-ink": {"oklch": "oklch(16% 0.012 55)", "hex": "#110c08"},
+    "focus": {"oklch": "oklch(72% 0.14 18)", "hex": "#ef7d83"},
+    "success": {"oklch": "oklch(70% 0.1 145)", "hex": "#76af77"},
+    "warning": {"oklch": "oklch(76% 0.11 70)", "hex": "#dba25b"},
+    "danger": {"oklch": "oklch(72% 0.14 18)", "hex": "#ef7d83"},
+    "info": {"oklch": "oklch(70% 0.07 235)", "hex": "#7aa8bd"},
 }
 
 # Convenience hex constants (light theme; hex approximations of OKLCH).
@@ -88,9 +88,9 @@ INFO_HEX = LIGHT_TOKENS["info"]["hex"]
 # ---------------------------------------------------------------------------
 # Typography roles (font stacks tolerate local font availability)
 # ---------------------------------------------------------------------------
-DISPLAY_FONT_STACK = '"Barlow Condensed", "Arial Narrow", "IBM Plex Sans", sans-serif'
-BODY_FONT_STACK = '"IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif'
-MONO_FONT_STACK = '"IBM Plex Mono", "Cascadia Mono", Consolas, "Courier New", monospace'
+DISPLAY_FONT_STACK = '"Cormorant Garamond", Georgia, "Times New Roman", serif'
+BODY_FONT_STACK = 'Manrope, "Segoe UI", "Helvetica Neue", Arial, sans-serif'
+MONO_FONT_STACK = '"IBM Plex Mono", "Cascadia Mono", Consolas, monospace'
 
 # ---------------------------------------------------------------------------
 # Radii / spacing / z-index / motion scales
@@ -270,68 +270,152 @@ def plotly_theme() -> dict[str, Any]:
 # Base CSS injection (one scoped block for the whole app)
 # ---------------------------------------------------------------------------
 def _base_css() -> str:
-    """Compose the scoped stylesheet. Keep it narrow; add comments per rule."""
-    t = {name: entry["hex"] for name, entry in LIGHT_TOKENS.items()}
-    dt = {name: entry["hex"] for name, entry in DARK_TOKENS.items()}
-    fast, base = MOTION_DURATION_MS["fast"], MOTION_DURATION_MS["base"]
-    ease = MOTION_EASE_OUT
+    """Compose the scoped stylesheet for Quiet Exchange Streamlit surfaces."""
+    light = {name: entry["hex"] for name, entry in LIGHT_TOKENS.items()}
+    dark = {name: entry["hex"] for name, entry in DARK_TOKENS.items()}
     return f"""
-/* MandiPulse "Market Atlas Workbench" base styles (source: mandipulse.app.design) */
+/* Quiet Exchange base styles (source: mandipulse.app.design) */
 :root {{
-  --mp-paper: {t["paper"]}; --mp-paper-2: {t["paper-2"]};
-  --mp-surface: {t["surface"]}; --mp-surface-raised: {t["surface-raised"]};
-  --mp-ink: {t["ink"]}; --mp-ink-2: {t["ink-2"]}; --mp-muted: {t["muted"]};
-  --mp-rule: {t["rule"]}; --mp-rule-strong: {t["rule-strong"]};
-  --mp-accent: {t["accent"]}; --mp-accent-ink: {t["accent-ink"]};
-  --mp-focus: {t["focus"]}; --mp-success: {t["success"]};
-  --mp-warning: {t["warning"]}; --mp-danger: {t["danger"]}; --mp-info: {t["info"]};
+  --mp-paper: {light["paper"]};
+  --mp-paper-2: {light["paper-2"]};
+  --mp-surface: {light["surface"]};
+  --mp-surface-raised: {light["surface-raised"]};
+  --mp-ink: {light["ink"]};
+  --mp-ink-2: {light["ink-2"]};
+  --mp-muted: {light["muted"]};
+  --mp-rule: {light["rule"]};
+  --mp-rule-strong: {light["rule-strong"]};
+  --mp-accent: {light["accent"]};
+  --mp-accent-ink: {light["accent-ink"]};
+  --mp-focus: {light["focus"]};
+  --mp-success: {light["success"]};
+  --mp-warning: {light["warning"]};
+  --mp-danger: {light["danger"]};
+  --mp-info: {light["info"]};
   --mp-font-display: {DISPLAY_FONT_STACK};
   --mp-font-body: {BODY_FONT_STACK};
   --mp-font-num: {MONO_FONT_STACK};
+  color-scheme: light;
 }}
-/* Dark tokens ship dormant; Streamlit stays LIGHT this release. Opt in by
-   setting data-mp-theme="dark" on <html>. */
-html[data-mp-theme="dark"] {{
-  --mp-paper: {dt["paper"]}; --mp-paper-2: {dt["paper-2"]};
-  --mp-surface: {dt["surface"]}; --mp-surface-raised: {dt["surface-raised"]};
-  --mp-ink: {dt["ink"]}; --mp-ink-2: {dt["ink-2"]}; --mp-muted: {dt["muted"]};
-  --mp-rule: {dt["rule"]}; --mp-rule-strong: {dt["rule-strong"]};
-  --mp-focus: {dt["focus"]}; --mp-success: {dt["success"]};
-  --mp-warning: {dt["warning"]}; --mp-danger: {dt["danger"]}; --mp-info: {dt["info"]};
+[data-theme="dark"] {{
+  --mp-paper: {dark["paper"]};
+  --mp-paper-2: {dark["paper-2"]};
+  --mp-surface: {dark["surface"]};
+  --mp-surface-raised: {dark["surface-raised"]};
+  --mp-ink: {dark["ink"]};
+  --mp-ink-2: {dark["ink-2"]};
+  --mp-muted: {dark["muted"]};
+  --mp-rule: {dark["rule"]};
+  --mp-rule-strong: {dark["rule-strong"]};
+  --mp-accent: {dark["accent"]};
+  --mp-accent-ink: {dark["accent-ink"]};
+  --mp-focus: {dark["focus"]};
+  --mp-success: {dark["success"]};
+  --mp-warning: {dark["warning"]};
+  --mp-danger: {dark["danger"]};
+  --mp-info: {dark["info"]};
+  color-scheme: dark;
 }}
-/* Canvas + body text */
-body, .stApp {{ background-color: var(--mp-paper); color: var(--mp-ink);
-  font-family: var(--mp-font-body); }}
-/* Sidebar: paper-2 panel with a single rule edge */
-[data-testid="stSidebar"] {{ background-color: var(--mp-paper-2);
-  border-right: 1px solid var(--mp-rule); }}
-/* Display headings use the condensed role */
-h1, h2 {{ font-family: var(--mp-font-display); font-weight: 700;
-  letter-spacing: 0.01em; }}
-/* Numeric role for metric values (generic testid match) + .mp-num utility */
-[data-testid*="MetricValue"], .mp-num {{ font-family: var(--mp-font-num);
-  font-weight: 500; font-variant-numeric: tabular-nums; }}
-/* Keyboard focus ring in the focus hue */
-.stApp :focus-visible {{ outline: 2px solid var(--mp-focus);
-  outline-offset: 2px; border-radius: {RADII["control"]}; }}
-/* Sentence case everywhere: never small caps, never uppercase transforms */
-h1, h2, h3, h4, h5, h6, button, a, label, summary, th, [data-testid] {{
-  font-variant-caps: normal; text-transform: none; letter-spacing: normal; }}
-/* Motion: animate transform/opacity only, short ease-out transitions on UI */
-.stApp button, .stApp a, .stApp [data-baseweb="tag"],
-.stApp [role="tab"] {{ transition-property: transform, opacity;
-  transition-duration: {base}ms; transition-timing-function: {ease}; }}
-.mp-wordmark {{ font-family: var(--mp-font-display); font-weight: 700;
-  color: var(--mp-ink); line-height: 1.1; margin: 0; font-size: 2rem; }}
-.mp-snapshot-label {{ font-family: var(--mp-font-num); color: var(--mp-muted); }}
-.mp-frozen-note {{ color: var(--mp-muted); font-size: 0.875rem;
-  border-left: 2px solid var(--mp-rule-strong); padding-left: 0.625rem; }}
+.stApp,
+body {{
+  background: var(--mp-paper);
+  color: var(--mp-ink);
+  font-family: var(--mp-font-body);
+}}
+[data-testid="stSidebar"] {{
+  background: var(--mp-paper-2);
+  border-right: 1px solid var(--mp-rule);
+}}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {{
+  font-family: var(--mp-font-display);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}}
+[data-testid="stMetric"] {{
+  border-top: 1px solid var(--mp-rule);
+  border-bottom: 1px solid var(--mp-rule);
+  padding-block: 0.5rem;
+}}
+[data-testid="stMetricValue"] {{
+  font-family: var(--mp-font-num);
+  font-variant-numeric: tabular-nums;
+}}
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] [role="combobox"],
+[data-baseweb="select"] [role="combobox"],
+textarea,
+input,
+select {{
+  background: var(--mp-surface);
+  border: 1px solid var(--mp-rule-strong);
+  color: var(--mp-ink);
+  font-family: var(--mp-font-body);
+}}
+button,
+[role="tab"],
+a {{
+  transition-property: transform, opacity;
+  transition-duration: 120ms;
+  transition-timing-function: {MOTION_EASE_OUT};
+}}
+button:hover,
+[role="tab"]:hover,
+a:hover {{
+  opacity: 0.9;
+}}
+button:active,
+[role="tab"]:active,
+a:active {{
+  transform: translateY(1px);
+}}
+table {{
+  border-collapse: collapse;
+}}
+th,
+td {{
+  border-top: 1px solid var(--mp-rule);
+  color: var(--mp-ink);
+}}
+details {{
+  border-top: 1px solid var(--mp-rule);
+  border-bottom: 1px solid var(--mp-rule);
+}}
+summary {{
+  font-family: var(--mp-font-body);
+  cursor: pointer;
+}}
+caption,
+.stCaption {{
+  color: var(--mp-muted);
+}}
+.mp-snapshot-label {{
+  font-family: var(--mp-font-num);
+  color: var(--mp-muted);
+}}
+.mp-frozen-note {{
+  color: var(--mp-muted);
+  border-top: 1px solid var(--mp-rule);
+  border-bottom: 1px solid var(--mp-rule);
+  padding-block: 0.75rem;
+}}
+.stApp :focus-visible {{
+  outline: 2px solid var(--mp-focus);
+  outline-offset: 2px;
+}}
 @media (prefers-reduced-motion: reduce) {{
-  /* Collapse motion to opacity-only transitions, <=150ms; stop keyframes */
-  *, *::before, *::after {{
-    animation-name: none !important;
-    transition-property: opacity !important;
-    transition-duration: {fast}ms !important;
+  *,
+  *::before,
+  *::after {{
+    animation: none !important;
+    transition-duration: 0ms !important;
   }}
 }}
 """
@@ -340,3 +424,22 @@ h1, h2, h3, h4, h5, h6, button, a, label, summary, th, [data-testid] {{
 def inject_base_css() -> None:
     """Emit the single shared <style> block. Call once from the app shell."""
     st.markdown(f"<style>{_base_css()}</style>", unsafe_allow_html=True)
+
+
+def render_page_header(title: str, intro: str) -> None:
+    st.title(title)
+    st.caption(intro)
+
+
+def render_frozen_notice() -> None:
+    st.markdown(
+        f'<p class="mp-frozen-note"><span class="mp-snapshot-label">{SNAPSHOT_LABEL}</span>'
+        f" — {FROZEN_NOTICE}</p>",
+        unsafe_allow_html=True,
+    )
+
+
+def render_section_heading(title: str, caption: str | None = None) -> None:
+    st.header(title)
+    if caption:
+        st.caption(caption)

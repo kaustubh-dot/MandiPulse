@@ -59,7 +59,7 @@ def test_light_and_dark_tokens_share_roles():
 def test_plotly_theme_uses_token_inks():
     theme = design.plotly_theme()
     assert theme["paper_bgcolor"] == design.SURFACE_HEX
-    assert "IBM Plex Sans" in theme["font"]["family"]
+    assert "Manrope" in theme["font"]["family"]
     assert design.RULE_HEX in theme["xaxis"]["gridcolor"]
 
 
@@ -68,3 +68,31 @@ def test_base_css_contains_contract_rules():
     assert "prefers-reduced-motion" in css
     assert ":focus-visible" in css
     assert "--mp-paper" in css
+
+
+def test_quiet_exchange_tokens_and_fonts_are_locked():
+    assert design.LIGHT_TOKENS["paper"]["hex"] == "#f7f1e9"
+    assert design.LIGHT_TOKENS["accent"]["hex"] == "#781827"
+    assert "atlas" not in design.LIGHT_TOKENS
+    assert "Cormorant Garamond" in design.DISPLAY_FONT_STACK
+    assert "Manrope" in design.BODY_FONT_STACK
+
+
+def test_quiet_exchange_css_is_native_first_and_has_no_garden_layer():
+    css = design._base_css()
+    assert "Quiet Exchange" in css
+    assert "Market Atlas Workbench" not in css
+    assert "--mp-atlas" not in css
+    assert "prefers-reduced-motion" in css
+    assert ":focus-visible" in css
+
+
+def test_shared_page_helpers_use_native_headings(monkeypatch):
+    calls = []
+    monkeypatch.setattr(design.st, "title", lambda value: calls.append(("title", value)))
+    monkeypatch.setattr(design.st, "caption", lambda value: calls.append(("caption", value)))
+    design.render_page_header("Recommended mandi", "One result with evidence.")
+    assert calls == [
+        ("title", "Recommended mandi"),
+        ("caption", "One result with evidence."),
+    ]

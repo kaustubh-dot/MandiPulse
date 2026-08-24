@@ -1,39 +1,10 @@
-﻿# MandiPulse — Streamlit theme
-# Mirrors the "Market Atlas Workbench" token set (OKLCH canonical values from
-# web/src/app/globals.css direction); hex values are author-time sRGB
-# conversions computed in src/mandipulse/app/design.py (LIGHT_TOKENS).
-# Keep design.py and this file in sync. Style: calm, exact decision tool —
-# cool mineral base, deep blue-black structure, signal-marigold accent.
-# Theme policy this release: LIGHT default.
-
 [theme]
 base = "light"
-primaryColor = "#dc8400"             # accent (signal marigold) oklch(69% 0.17 70)
-backgroundColor = "#f1f7fa"          # paper oklch(97.2% 0.008 235) — page canvas
-secondaryBackgroundColor = "#e4eff5" # paper-2 oklch(94.5% 0.014 235) — sidebar, cards
-textColor = "#0a1a28"                # ink oklch(21% 0.035 248) — deep blue-black text
+primaryColor = "#781827"
+backgroundColor = "#f7f1e9"
+secondaryBackgroundColor = "#ebe3d9"
+textColor = "#1a1511"
 font = "sans serif"
 
-# --- Streamlit >= 1.45 extended theming (installed: 1.58) ---
-# Older Streamlit (>= 1.38 floor) ignores unknown keys with a warning; safe to keep.
-linkColor = "#0074e3"                # focus oklch(57% 0.19 255)
-borderColor = "#bac6cf"              # rule oklch(82% 0.018 240)
-baseRadius = "0.5rem"                # panel radius (design.RADII["panel"])
-# Typography roles (display Barlow Condensed / body IBM Plex Sans / numeric
-# IBM Plex Mono) are applied as CSS fallback stacks via
-# mandipulse.app.design.inject_base_css() — no remote font fetches here so the
-# offline demo never blocks on network requests.
-
-# Chart series colors (reference for Plotly traces; Streamlit does not read
-# these keys directly — pass fig.update_layout(**plotly_theme()) from
-# mandipulse.app.design instead):
-#   primary series    #0a1a28 (ink)
-#   forecast/signal   #dc8400 (accent), dashed
-#   confidence band   #dc8400 @ ~15% opacity
-#   gridlines         #bac6cf (rule); axis/zero lines #8c9aa7 (rule-strong)
-#   risk: low #017b37 (success) · medium #a45500 (warning) · high #c93029
-#   (danger) — always rendered WITH the level label, never color alone.
-
 [server]
-# Offline MVP reads local artifacts; no telemetry needed for the demo.
 headless = true
