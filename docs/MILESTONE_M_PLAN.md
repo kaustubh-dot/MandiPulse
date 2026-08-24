@@ -1,5 +1,9 @@
 # Milestone M Plan — FastAPI Backend (post-MVP, additive)
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 ## Decision
 
 Promote the **FastAPI service** from deferred to active. This is the first milestone of a

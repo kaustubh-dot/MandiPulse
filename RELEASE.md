@@ -77,8 +77,9 @@ npm test
 npm run build
 ```
 
-Current non-frontend gate: 206 Python tests and 74.90% coverage. Coverage floor is 70%.
-The updated Next.js parity/build gate is intentionally reserved for a separate frontend release.
+Current gates: 230 Python tests pass at 77.85% coverage against a 70% floor. The web gate runs lint,
+typecheck, parity tests, component tests, the static build, and the Playwright browser/accessibility
+suite in CI (`.github/workflows/ci.yml`).
 
 ## Key Metrics
 
@@ -101,4 +102,5 @@ snapshot. The current ranking order is therefore driven by forecast price and tr
 - Render API (optional): deploy with `requirements-api.txt` and start command
   `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
 
-After deployment, update the README live-demo table with the final URLs.
+After deployment, record the final URLs in the release record in
+[docs/portfolio/RELEASE_GATES.md](docs/portfolio/RELEASE_GATES.md).

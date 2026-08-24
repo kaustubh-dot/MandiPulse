@@ -1,5 +1,9 @@
 # Milestone H Plan — Surface the recommendation backtest in the dashboard
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Goal:** Make the Milestone-G regret@K backtest *visible and credible* inside the Streamlit
 Recommendation page, and refresh the docs. The evaluation exists and is sound (regret@1 296.3 vs
 nearest-mandi 370.1 INR/qtl; top-1 beats nearest 78.8%) but no user can see it today.

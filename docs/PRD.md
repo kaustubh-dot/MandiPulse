@@ -1,5 +1,11 @@
 # MandiPulse India PRD
 
+> **Scope note (2026-08).** This PRD records the original MVP decisions. The shipped product now
+> also includes the FastAPI service and the Next.js static frontend (Milestones M and N), ranks by
+> **transport-adjusted** net expected price with uncertainty shown as separate evidence, and follows
+> `docs/IMPLEMENTATION_PLAN.md`. Sections below describe the repository as it was when the MVP was
+> scoped.
+
 ## Project Overview
 
 **MandiPulse India** is a transport-cost-aware mandi decision intelligence system for Indian agricultural markets. The MVP is an offline, static-data showcase for Onion mandis in Maharashtra: forecast the 7-day price, subtract distance-based transport cost, and recommend the best nearby mandi.

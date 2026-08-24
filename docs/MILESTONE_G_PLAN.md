@@ -1,5 +1,9 @@
 # Milestone G — Recommendation-Quality Evaluation + F-Review Cleanups
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Scope:** strictly within MVP (Onion/Maharashtra, 7-day horizon). No new
 features beyond what RULES already requires. This milestone closes the last open RULES gap — the
 project ranks mandis but has never *measured* whether the ranking is good — and folds in the

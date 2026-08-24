@@ -66,10 +66,10 @@ configuration, and evaluation evidence.
   candidate-specific uncertainty method is promoted.
 - The transport rate is a configurable scenario, not a carrier quote.
 - The road-distance factor is an approximation, not route-engine output.
-- The Next.js dependency tree currently has high-severity audit findings and must be upgraded before
-  deployment.
-- Updated Next.js files are currently uncommitted. The local build passes, but release evidence must
-  be regenerated after the redesign.
+- The Next.js dependency tree has been migrated to supported versions (Next.js 16, React 19,
+  Tailwind v4); the production audit reports zero unresolved findings.
+- The rebuilt Next.js experience is committed on `finish/portfolio-release`. Release evidence must be
+  rerun on the exact release commit.
 - Streamlit remains a secondary technical-review surface. It must share product terminology and
   semantic tokens with Next.js, but it does not need pixel-identical composition.
 
@@ -90,8 +90,9 @@ configuration, and evaluation evidence.
   split-conformal coverage for the internal evaluation population.
 - Public recommendation backtest: mean regret@1 of 296.3 INR/qtl versus 370.1 INR/qtl for the
   nearest-mandi baseline; the recommendation beats nearest on 74.4% of evaluated dates.
-- 206 passing Python tests with 74.90% coverage from the latest non-frontend verification.
-- 52 passing TypeScript parity assertions and a successful 7-route static build on 2026-08-22.
+- 230 passing Python tests with 77.85% coverage from the latest verification.
+- 113 web unit assertions, 34 component suites, and 17 Playwright end-to-end checks
+  (desktop and mobile, with automated accessibility scans) on the release branch.
 - Eight strict web JSON artifacts with verified schema, finite-value, and manifest-hash checks.
 - No verified production-user count, profit improvement, request volume, or public API deployment.
 

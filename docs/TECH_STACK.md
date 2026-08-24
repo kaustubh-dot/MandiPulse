@@ -10,7 +10,7 @@
 | Tracking | MLflow | Local experiment metadata |
 | Dashboard | Streamlit, Plotly | Offline data-science showcase |
 | API | FastAPI, Pydantic, Uvicorn | Additive `/health`, `/forecast`, `/recommend` surface |
-| Frontend | Next.js 14, React, Tailwind, Recharts, Leaflet | Static Vercel frontend |
+| Frontend | Next.js 16, React 19, Tailwind v4, Recharts, Leaflet | Static Vercel frontend |
 | Testing | pytest, pytest-cov, Node test runner | Python logic, API tests, TS/Python parity |
 | Quality | Ruff, Black, GitHub Actions | Lint, format, CI gates |
 

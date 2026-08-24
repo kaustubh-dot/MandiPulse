@@ -2,123 +2,28 @@
 
 **Transport-cost-aware mandi decision intelligence for Maharashtra onion farmers.**
 
-[![Tests](https://img.shields.io/badge/tests-206%20passed-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-75%25-green)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-230%20passed-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-77.85%25-green)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
-## Demo surfaces
-
-| Surface | URL | Stack |
-|---|---|---|
-| Streamlit dashboard | [mandipulse.streamlit.app](https://mandipulse.streamlit.app/) | Python + Streamlit |
-| FastAPI service | _local snapshot API; optional Render deploy — see [docs/DEPLOY_API.md](docs/DEPLOY_API.md)_ | FastAPI |
-| Next.js frontend | _updated frontend packaging is intentionally deferred to a separate commit_ | Next.js |
-
----
-
-## Product surfaces
-
-The Streamlit dashboard and FastAPI snapshot service are part of this release. The updated
-recommendation-first Next.js experience is being packaged separately and should not be described as
-publicly deployed until its dedicated frontend commit, CI pass, and browser smoke test are complete.
-
-The snapshot is intentionally frozen at **2025-10-30**. It is a reproducible portfolio artifact,
-not a live price feed.
-
----
-
-## The problem
+## What it does
 
 Maharashtra onion farmers choose which mandi (market) to sell at based on word-of-mouth and nearest
 distance. They ignore transport cost, forecast uncertainty, and historical ranking quality. A farmer
 who drives 40 km to a mandi with a higher forecast price can still lose money if transport costs
 exceed the price premium.
 
-MandiPulse forecasts 7-day prices across 15 mandis, subtracts transparent distance-based transport
-cost, and ranks mandis by **net expected price** with uncertainty bounds and risk labels.
-
----
-
-## Honest results
-
-LightGBM was trained and evaluated — it **did not beat the 7-day moving-average baseline** on the
-held-out test split. The baseline ships. This is reported transparently.
-
-| Model | Test MAE (INR/qtl) | Ships? |
-|---|---|---|
-| `moving_average_7d` | **139.57** | Yes |
-| `ridge` | 224.43 | No |
-| `lightgbm` | 188.2 | No |
-| `lightgbm_residual` | 195.63 | No |
-
-The committed public v1 forecast bundle uses the residual interval from the shipped all-row
-calibration and reports **86.71% empirical coverage** on its test split. This is below the nominal
-level, so the interval is an observed uncertainty estimate, not a guarantee, and the shortfall is
-reported rather than described as conservative. The Phase 3 observed-target re-evaluation is kept
-separate in [the evidence report](reports/modeling/phase3_evaluation.md): conditional residual
-coverage is 86.87%, split-conformal coverage is 90.91%, and the pre-declared rule adopts
-split-conformal for that evaluation population. No public v1 field or schema is changed by the
-internal evidence export.
-
-Recommendation backtest (regret@K vs nearest-mandi baseline, held-out test window):
-
-| Metric | Value |
-|---|---|
-| Mean regret@1 | 296.3 INR/qtl |
-| Nearest-mandi baseline regret | 370.1 INR/qtl |
-| Beats nearest-mandi | 74.4% of dates |
-
----
-
-## What makes this credible
-
-- Temporal train/validation/test splits only; no random split on time-series data.
-- Baseline honesty: LightGBM and residual-LightGBM are reported even though they lose.
-- Forecasts include uncertainty intervals with measured empirical coverage.
-- Recommendations are evaluated with regret@K against a nearest-mandi baseline.
-- The demo is clone-runnable from committed `data/sample/` artifacts; no secrets required.
-- The separately packaged Next.js ranking has a recorded local Python/TypeScript parity tolerance
-  of 0.01 INR/qtl; publish that claim with the frontend commit and its CI evidence.
-
-## ML Engineer case study
-
-**Problem.** A higher mandi price is not necessarily a better farmer outcome once distance,
-transport cost, and forecast uncertainty are included.
-
-**Approach.** Build a point-in-time daily panel for 15 Maharashtra onion mandis, compare temporal
-models, calibrate uncertainty on observed targets, and rank only candidates whose forecast as-of
-date matches the canonical bundle date. The shipped baseline is the 7-day moving average because
-it beats the trained LightGBM variants on the untouched held-out split.
-
-**Evidence.** The public v1 bundle reports 86.71% all-row test coverage; the Phase 3 observed-target
-holdout has 792 eligible rows, with 86.87% conditional-residual coverage and 90.91% split-conformal
-coverage. The multi-origin recommendation evidence reports matched observed-target denominators
-and explicit 0.8x/1.0x/1.2x transport-cost scenarios. These are measured decision-support results,
-not profit guarantees. The strict export process generates a manifest with snapshot, model,
-configuration, input, code, and artifact hashes; that bundle will be published with the separate
-frontend commit.
-
-**Engineering lesson.** The valuable part is the contract between data, model, policy, API, and
-UI: the same as-of date, denominator, transport assumptions, and uncertainty semantics must survive
-export, browser ranking, and documentation.
-
-### Decision-model limitations
-
-- Road distance is approximated as haversine distance multiplied by a configurable `1.3` factor;
-  it is not routing-engine distance.
-- The baseline `4.0 INR/km/quintal` rate is a configurable evaluation scenario, not a live carrier
-  quote. Phase 3 tests 0.8x, 1.0x, and 1.2x versions of that rate.
-- The public v1 residual interval has one global width. Its penalty is therefore the same for every
-  eligible mandi in a snapshot and does not change their relative ordering. The interval remains
-  useful for coverage reporting and relative risk labels; transport cost and forecast price drive
-  the current public ranking.
-
----
+MandiPulse forecasts 7-day onion prices across **15 Maharashtra mandis**, subtracts transparent
+distance-based transport cost, and ranks mandis by **transport-adjusted net expected price** with
+uncertainty bounds shown as separate evidence. The demo snapshot is frozen at **2025-10-30**: it is
+a reproducible portfolio artifact, not a live price feed.
 
 ## Architecture
 
+A Python analytical core produces committed artifacts; three read-only surfaces consume them.
+
 ```
-CEDA/AGMARKNET cache
+CEDA/AGMARKNET cached extract
        |
  clean daily panel  (15 mandis × 2020–2025)
        |
@@ -126,53 +31,69 @@ CEDA/AGMARKNET cache
        |
  temporal split  (train/val/test — no random splits)
        |
- baseline comparison  (moving-avg wins)
+ model comparison  (7-day moving average wins; LightGBM reported, unshipped)
        |
- residual uncertainty intervals  (validation calibration)
+ residual uncertainty intervals  (validation-calibrated)
        |
- transport-aware recommendation ranking  (haversine + cost/km)
+ transport-adjusted recommendation ranking  (haversine × 1.3 road factor + cost/km)
        |
  regret@K backtest  (vs nearest-mandi baseline)
        |
- Streamlit dashboard  (Data Coverage · Forecast · Recommendation)
+ committed artifacts  (data/sample/*.csv, web/public/data/*.json, schemas validated)
        |
- build_web_export.py  (→ web/public/data/*.json)
-       |
-Next.js frontend  (static export — decision inputs re-rank in TS)
+       +-- Next.js static export  (web/ — Decision · Forecast · Coverage, re-ranks in TS)
+       +-- Streamlit dashboard    (app/ — same four destinations, shared Python ranking)
+       +-- FastAPI service        (api/ — /health, /forecast, /recommend over the same bundle)
 ```
 
 Data reads go through a DuckDB query layer (`src/mandipulse/data/store.py`). CSV files remain the
-on-disk source of truth; DuckDB is the read interface per `docs/RULES.md §Architecture`.
+on-disk source of truth; DuckDB is the read interface per `docs/RULES.md §Architecture`. The
+Next.js TypeScript ranking is parity-tested against Python at a 0.01 INR/qtl tolerance.
 
----
+## Two-minute demo
 
-## Quickstart (2 minutes, no pipeline run required)
-
-The repo ships a bundled demo dataset (`data/sample/`) so the dashboard works from a fresh clone.
+Install once (PowerShell):
 
 ```powershell
 git clone https://github.com/kaustubh-dot/MandiPulse.git
 cd MandiPulse
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,post-mvp]"
+```
+
+No API key or pipeline run is needed — everything below runs on the committed demo bundle.
+
+**Next.js web product**
+
+```powershell
+cd web
+npm install
+npm run dev
+```
+
+1. Open `http://localhost:3000` — the Overview states the thesis, shows a live decision preview at
+   artifact defaults, and links the evaluation evidence (`/#method`).
+2. Click **Decision** in the rail (or go to `http://localhost:3000/recommend`). Inputs are prefilled;
+   click **Compare mandis** to get the ranked list with arithmetic, alternatives, table, and map.
+3. Change quantity, transport rate, or radius — results re-rank instantly and the decision state is
+   serialized into the URL; use the copy-link action to save a reproducible scenario.
+4. Open **Forecast** (`/forecast`) and pick a mandi for history plus the 7-day interval, then
+   **Coverage** (`/coverage`) for row definitions and per-mandi comparability.
+
+**Streamlit technical dashboard**
+
+```powershell
 streamlit run app\streamlit_app.py
 ```
 
-Open `http://localhost:8501`. All three pages load on the bundled Oct 2025 snapshot — no CEDA key,
-no full pipeline run. A banner in the app shows which data source is active.
+1. Open `http://localhost:8501` — Overview shows the same decision preview at artifact defaults.
+2. Open **Decision** in the sidebar. Edit any input; the workbench compares mandis on every edit.
+3. Open **Forecast** and **Coverage** from the sidebar for the matching evidence views.
 
-> **Run the full pipeline** to replace the demo bundle with your own freshly-generated artifacts.
-> See [RELEASE.md](RELEASE.md) for the full pipeline runbook.
-
----
-
-## API (FastAPI)
-
-A REST API exposes the same forecasts and recommendations as a separate demo surface.
+**FastAPI service**
 
 ```powershell
-# Local run
 uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 # Swagger UI at http://localhost:8000/docs
 ```
@@ -183,48 +104,112 @@ uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 | `POST /forecast` | 7-day price + uncertainty interval for a mandi |
 | `POST /recommend` | Transport-adjusted mandi ranking |
 
-All three endpoints run over the same committed `data/sample/` bundle — no pipeline run required.
-FastAPI is a local snapshot surface by default; see [docs/DEPLOY_API.md](docs/DEPLOY_API.md) for the
-optional Render deployment procedure.
+## Tests and build
 
----
-
-## Frontend (Next.js)
-
-The separately packaged static frontend reads generated JSON from `web/public/data/` and re-ranks
-recommendations in the browser as the farmer location, transport rate, and maximum radius change.
-Quantity is used to show the corresponding lot-level net estimate.
+Python quality gate:
 
 ```powershell
-python scripts\build_web_export.py
-cd web
-npm install
-npm test
-npm run build
-npm run dev
+ruff check api app src scripts tests
+black --check api app src scripts tests
+pytest -q
 ```
 
-To deploy it on Vercel, set **Root Directory** to `web`. No environment variables are required.
+230 Python tests pass at 77.85% coverage against a 70% floor. The suite covers pipeline smoke tests,
+leakage guards, temporal-split validation, recommendation scoring, schema validation, Streamlit
+smoke tests, and golden-fixture comparisons under `tests/golden/`.
 
----
-
-## Deploy in 3 steps
-
-1. Fork this repo (or push to your GitHub account).
-2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with GitHub, click **New app**.
-3. Set: **Repository** = this repo, **Branch** = `main`, **Main file** = `app/streamlit_app.py`.
-
-No secrets required. The app runs entirely on the committed demo bundle.
-
-Paste the resulting URL in the badge at the top of this README.
-
----
-
-## Run the full pipeline
-
-If you want to generate fresh artifacts from the raw CEDA data:
+Web quality gate (from `web/`, Node 20.9+):
 
 ```powershell
+npm run lint
+npm run typecheck
+npm test                # logic + Python/TypeScript parity fixtures
+npm run test:components # jsdom component suites
+npm run build           # production static export (7 routes)
+npx playwright test     # browser + accessibility suite against the built export
+```
+
+CI runs all of the above on GitHub Actions (see `.github/workflows/ci.yml`).
+
+## Honest results
+
+LightGBM was trained and evaluated — it **did not beat the 7-day moving-average baseline** on the
+held-out test split. The baseline ships. This is reported transparently
+([reports/modeling/lightgbm_metrics_7d.md](reports/modeling/lightgbm_metrics_7d.md)).
+
+| Model | Test MAE (INR/qtl) | Ships? |
+|---|---|---|
+| `moving_average_7d` | **139.57** | Yes |
+| `ridge` | 224.43 | No |
+| `lightgbm` | 188.2 | No |
+| `lightgbm_residual` | 195.63 | No |
+
+The shipped residual interval reports **86.71% empirical coverage** on its test split against a 90%
+nominal level ([reports/modeling/forecast_intervals_7d.md](reports/modeling/forecast_intervals_7d.md)).
+It falls short of nominal, so the interval is an observed uncertainty estimate, not a guarantee. The
+Phase 3 observed-target re-evaluation
+([reports/modeling/phase3_evaluation.md](reports/modeling/phase3_evaluation.md)) keeps a separate
+internal population: 792 eligible rows, MAE 133.61, 86.87% conditional-residual and 90.91%
+split-conformal coverage.
+
+Recommendation backtest vs nearest-mandi baseline (held-out test window,
+[reports/modeling/recommendation_backtest_7d.md](reports/modeling/recommendation_backtest_7d.md)):
+
+| Metric | Value |
+|---|---|
+| Mean regret@1 | 296.3 INR/qtl |
+| Nearest-mandi baseline regret | 370.1 INR/qtl |
+| Beats nearest-mandi | 74.4% of dates |
+
+What makes this credible:
+
+- Temporal train/validation/test splits only; no random split on time-series data.
+- Baseline honesty: LightGBM variants are reported even though they lose.
+- Forecasts include uncertainty intervals with measured empirical coverage.
+- Recommendations are evaluated with regret@K against a nearest-mandi baseline.
+- The whole demo is clone-runnable from committed `data/sample/` artifacts; no secrets required.
+
+## Limitations
+
+- **Frozen demo data.** The snapshot ends on **2025-10-30** and is not a live feed. Results are
+  decision-support examples on historical data, not current market guidance.
+- **Transport is a scenario estimate, not a carrier quote.** Road distance is haversine distance ×
+  a configurable `1.3` factor, priced at a configurable rate (default `4.0 INR/km/quintal`). It is
+  not routing-engine distance or freight pricing; Phase 3 sensitivity tests 0.8x/1.0x/1.2x rates.
+- **Uncertainty does not change the ranking order.** The public interval has one global width, so
+  its penalty is identical for every eligible mandi in a snapshot. Ranking is driven by forecast
+  price minus transport cost; uncertainty is displayed as separate evidence.
+- **Moving-average policy ships; the model comparison does not.** LightGBM and residual-LightGBM
+  stay unshipped because they lost on held-out MAE. No stronger claim is made for them.
+- **Single crop, single state.** Onion, Maharashtra, 15 mandis, 7-day horizon only. Other crops,
+  states, horizons, live ingestion, and causal claims are out of scope by design.
+
+## Where the evidence lives
+
+| Location | Contents |
+|---|---|
+| [docs/portfolio/](docs/portfolio/) | Release gates, checkpoint history, rescue plan, current state |
+| [tests/golden/](tests/golden/) | Golden fixtures pinning panel, features, forecasts, recommendations |
+| [reports/modeling/](reports/modeling/) | Baseline, LightGBM, interval, backtest, and Phase 3 reports |
+| [web/public/data/meta.json](web/public/data/meta.json) | Snapshot date, policy bounds, ranking config for the exported bundle |
+| [web/public/data/manifest.json](web/public/data/manifest.json) | Artifact/input/code/config hashes for strict export verification |
+
+Regenerate contracts when source artifacts change:
+
+```powershell
+python scripts\build_demo_sample.py
+python scripts\build_web_export.py
+python scripts\validate_web_export.py
+```
+
+## Run the full pipeline (optional)
+
+To regenerate local artifacts from the cached raw extract instead of the committed
+demo bundle (optionally fetch fresh CEDA data first):
+
+```powershell
+# Optional fresh fetch — requires a CEDA API token in .env (see below)
+python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13
 python scripts\build_clean_onion_panel.py
 python scripts\build_feature_table.py
 python scripts\train_baselines_7d.py
@@ -239,52 +224,31 @@ python scripts\build_web_export.py
 python scripts\validate_web_export.py
 ```
 
-See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
+Requires a CEDA API token for the fetch step — create `.env` from `.env.example` and set
+`CEDA_API_TOKEN`. See [RELEASE.md](RELEASE.md) for the full runbook with expected outputs.
 
----
+## Deploy (optional)
 
-## Tests
+1. **Streamlit Cloud:** [share.streamlit.io](https://share.streamlit.io) → New app → repository,
+   branch `main`, Main file `app/streamlit_app.py`. No secrets required.
+2. **Vercel (Next.js):** import the repo with **Root Directory** set to `web`. Static export; no
+   environment variables required. See [docs/DEPLOY_FRONTEND.md](docs/DEPLOY_FRONTEND.md).
+3. **Render (FastAPI, optional):** deploy `api/` with `requirements-api.txt`; start command
+   `uvicorn api.main:app --host 0.0.0.0 --port $PORT`. See [docs/DEPLOY_API.md](docs/DEPLOY_API.md).
 
-```powershell
-pytest
-```
-
-206 Python tests, 74.90% coverage, `--cov-fail-under=70`. Includes pipeline smoke tests, leakage guards,
-temporal-split validation, recommendation scoring, and data-store parity tests.
-
-Web gates:
-
-```powershell
-cd web
-npm test
-npm run build
-```
-
-GitHub Actions currently runs the Python lint/format/test gate. The Next.js source, generated public
-data, strict export/schema gate, and updated frontend parity/build evidence are intentionally
-reserved for a separate frontend commit.
-
----
+Public URLs for this release are recorded in
+[docs/portfolio/RELEASE_GATES.md](docs/portfolio/RELEASE_GATES.md) once deployment verification
+completes.
 
 ## Project docs
 
 | Doc | Contents |
 |---|---|
+| [PRODUCT.md](PRODUCT.md) | Product truth: users, purpose, constraints, evidence |
 | [RELEASE.md](RELEASE.md) | Full pipeline runbook, key metrics, deploy instructions |
 | [docs/RULES.md](docs/RULES.md) | Development rules (authoritative scope guard) |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, storage decision, data flow |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, storage policy, ranking boundary |
+| [docs/APP_FLOW.md](docs/APP_FLOW.md) | Authoritative product-flow specification |
+| [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Approved finish-track execution sequence |
+| [docs/portfolio/RELEASE_GATES.md](docs/portfolio/RELEASE_GATES.md) | Release acceptance checklist |
 | [docs/TRACKER.md](docs/TRACKER.md) | Milestone history; v0.1-mvp is frozen |
-| [docs/PRD.md](docs/PRD.md) | Product scope and requirements |
-| [reports/modeling/](reports/modeling/) | Committed model and evaluation reports |
-
----
-
-## Setup for data ingestion (optional)
-
-The static historical dump is already used for all modeling. Re-fetch only if you need to refresh:
-
-```powershell
-python scripts\fetch_ceda_onion_maharashtra.py --from-date 2020-01-01 --to-date 2026-06-13
-```
-
-Requires a CEDA API token — create `.env` from `.env.example` and set `CEDA_API_TOKEN`.

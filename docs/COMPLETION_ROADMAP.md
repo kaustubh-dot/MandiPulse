@@ -1,8 +1,12 @@
 # MandiPulse End-to-End Completion Roadmap
 
-Status: active finish inventory
+Status: historical finish inventory
 
 Last audited: 2026-08-22
+
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this roadmap was written.
 
 Scope: portfolio-quality Onion / Maharashtra / seven-day product
 

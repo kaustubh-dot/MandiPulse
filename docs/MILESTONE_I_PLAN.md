@@ -1,5 +1,9 @@
 # Milestone I Plan — Beat the moving-average baseline honestly (M3-04)
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Goal:** Give the LightGBM forecaster a fair shot at beating `moving_average_7d` by **reformulating the
 target as a residual over the baseline**, evaluate it under the same temporal/metrics rules, and **only
 promote it if it actually wins on the test split**. If it still loses, keep moving-average shipped and

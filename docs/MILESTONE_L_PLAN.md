@@ -1,5 +1,9 @@
 # Milestone L Plan — Make It Visible (Clone-Runnable + Live Demo)
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 ## Decision
 
 The MVP is frozen and RULES-complete (Milestone K). Milestone L adds **no modeling or product

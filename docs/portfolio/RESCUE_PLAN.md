@@ -1,5 +1,9 @@
 # MandiPulse Portfolio Rescue Plan
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 This is the canonical execution plan for the remaining MandiPulse portfolio work. It is a
 documentation-only bootstrap: the bootstrap itself does not change application code, generated
 artifacts, metrics, data, or deployment state.

@@ -64,9 +64,9 @@ This keeps the repo small while preserving a no-secrets demo path.
 
 | Surface | Role | Data source |
 |---|---|---|
-| Streamlit | Offline data-science showcase with coverage, forecast, and recommendation pages | `data/sample/` fallback or local full artifacts |
+| Streamlit | Offline data-science showcase with Overview, Decision, Forecast, and Coverage pages | `data/sample/` fallback or local full artifacts |
 | FastAPI | Local snapshot API for `/health`, `/forecast`, and `/recommend`; external deployment is optional | Shared streamlit-free loaders over `data/sample/` |
-| Next.js | Static recommendation-first frontend with client-side decision-input re-ranking; external deployment is optional | `web/public/data/*.json` |
+| Next.js | Static decision-first frontend with client-side decision-input re-ranking; external deployment is optional | `web/public/data/*.json` |
 
 The Next.js ranking code is a TypeScript port of `src/mandipulse/recommend/engine.py`, wrapped by the
 same canonical as-of, radius, and alternative-limit policy used by the exporter and API. The parity

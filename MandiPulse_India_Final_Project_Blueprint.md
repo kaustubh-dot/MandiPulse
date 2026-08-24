@@ -1,5 +1,9 @@
 # MandiPulse India Blueprint
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this blueprint was written.
+
 > Current scope: offline Onion/Maharashtra MVP. This file replaces the older broad platform blueprint so the repository has one clear direction.
 
 ## Positioning

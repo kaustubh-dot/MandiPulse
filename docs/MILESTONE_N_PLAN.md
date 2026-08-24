@@ -1,5 +1,9 @@
 # Milestone N — Next.js Static Frontend (Vercel)
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Workflow:** Implement top-to-bottom, commit, push, and stop.
 **Status:** Planned.
 **Type:** Additive delivery surface. **No** modeling, data-scope, or number changes.

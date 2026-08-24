@@ -1,5 +1,9 @@
 # Milestone F — Test Coverage + Dashboard Reliability Hardening
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Scope:** strictly within MVP (Onion/Maharashtra, 7-day horizon). No new
 features, no new scope. This milestone closes the RULES-required test gap and fixes correctness
 issues found in the Milestone E dashboard review.

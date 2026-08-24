@@ -1,5 +1,9 @@
 # Milestone J Plan — DuckDB read-layer + coverage gating
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Goal:** Close the last RULES-compliance gap. RULES §Architecture mandates DuckDB as the local data
 store; the pipeline is CSV-only today. Adopt DuckDB as a **read/query layer over the existing processed
 CSVs** (CSV stays the on-disk source of truth), route the dashboard + evaluation reads through it, and

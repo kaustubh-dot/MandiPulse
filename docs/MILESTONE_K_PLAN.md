@@ -1,5 +1,9 @@
 # Milestone K Plan — Release Hardening + Freeze
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 ## Decision
 
 The MVP loop is **RULES-complete** (TRACKER §"MVP loop is now RULES-complete"). Milestone K adds

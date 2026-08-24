@@ -1,5 +1,9 @@
 # Milestones O & P — Exogenous Signals + Conformal Intervals
 
+> **Historical document.** Retained for narrative and decision context only; it is not active truth.
+> Superseded by `docs/IMPLEMENTATION_PLAN.md` (approved execution sequence) and `TODO.md` (live
+> worklist). Content below describes the repository as it was when this plan was written.
+
 **Workflow:** Implement, commit, push, and stop per milestone.
 **Status:** Planned. **Order:** O before P (O changes the feature table; P calibrates whatever ships).
 **Type:** Modeling. Touches features, baselines, LightGBM, intervals, reports, tests.
