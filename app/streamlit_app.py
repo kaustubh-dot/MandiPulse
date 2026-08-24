@@ -1,6 +1,6 @@
 """MandiPulse overview — the Streamlit entry page.
 
-Mirrors the Next.js ``/`` route under the Market Atlas Workbench contract:
+Mirrors the Next.js ``/`` route under the Quiet Exchange contract:
 a decision-first technical overview with a live decision preview at artifact
 defaults, evaluation facts traced to committed artifacts, the ranking
 pipeline, and an anchored method-and-limitations section. Navigation order
@@ -26,11 +26,13 @@ from mandipulse.app.data_access import (  # noqa: E402
     load_recommendation_backtest,
 )
 from mandipulse.app.design import (  # noqa: E402
-    FROZEN_NOTICE,
     SNAPSHOT_LABEL,
     format_inr_per_qtl,
     format_pct,
     inject_base_css,
+    render_frozen_notice,
+    render_page_header,
+    render_section_heading,
 )
 from mandipulse.config import load_yaml_config  # noqa: E402
 from mandipulse.policy import (  # noqa: E402
@@ -66,16 +68,10 @@ DEFAULT_LON = 73.7898
 DEFAULT_QUANTITY_QTL = 100
 
 # ---------------------------------------------------------------------------
-# Header: wordmark, snapshot status, frozen-data notice, primary CTA.
+# Header: wordmark, snapshot status, frozen-data notice.
 # ---------------------------------------------------------------------------
-st.markdown(
-    f"""
-    <h1 class="mp-wordmark">MandiPulse</h1>
-    <div class="mp-snapshot-label">{SNAPSHOT_LABEL} · onion · Maharashtra · 7-day horizon</div>
-    <p class="mp-frozen-note">{FROZEN_NOTICE}</p>
-    """,
-    unsafe_allow_html=True,
-)
+render_page_header("Recommended mandi", "One recommendation with every assumption and evidence visible.")
+render_frozen_notice()
 
 if RUNNING_ON_SAMPLE():
     st.info(
@@ -84,26 +80,10 @@ if RUNNING_ON_SAMPLE():
         icon=":material/info:",
     )
 
-st.markdown("#### Sell where the transport-adjusted net price is strongest.")
 st.markdown(
     "MandiPulse ranks supported Maharashtra onion mandis by expected net price "
     "after estimated transport, using a frozen seven-day forecast. Every figure "
     "traces to a committed artifact; nothing is live."
-)
-
-st.page_link(
-    "pages/1_Decision.py", label="Open the Decision workbench", icon=":material/arrow_forward:"
-)
-st.markdown("[Read the method](#method-and-limitations)")
-
-# ---------------------------------------------------------------------------
-# Decision preview at artifact defaults.
-# ---------------------------------------------------------------------------
-st.header("Decision preview at default assumptions")
-st.caption(
-    f"Location: default farmer ({DEFAULT_LAT:.4f}, {DEFAULT_LON:.4f}) · "
-    f"quantity {DEFAULT_QUANTITY_QTL} qtl · rate {COST_PER_KM} INR/km/quintal scenario · "
-    f"radius {MAX_RADIUS_KM:.0f} km. Adjust all of these in the workbench."
 )
 
 try:
@@ -140,12 +120,10 @@ except Exception as exc:
     st.stop()
 
 _n_stale = int((_all_forecasts["staleness_days"] > 0).sum())
-st.caption(
-    f"Canonical as-of {_canonical_as_of.isoformat()}: "
-    f"{len(ranked)} eligible candidates · {_n_stale} stale excluded · "
-    f"{len(_candidates) - len(ranked)} beyond radius excluded."
-)
 
+# ---------------------------------------------------------------------------
+# Decision preview at artifact defaults.
+# ---------------------------------------------------------------------------
 if ranked.empty:
     st.warning(
         "No eligible candidates at the default assumptions. Increase the road "
@@ -154,10 +132,10 @@ if ranked.empty:
 else:
     top = ranked.iloc[0]
     alts = ranked.iloc[1:3]
-    c_main, c_alt = st.columns([2, 3])
+    c_main, c_alt = st.columns([2, 3], gap="large")
     with c_main:
         st.metric(
-            "Rank 1 — transport-adjusted net price",
+            "Transport-adjusted net price",
             format_inr_per_qtl(top["transport_adjusted_net_price_inr_qtl"]),
             help=(
                 f"{top['mandi']} ({top['district_name']}): forecast "
@@ -166,7 +144,7 @@ else:
                 f"({top['road_distance_km']:.0f} km road)."
             ),
         )
-        st.markdown(f"**{top['mandi']}** · {top['district_name']}")
+        st.markdown(f"**Rank 1 — {top['mandi']}** · {top['district_name']}")
         staleness = int(
             _all_forecasts.loc[
                 _all_forecasts["market_id"] == top["market_id"], "staleness_days"
@@ -175,27 +153,30 @@ else:
         if staleness > 0:
             st.warning(f"This forecast is {staleness} days behind the current snapshot window.")
     with c_alt:
-        st.markdown("**Next best options**")
+        st.markdown("**Alternative recommendations**")
         for _, alt in alts.iterrows():
             diff = (
                 alt["transport_adjusted_net_price_inr_qtl"]
                 - top["transport_adjusted_net_price_inr_qtl"]
             )
             st.markdown(
-                f"- **{alt['mandi']}** ({alt['district_name']}) — "
+                f"- **#{int(alt['rank'])} {alt['mandi']}** ({alt['district_name']}) — "
                 f"{format_inr_per_qtl(alt['transport_adjusted_net_price_inr_qtl'])} "
                 f"({format_inr_per_qtl(diff)} vs rank 1)"
             )
-    st.caption(
-        "Ranking: expected net price minus estimated transport, highest first; "
-        "equal prices break by market identifier. Forecast uncertainty is shown "
-        "as separate evidence and does not change the order."
-    )
+        st.caption(
+            f"Default assumptions: ({DEFAULT_LAT:.4f}, {DEFAULT_LON:.4f}) · "
+            f"{DEFAULT_QUANTITY_QTL} qtl · {COST_PER_KM} INR/km/qtl · {MAX_RADIUS_KM:.0f} km radius."
+        )
+
+st.page_link(
+    "pages/1_Decision.py", label="Open the Decision workbench", icon=":material/arrow_forward:"
+)
 
 # ---------------------------------------------------------------------------
 # Evaluation facts.
 # ---------------------------------------------------------------------------
-st.header("Evaluation facts")
+render_section_heading("Evaluation facts")
 
 sensitivity = load_baseline_sensitivity()
 backtest_df = load_recommendation_backtest()
@@ -252,7 +233,7 @@ st.caption(
 # ---------------------------------------------------------------------------
 # How a ranking is produced.
 # ---------------------------------------------------------------------------
-st.header("How a ranking is produced")
+render_section_heading("How a ranking is produced")
 st.markdown(
     rf"""
     1. **Frozen data snapshot** — a cleaned daily onion-price panel ending
@@ -271,7 +252,7 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # Method and limitations.
 # ---------------------------------------------------------------------------
-st.header("Method and limitations")
+render_section_heading("Method and limitations")
 st.markdown(
     f"""
     - **Scope.** One commodity (onion), one state (Maharashtra), {len(_mandis)} mandis,

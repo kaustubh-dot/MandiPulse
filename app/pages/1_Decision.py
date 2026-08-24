@@ -1,7 +1,7 @@
 """Decision workbench — ranks mandis by transport-adjusted net expected price.
 
-Streamlit counterpart of the Next.js ``/recommend`` route under the Market
-Atlas Workbench contract: decision inputs stay beside their results in the
+Streamlit counterpart of the Next.js ``/recommend`` route under the Quiet
+Exchange contract: decision inputs stay beside their results in the
 page body, the shared recommendation engine produces the ranking, and every
 figure traces back to the frozen October 2025 snapshot.
 """
@@ -27,7 +27,6 @@ from mandipulse.app.data_access import (  # noqa: E402
 )
 from mandipulse.app.design import (  # noqa: E402
     EM_DASH,
-    FROZEN_NOTICE,
     SNAPSHOT_LABEL,
     format_date_iso,
     format_inr,
@@ -38,6 +37,9 @@ from mandipulse.app.design import (  # noqa: E402
     format_quantity,
     inject_base_css,
     plotly_theme,
+    render_frozen_notice,
+    render_page_header,
+    render_section_heading,
 )
 from mandipulse.config import load_yaml_config  # noqa: E402
 from mandipulse.policy import (  # noqa: E402
@@ -116,7 +118,7 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
             lon=others["longitude"].tolist(),
             mode="markers",
             name="Other candidates",
-            marker={"size": 13, "color": "#3e4f60", "opacity": 0.85},
+            marker={"size": 11, "color": "#766d66", "opacity": 0.85},
             text=[
                 f"{row['mandi']} · Rank {int(row['rank'])} · "
                 f"{format_inr_per_qtl(row['transport_adjusted_net_price_inr_qtl'])} net · "
@@ -133,7 +135,7 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
             lon=[float(top["longitude"])],
             mode="markers",
             name="Rank 1 mandi",
-            marker={"size": 26, "color": "#dc8400", "opacity": 0.95},
+            marker={"size": 22, "color": "#781827", "opacity": 0.95},
             text=[
                 f"{top['mandi']} · Rank 1 · "
                 f"{format_inr_per_qtl(top['transport_adjusted_net_price_inr_qtl'])} net · "
@@ -148,7 +150,7 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
             lon=[farmer_lon],
             mode="markers",
             name="Your location",
-            marker={"size": 17, "color": "#0074e3", "symbol": "star"},
+            marker={"size": 15, "color": "#1a1511", "symbol": "circle"},
             text=["Selected farm location"],
             hoverinfo="text",
         )
@@ -162,7 +164,7 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
             "center": {"lat": sum(lats) / len(lats), "lon": sum(lons) / len(lons)},
             "zoom": 5,
         },
-        height=500,
+        height=440,
         showlegend=True,
         legend={
             "orientation": "h",
@@ -175,18 +177,15 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
     return fig
 
 
-st.title("Decision workbench")
-st.caption(
+# ---------------------------------------------------------------------------
+# Header: title, caption, frozen notice.
+# ---------------------------------------------------------------------------
+render_page_header(
+    "Decision workbench",
     "Set your location, lot size, and transport assumptions. Mandis rank by "
-    "transport-adjusted net expected price from a frozen seven-day forecast."
+    "transport-adjusted net expected price from a frozen seven-day forecast.",
 )
-st.markdown(
-    f"""
-    <div class="mp-snapshot-label">{SNAPSHOT_LABEL} · onion · Maharashtra · 7-day horizon</div>
-    <p class="mp-frozen-note">{FROZEN_NOTICE}</p>
-    """,
-    unsafe_allow_html=True,
-)
+render_frozen_notice()
 
 try:
     forecasts_all = add_staleness_days(load_forecasts())
@@ -201,7 +200,7 @@ with inputs_col:
     st.subheader("Decision inputs")
     st.caption("Coordinates are expert input. There is no geocoding search.")
     farmer_lat = st.number_input(
-        "Farmer latitude",
+        "Latitude",
         min_value=-90.0,
         max_value=90.0,
         value=DEFAULT_LAT,
@@ -210,7 +209,7 @@ with inputs_col:
         help="Decimal degrees, \u221290 to 90.",
     )
     farmer_lon = st.number_input(
-        "Farmer longitude",
+        "Longitude",
         min_value=-180.0,
         max_value=180.0,
         value=DEFAULT_LON,
@@ -301,17 +300,11 @@ with results_col:
     )
     ranked = ranked.merge(evidence, on="market_id", how="left", validate="one_to_one")
     display_frame = ranked.head(MAX_ALTERNATIVES).copy()
-    st.caption(
-        f"{len(candidates)} eligible forecasts at canonical as-of "
-        f"{format_date_iso(canonical_as_of)} · {stale_excluded} stale excluded · "
-        f"{beyond_radius_excluded} of those beyond {format_km(radius_km, 0)} radius · "
-        f"showing {len(display_frame)} of up to {MAX_ALTERNATIVES}."
-    )
 
     top = display_frame.iloc[0]
     top_net = float(top["transport_adjusted_net_price_inr_qtl"])
-    st.metric("Rank 1 — transport-adjusted net price", format_inr_per_qtl(top_net))
-    st.markdown(f"**{top['mandi']}** · {top['district_name']}")
+    st.metric("Transport-adjusted net price", format_inr_per_qtl(top_net))
+    st.markdown(f"**Rank 1 — {top['mandi']}** · {top['district_name']}")
     st.markdown(_arithmetic_sentence(top))
     st.caption(
         f"Lot net estimate {format_inr(top_net * float(quantity_qtl), 0)} for "
@@ -324,7 +317,7 @@ with results_col:
 
     alternatives = display_frame.iloc[1:3]
     if not alternatives.empty:
-        st.markdown("**Next best options**")
+        st.markdown("**Alternative recommendations**")
         for _, alt in alternatives.iterrows():
             alt_net = float(alt["transport_adjusted_net_price_inr_qtl"])
             diff = alt_net - top_net
@@ -335,7 +328,7 @@ with results_col:
                     "current snapshot window"
                 )
             st.markdown(
-                f"- **{alt['mandi']}** ({alt['district_name']}) {EM_DASH} "
+                f"- **#{int(alt['rank'])} {alt['mandi']}** ({alt['district_name']}) {EM_DASH} "
                 f"{format_inr_per_qtl(alt_net)} net ({format_inr_per_qtl(diff)} vs rank 1) "
                 f"· forecast {format_inr_per_qtl(alt['forecast_price_inr_qtl'])} · "
                 f"transport {format_inr_per_qtl(alt['estimated_transport_cost_inr_qtl'])} · "
@@ -343,7 +336,7 @@ with results_col:
                 f"{_risk_label(alt['risk_level'])} risk{stale_note}"
             )
 
-    st.markdown("#### All eligible mandis")
+    render_section_heading("All eligible mandis")
     st.dataframe(
         _ranking_table(display_frame).round(1),
         hide_index=True,
@@ -356,17 +349,17 @@ with results_col:
         "exclude candidates."
     )
 
-    st.markdown("#### Candidate map")
+    render_section_heading("Candidate map")
     st.plotly_chart(
         _candidate_map(display_frame, float(farmer_lat), float(farmer_lon)),
         width="stretch",
     )
     st.caption(
-        "Star: your location. Large circle: rank-1 mandi. Smaller circles: other "
-        "candidates. Exact distances repeat in the table above."
+        "Dark circle: rank-1 mandi. Smaller circles: other candidates. "
+        "Exact distances repeat in the table above."
     )
 
-    st.markdown("#### Evidence")
+    render_section_heading("Evidence")
     levels = sorted(set(candidates["confidence_level"].dropna().unique()))
     level_label = " / ".join(format_pct(float(level) * 100, 0) for level in levels) or EM_DASH
     target_date = forecast_target_date(top["as_of_date"], int(top["horizon_days"]))
@@ -390,8 +383,7 @@ with results_col:
         st.markdown(f"- Sale target: {format_date_iso(target_date)}")
         st.markdown(f"- Horizon: {int(top['horizon_days'])}-day ahead")
 
-st.header("Regret evaluation")
-st.caption("Held-out replay of the same ranking policy over historical as-of dates.")
+render_section_heading("Regret evaluation", "Held-out replay of the same ranking policy over historical as-of dates.")
 backtest_df = load_recommendation_backtest()
 if backtest_df is None:
     st.info(
