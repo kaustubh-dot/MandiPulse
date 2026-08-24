@@ -32,16 +32,17 @@ from mandipulse.app.design import (  # noqa: E402
     ACCENT_HEX,
     ACCENT_INK_HEX,
     EM_DASH,
-    FROZEN_NOTICE,
     INK_HEX,
     MUTED_HEX,
-    SNAPSHOT_LABEL,
     format_date_iso,
     format_inr_per_qtl,
     format_interval,
     format_pct,
     inject_base_css,
     plotly_theme,
+    render_frozen_notice,
+    render_page_header,
+    render_section_heading,
 )
 
 st.set_page_config(page_title="Forecast · MandiPulse", layout="wide")
@@ -263,6 +264,17 @@ def _data_quality_note(panel: pd.DataFrame, market_id: object, as_of: pd.Timesta
 
 
 # ---------------------------------------------------------------------------
+# Header: title, caption, frozen notice.
+# ---------------------------------------------------------------------------
+render_page_header(
+    "Forecast evidence",
+    "Inspect one Maharashtra onion mandi's recent wholesale prices beside its "
+    "7-day forecast and prediction interval, with honest "
+    "model-versus-baseline evidence and data-quality notes.",
+)
+render_frozen_notice()
+
+# ---------------------------------------------------------------------------
 # Load mandatory artifacts (missing forecasts stop inside load_forecasts).
 # ---------------------------------------------------------------------------
 forecasts_raw = load_forecasts()
@@ -290,7 +302,7 @@ if SELECT_KEY not in st.session_state or st.session_state[SELECT_KEY] not in man
     st.session_state[SELECT_KEY] = default_name if default_name is not None else mandi_options[0]
 
 selected_mandi: str = st.selectbox(
-    "Mandi",
+    "Choose a mandi",
     options=mandi_options,
     key=SELECT_KEY,
     help=(
@@ -304,24 +316,6 @@ as_of_ts = pd.Timestamp(row["as_of_date"])
 horizon_days = int(row["horizon_days"])
 target_ts = as_of_ts + pd.Timedelta(days=horizon_days)
 staleness_days = int(row["staleness_days"])
-
-# ---------------------------------------------------------------------------
-# Header: title, caption, compact snapshot framing.
-# ---------------------------------------------------------------------------
-st.title("Forecast exploration")
-st.caption(
-    "Inspect one Maharashtra onion mandi's recent wholesale prices beside its "
-    f"{horizon_days}-day forecast and prediction interval, with honest "
-    "model-versus-baseline evidence and data-quality notes. Prices are wholesale "
-    "modal prices in INR/quintal."
-)
-st.markdown(
-    f"""
-    <div class="mp-snapshot-label">{SNAPSHOT_LABEL}</div>
-    <p class="mp-frozen-note">{FROZEN_NOTICE}</p>
-    """,
-    unsafe_allow_html=True,
-)
 
 if staleness_days > 0:
     st.warning(
@@ -338,8 +332,7 @@ with identity_col:
     district_line = f"{district} district, Maharashtra" if district != EM_DASH else "Maharashtra"
     st.caption(district_line)
 with dates_col:
-    st.metric("As-of date", format_date_iso(as_of_ts))
-    st.metric("Target date", format_date_iso(target_ts))
+    st.caption(f"As-of: {format_date_iso(as_of_ts)} · Target: {format_date_iso(target_ts)}")
 
 # --- 5.2 (b) Headline forecast price ---------------------------------------
 confidence_level = float(row["confidence_level"])
@@ -352,10 +345,8 @@ with price_col:
         help=f"As of {format_date_iso(as_of_ts)}, target {format_date_iso(target_ts)}.",
     )
 with interval_col:
-    st.metric(
-        interval_label,
-        format_interval(row["lower_bound_inr_qtl"], row["upper_bound_inr_qtl"]),
-    )
+    st.caption(f"**{interval_label}**")
+    st.markdown(f"**{format_interval(row['lower_bound_inr_qtl'], row['upper_bound_inr_qtl'])}**")
 st.caption(
     f"Method: split-conformal at the {format_pct(confidence_level * 100, 0)} nominal "
     f"level. As-of {format_date_iso(as_of_ts)}, target {format_date_iso(target_ts)} "
@@ -364,7 +355,7 @@ st.caption(
 )
 
 # --- 5.2 (d) History + forecast chart --------------------------------------
-st.markdown(f"#### Price history and {horizon_days}-day forecast")
+render_section_heading(f"Price history and {horizon_days}-day forecast")
 
 history_full = history_for_mandi(panel, row["market_id"])
 window_start, window_end = _window_for_as_of(as_of_ts)
@@ -391,10 +382,10 @@ else:
     st.plotly_chart(figure, width="stretch")
 
 # --- 5.2 (e) Model-versus-baseline evidence ---------------------------------
-st.markdown("#### Model-versus-baseline evidence")
-st.markdown(f"Shipped forecaster: `{row['model_name']}` " f"(version `{row['model_version']}`).")
+render_section_heading("Model-versus-baseline evidence")
+st.markdown(f"Shipped forecaster: `{row['model_name']}` (version `{row['model_version']}`).")
 st.caption(
-    "Interview note: LightGBM was trained honestly but did NOT beat the "
+    "LightGBM was trained honestly but did NOT beat the "
     "moving-average baseline on held-out test dates (test MAE 188 vs 140 "
     "INR/qtl), so the baseline ships."
 )
@@ -416,17 +407,28 @@ if sensitivity is not None and not sensitivity.empty:
         st.caption("Baseline-sensitivity artifact loaded, but holds no test-split rows.")
 else:
     st.caption(
-        "Baseline-sensitivity table not generated yet. Run the pipeline (see the "
-        "commands above) to produce `baseline_sensitivity_7d.csv`."
+        "Baseline-sensitivity table not generated yet. Run the pipeline to produce "
+        "`baseline_sensitivity_7d.csv`."
     )
 
 # --- 5.2 (f) Missingness / data-quality note --------------------------------
-st.markdown("#### Data quality")
+render_section_heading("Data quality")
 st.markdown(_data_quality_note(panel, row["market_id"], as_of_ts))
 
 # --- 5.2 (g) Closing action --------------------------------------------------
-st.page_link(
-    "pages/1_Decision.py",
-    label="Use this mandi in the Decision workbench",
-    icon=":material/arrow_forward:",
-)
+try:
+    st.page_link(
+        "pages/1_Decision.py",
+        label="Use this mandi in the Decision workbench",
+        icon=":material/arrow_forward:",
+    )
+except Exception:
+    try:
+        st.page_link(
+            "1_Decision.py",
+            label="Use this mandi in the Decision workbench",
+            icon=":material/arrow_forward:",
+        )
+    except Exception:
+        pass
+

@@ -1,11 +1,10 @@
 """Coverage and provenance page — what the snapshot actually contains.
 
-Mirrors the Next.js ``/coverage`` route under the Market Atlas Workbench
-contract (docs/APP_FLOW.md section 6): snapshot range, explicit row
-definitions, a per-mandi comparability table, a focused single-mandi view,
-trainability facts, and provenance report links. Absence is reported as
-absence — missing mandi-days and missing artifacts are never rendered as
-zeros.
+Mirrors the Next.js ``/coverage`` route under the Quiet Exchange
+contract: snapshot range, explicit row definitions, a per-mandi comparability
+table, a focused single-mandi view, trainability facts, and provenance report
+links. Absence is reported as absence — missing mandi-days and missing artifacts
+are never rendered as zeros.
 """
 
 from __future__ import annotations
@@ -31,15 +30,16 @@ from mandipulse.app.data_access import (  # noqa: E402
 )
 from mandipulse.app.design import (  # noqa: E402
     EM_DASH,
-    FROZEN_NOTICE,
     INK_HEX,
-    SNAPSHOT_LABEL,
     WARNING_HEX,
     format_date_iso,
     format_inr_per_qtl,
     format_pct,
     inject_base_css,
     plotly_theme,
+    render_frozen_notice,
+    render_page_header,
+    render_section_heading,
 )
 
 st.set_page_config(page_title="Coverage · MandiPulse", layout="wide")
@@ -220,7 +220,7 @@ def render_missing_artifact_notice(expected_artifact: str, regenerate_command: s
 
 def render_trainability() -> None:
     """Summarize feature-table trainability, or say plainly why it cannot be."""
-    st.markdown("### Trainability")
+    render_section_heading("Trainability")
     try:
         features = load_feature_table()
     except Exception as exc:
@@ -261,14 +261,11 @@ def render_trainability() -> None:
 # ---------------------------------------------------------------------------
 # Page header: title, snapshot label, frozen-data notice.
 # ---------------------------------------------------------------------------
-st.markdown(
-    f"""
-    <div class="mp-snapshot-label">Coverage provenance</div>
-    <h1 class="mp-wordmark">What the snapshot actually contains</h1>
-    <p class="mp-frozen-note">{SNAPSHOT_LABEL} · {FROZEN_NOTICE}</p>
-    """,
-    unsafe_allow_html=True,
+render_page_header(
+    "Coverage and provenance",
+    "Data coverage, trainability, and model evaluation provenance.",
 )
+render_frozen_notice()
 st.caption(
     "Every figure elsewhere traces back to one fixed data bundle. This page shows how much of "
     "that bundle exists, where the gaps sit, and which artifacts produced each number. Absence "
@@ -292,24 +289,23 @@ stats = compute_mandi_coverage(panel, mandi_meta)
 # ---------------------------------------------------------------------------
 # 1. Snapshot range (APP_FLOW 6.1-6.2).
 # ---------------------------------------------------------------------------
-st.markdown("### Snapshot range")
+render_section_heading("Snapshot range")
 first_available = stats["first_date"].min()
 last_available = stats["last_date"].max()
 n_mandis = int(panel["market_id"].nunique())
 total_panel_rows = len(panel)
 
-with st.container(border=True):
-    st.markdown(
-        "\n".join(
-            [
-                f"- **First available observation:** {format_date_iso(first_available)}",
-                f"- **Last available observation:** {format_date_iso(last_available)}",
-                f"- **Clean-panel rows:** {_fmt_count(total_panel_rows)} mandi-day rows",
-                f"- **Mandis in scope:** {_fmt_count(n_mandis)} selected mandis "
-                f"(top {n_mandis} by historical coverage)",
-            ]
-        )
+st.markdown(
+    "\n".join(
+        [
+            f"- **First available observation:** {format_date_iso(first_available)}",
+            f"- **Last available observation:** {format_date_iso(last_available)}",
+            f"- **Clean-panel rows:** {_fmt_count(total_panel_rows)} mandi-day rows",
+            f"- **Mandis in scope:** {_fmt_count(n_mandis)} selected mandis "
+            f"(top {n_mandis} by historical coverage)",
+        ]
     )
+)
 st.caption(
     "Range reflects dates present in `data/processed/onion_maharashtra/clean_mandi_prices.csv`."
 )
@@ -317,7 +313,7 @@ st.caption(
 # ---------------------------------------------------------------------------
 # 2. Row definitions (APP_FLOW 6.3).
 # ---------------------------------------------------------------------------
-st.markdown("### Row definitions")
+render_section_heading("Row definitions")
 st.markdown(
     "| Row kind | Definition |\n|---|---|\n"
     + "\n".join(f"| **{kind}** | {definition} |" for kind, definition in ROW_DEFINITIONS)
@@ -326,7 +322,7 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # 3. Per-mandi comparability (APP_FLOW 6.4).
 # ---------------------------------------------------------------------------
-st.markdown("### Per-mandi comparability")
+render_section_heading("Per-mandi comparability")
 st.caption(
     "Shares are computed over all rows of the clean panel for each mandi. Gaps stay comparable "
     "in place rather than hidden inside averages."
@@ -343,7 +339,7 @@ st.dataframe(
 # ---------------------------------------------------------------------------
 # 4. Mandi focus (APP_FLOW 6.5).
 # ---------------------------------------------------------------------------
-st.markdown("### Mandi focus")
+render_section_heading("Mandi focus")
 name_by_id = dict(zip(stats["market_id"], stats["market_name"]))
 district_by_id = dict(zip(stats["market_id"], stats["district_name"]))
 
@@ -365,34 +361,33 @@ focus_history = history_for_mandi(panel, focused_id)
 focus_window = focus_history.tail(FOCUS_WINDOW_ROWS)
 observed_share = focus_stats["available_pct"] - focus_stats["imputed_pct"]
 
-with st.container(border=True):
-    st.markdown(
-        f"**{_cell_text(focus_stats['market_name'])}** — "
-        f"{_cell_text(focus_stats['district_name'])}"
+st.markdown(
+    f"**{_cell_text(focus_stats['market_name'])}** — "
+    f"{_cell_text(focus_stats['district_name'])}"
+)
+st.markdown(
+    "\n".join(
+        [
+            f"- First seen: {_cell_date(focus_stats['first_date'])} · "
+            f"Last seen: {_cell_date(focus_stats['last_date'])} · "
+            f"Active trading days: {_cell_count(focus_stats['active_days'])}",
+            f"- Clean-panel rows: {_cell_count(focus_stats['total_rows'])} · "
+            f"Observed: {_cell_count(focus_stats['observed_rows'])} "
+            f"({format_pct(observed_share)})",
+            f"- Imputed: {_cell_count(focus_stats['imputed_rows'])} "
+            f"({format_pct(focus_stats['imputed_pct'])})",
+            f"- Missing: {_cell_count(focus_stats['unavailable_rows'])} "
+            f"({format_pct(focus_stats['unavailable_pct'])})",
+            f"- Recent window charted: {_fmt_count(len(focus_window))} rows "
+            f"(last {FOCUS_WINDOW_ROWS})",
+        ]
     )
-    st.markdown(
-        "\n".join(
-            [
-                f"- First seen: {_cell_date(focus_stats['first_date'])} · "
-                f"Last seen: {_cell_date(focus_stats['last_date'])} · "
-                f"Active trading days: {_cell_count(focus_stats['active_days'])}",
-                f"- Clean-panel rows: {_cell_count(focus_stats['total_rows'])} · "
-                f"Observed: {_cell_count(focus_stats['observed_rows'])} "
-                f"({format_pct(observed_share)})",
-                f"- Imputed: {_cell_count(focus_stats['imputed_rows'])} "
-                f"({format_pct(focus_stats['imputed_pct'])})",
-                f"- Missing: {_cell_count(focus_stats['unavailable_rows'])} "
-                f"({format_pct(focus_stats['unavailable_pct'])})",
-                f"- Recent window charted: {_fmt_count(len(focus_window))} rows "
-                f"(last {FOCUS_WINDOW_ROWS})",
-            ]
-        )
-    )
-    st.plotly_chart(focus_window_chart(focus_window), width="stretch")
-    st.caption(
-        "Observed points use ink; imputed points use open diamonds in the warning hue. Gaps have "
-        "no points: unavailable mandi-days are never rendered as zero prices."
-    )
+)
+st.plotly_chart(focus_window_chart(focus_window), width="stretch")
+st.caption(
+    "Observed points use ink; imputed points use open diamonds in the warning hue. Gaps have "
+    "no points: unavailable mandi-days are never rendered as zero prices."
+)
 
 # ---------------------------------------------------------------------------
 # 5. Trainability summary.
@@ -402,7 +397,7 @@ render_trainability()
 # ---------------------------------------------------------------------------
 # 6. Model evidence availability — missing artifacts named honestly.
 # ---------------------------------------------------------------------------
-st.markdown("### Model evidence availability")
+render_section_heading("Model evidence availability")
 
 sensitivity = load_baseline_sensitivity()
 st.markdown("#### Held-out model comparison")
@@ -469,7 +464,7 @@ else:
 # ---------------------------------------------------------------------------
 # 7. Provenance and reports (APP_FLOW 6.6).
 # ---------------------------------------------------------------------------
-st.markdown("### Where these numbers come from")
+render_section_heading("Where these numbers come from")
 st.markdown(
     "Modeling reports are committed under `reports/modeling/`. A missing report renders its "
     "fallback notice below instead of failing the page."
