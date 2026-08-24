@@ -81,12 +81,11 @@ function SeriesTooltip({
       style={{
         background: "var(--mp-surface)",
         border: "1px solid var(--mp-rule-strong)",
-        borderRadius: "var(--radius-control)",
+        borderRadius: "var(--radius-panel)",
         padding: "0.5rem 0.625rem",
-        boxShadow: "var(--shadow-whisper)",
       }}
     >
-      <p className="numeric font-bold text-ink">{formatDateIso(String(label))}</p>
+      <p className="numeric font-semibold text-ink">{formatDateIso(String(label))}</p>
       <dl className="mt-1 space-y-1">
         {seriesEntries.map((entry) => (
           <div key={entry.dataKey} className="flex items-baseline justify-between gap-3">
@@ -200,7 +199,7 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
           <ResponsiveContainer
             width="100%"
             height="100%"
-            initialDimension={{ width: 1, height: 1 }}
+            initialDimension={{ width: 600, height: 320 }}
           >
             <ComposedChart data={points} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
               <CartesianGrid
@@ -294,7 +293,7 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
         </div>
       ) : (
         <div
-          className="overflow-x-auto rounded-control border border-rule bg-surface-raised"
+          className="overflow-x-auto border-y border-rule bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           role="region"
           aria-label="Chart series as a data table"
           tabIndex={0}

@@ -10,7 +10,7 @@ const ForecastChart = dynamic(() => import("@/components/ForecastChart"), {
     <div
       role="img"
       aria-label="Price chart loading"
-      className="h-[320px] w-full rounded-panel border border-rule bg-paper-2"
+      className="h-[320px] w-full border-y border-rule bg-paper-2"
     />
   ),
 });
@@ -24,6 +24,7 @@ import {
   TextLink,
   buttonClass,
 } from "@/components/ui/primitives";
+import { ContourField } from "@/components/visual/ContourField";
 import {
   loadBacktest,
   loadForecasts,
@@ -83,15 +84,15 @@ function ForecastSkeleton() {
   return (
     <div className="space-y-6" role="status" aria-live="polite" aria-busy="true">
       <span className="sr-only">Loading forecast workbench…</span>
-      <div className="h-28 max-w-2xl animate-pulse rounded-panel bg-paper-2" />
+      <div className="h-28 max-w-2xl animate-pulse rounded bg-paper-2" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-4">
-          <div className="h-[74px] animate-pulse rounded-panel bg-paper-2" />
-          <div className="h-56 animate-pulse rounded-panel bg-paper-2" />
-          <div className="h-72 animate-pulse rounded-panel bg-paper-2" />
+          <div className="h-[74px] animate-pulse rounded bg-paper-2" />
+          <div className="h-56 animate-pulse rounded bg-paper-2" />
+          <div className="h-72 animate-pulse rounded bg-paper-2" />
         </div>
         <div className="lg:col-span-8">
-          <div className="h-[620px] animate-pulse rounded-panel bg-paper-2" />
+          <div className="h-[620px] animate-pulse rounded bg-paper-2" />
         </div>
       </div>
     </div>
@@ -163,25 +164,25 @@ function ForecastView() {
   // Missingness over the raw window (filterForecastHistory drops nulls by
   // design, so counts come straight from the bundle).
   const windowQuality = useMemo(() => {
-      if (!data || !selectedForecast) {
-        return { total: 0, nullCount: 0, imputedCount: 0 };
+    if (!data || !selectedForecast) {
+      return { total: 0, nullCount: 0, imputedCount: 0 };
+    }
+    const firstDate = addDaysIso(selectedForecast.as_of_date, -(HISTORY_DAYS - 1));
+    let total = 0;
+    let nullCount = 0;
+    let imputedCount = 0;
+    for (const row of data.history) {
+      if (row.market_id !== selectedForecast.market_id) continue;
+      if (row.date < firstDate || row.date > selectedForecast.as_of_date) continue;
+      total += 1;
+      if (row.modal_price_inr_qtl === null || !Number.isFinite(row.modal_price_inr_qtl)) {
+        nullCount += 1;
+      } else if (row.is_imputed) {
+        imputedCount += 1;
       }
-      const firstDate = addDaysIso(selectedForecast.as_of_date, -(HISTORY_DAYS - 1));
-      let total = 0;
-      let nullCount = 0;
-      let imputedCount = 0;
-      for (const row of data.history) {
-        if (row.market_id !== selectedForecast.market_id) continue;
-        if (row.date < firstDate || row.date > selectedForecast.as_of_date) continue;
-        total += 1;
-        if (row.modal_price_inr_qtl === null || !Number.isFinite(row.modal_price_inr_qtl)) {
-          nullCount += 1;
-        } else if (row.is_imputed) {
-          imputedCount += 1;
-        }
-      }
-      return { total, nullCount, imputedCount };
-    }, [data, selectedForecast]);
+    }
+    return { total, nullCount, imputedCount };
+  }, [data, selectedForecast]);
 
   if (state.status === "loading") {
     return <ForecastSkeleton />;
@@ -191,7 +192,6 @@ function ForecastView() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Forecast"
           title="Price forecast"
           intro="Maharashtra onion mandi price outlook."
         />
@@ -223,7 +223,6 @@ function ForecastView() {
       <div className="space-y-6">
         <SnapshotNotice />
         <PageHeader
-          eyebrow="Forecast"
           title={`${meta.forecast_horizon_days}-day price forecast`}
           intro="Maharashtra onion."
         />
@@ -252,22 +251,24 @@ function ForecastView() {
   });
 
   return (
-    <div className="space-y-6">
+    <div data-layout="quiet-forecast" className="space-y-12">
       <SnapshotNotice />
 
-      <PageHeader
-        eyebrow="Forecast"
-        title={`${meta.forecast_horizon_days}-day price forecast`}
-        intro={
-          <>
-            Maharashtra onion — up to {HISTORY_DAYS} days of observed prices per
-            mandi and one {meta.forecast_horizon_days}-day-ahead target. The{" "}
-            <strong>as-of date</strong> is the latest market date behind a forecast;
-            the target date is {meta.forecast_horizon_days} days later. Prices are
-            wholesale modal prices in INR/quintal.
-          </>
-        }
-      />
+      <div className="relative isolate grid gap-8 border-b border-rule pb-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(18rem,0.6fr)]">
+        <PageHeader
+          title={`${meta.forecast_horizon_days}-day price forecast`}
+          intro={
+            <>
+              Maharashtra onion — up to {HISTORY_DAYS} days of observed prices per
+              mandi and one {meta.forecast_horizon_days}-day-ahead target. The{" "}
+              <strong>as-of date</strong> is the latest market date behind a forecast;
+              the target date is {meta.forecast_horizon_days} days later. Prices are
+              wholesale modal prices in INR/quintal.
+            </>
+          }
+        />
+        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
+      </div>
 
       {staleDays > 0 ? (
         <StatusNotice tone="warning" title="Stale as-of date">
@@ -278,7 +279,7 @@ function ForecastView() {
         </StatusNotice>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Context column */}
         <div className="space-y-6 lg:col-span-4">
           <SelectField
@@ -292,13 +293,10 @@ function ForecastView() {
 
           <Panel className="space-y-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-muted">
-                Selected mandi
-              </p>
-              <h2 className="font-display text-2xl leading-tight text-ink">
+              <h2 className="font-display text-3xl leading-tight text-ink">
                 {mandiName}
               </h2>
-              <p className="text-sm text-ink-2">
+              <p className="mt-1 text-sm text-ink-2">
                 {selectedMandi?.district_name ?? EM_DASH} district, Maharashtra
               </p>
             </div>
@@ -317,7 +315,7 @@ function ForecastView() {
             </dl>
 
             <p
-              className={`text-xs font-bold ${
+              className={`text-xs font-semibold ${
                 staleDays > 0 ? "text-warning" : "text-success"
               }`}
             >
@@ -348,78 +346,76 @@ function ForecastView() {
         </div>
 
         {/* Chart column */}
-        <div className="lg:col-span-8">
-          <Panel className="space-y-4">
-            <SectionHeading>
-              Price history and {meta.forecast_horizon_days}-day forecast
-            </SectionHeading>
+        <div className="space-y-6 lg:col-span-8">
+          <SectionHeading>
+            Price history and {meta.forecast_horizon_days}-day forecast
+          </SectionHeading>
 
-            {chartHistory.length > 0 ? (
-              <ForecastChart
-                history={chartHistory}
-                forecast={selectedForecast}
-                forecastDate={forecastDate}
-              />
-            ) : (
-              <StatusNotice tone="info" title="No plotted history">
-                No finite observed prices exist in the {HISTORY_DAYS}-day window
-                ending {formatDateIso(selectedForecast.as_of_date)}. Missing records
-                remain in the bundle as nulls; see the coverage route for provenance.
-              </StatusNotice>
-            )}
+          {chartHistory.length > 0 ? (
+            <ForecastChart
+              history={chartHistory}
+              forecast={selectedForecast}
+              forecastDate={forecastDate}
+            />
+          ) : (
+            <StatusNotice tone="info" title="No plotted history">
+              No finite observed prices exist in the {HISTORY_DAYS}-day window
+              ending {formatDateIso(selectedForecast.as_of_date)}. Missing records
+              remain in the bundle as nulls; see the coverage route for provenance.
+            </StatusNotice>
+          )}
 
-            <div className="border-t border-rule pt-4">
-              <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-muted">
-                    Forecast for {formatDateIso(forecastDate)}
-                  </p>
-                  <p className="numeric mt-1 text-4xl font-bold leading-tight text-ink">
-                    {formatInrPerQtl(selectedForecast.forecast_price_inr_qtl)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold uppercase tracking-wide text-muted">
-                    {nominalPct}% prediction interval
-                  </p>
-                  <p className="numeric mt-1 text-lg text-ink">
-                    {formatInterval(
-                      selectedForecast.lower_bound_inr_qtl,
-                      selectedForecast.upper_bound_inr_qtl
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <p className="mt-3 text-xs leading-relaxed text-muted">
-                Method: split-conformal, observed coverage 90.91% on internal Phase 3
-                population; on this snapshot’s held-out dates, coverage was{" "}
-                {formatPct(meta.empirical_coverage * 100, 1)} against the{" "}
-                {formatPct(nominalPct, 0)} nominal level. As-of{" "}
-                {formatDateIso(selectedForecast.as_of_date)}, target{" "}
-                {formatDateIso(forecastDate)} (as-of +{" "}
-                {meta.forecast_horizon_days} days);{" "}
-                {staleDays > 0
-                  ? `as-of sits ${staleDays} days behind the canonical snapshot date`
-                  : "as-of matches the canonical snapshot date"}
-                . A prediction interval is a calibrated range, not a certainty.
-              </p>
-
-              {windowQuality.total > 0 ? (
-                <p className="mt-2 text-xs leading-relaxed text-muted">
-                  Data quality:{" "}
-                  {windowQuality.nullCount > 0
-                    ? `${windowQuality.nullCount} of ${windowQuality.total} daily records in the ${HISTORY_DAYS}-day window ending ${formatDateIso(selectedForecast.as_of_date)} are missing (null) and omitted from the chart.`
-                    : `all ${windowQuality.total} daily records in the ${HISTORY_DAYS}-day window ending ${formatDateIso(selectedForecast.as_of_date)} carry finite prices.`}
-                  {windowQuality.imputedCount > 0
-                    ? ` ${windowQuality.imputedCount} ${
-                        windowQuality.imputedCount === 1 ? "value is" : "values are"
-                      } imputed fills, drawn as hollow markers.`
-                    : ""}
+          <div className="border-t border-rule pt-4">
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+              <div>
+                <p className="text-xs text-muted">
+                  Forecast for {formatDateIso(forecastDate)}
                 </p>
-              ) : null}
+                <p className="numeric mt-1 text-4xl font-semibold leading-tight text-accent">
+                  {formatInrPerQtl(selectedForecast.forecast_price_inr_qtl)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted">
+                  {nominalPct}% prediction interval
+                </p>
+                <p className="numeric mt-1 text-lg font-semibold text-ink">
+                  {formatInterval(
+                    selectedForecast.lower_bound_inr_qtl,
+                    selectedForecast.upper_bound_inr_qtl
+                  )}
+                </p>
+              </div>
             </div>
-          </Panel>
+
+            <p className="mt-4 text-xs leading-relaxed text-muted">
+              Method: split-conformal, observed coverage 90.91% on internal Phase 3
+              population; on this snapshot’s held-out dates, coverage was{" "}
+              {formatPct(meta.empirical_coverage * 100, 1)} against the{" "}
+              {formatPct(nominalPct, 0)} nominal level. As-of{" "}
+              {formatDateIso(selectedForecast.as_of_date)}, target{" "}
+              {formatDateIso(forecastDate)} (as-of +{" "}
+              {meta.forecast_horizon_days} days);{" "}
+              {staleDays > 0
+                ? `as-of sits ${staleDays} days behind the canonical snapshot date`
+                : "as-of matches the canonical snapshot date"}
+              . A prediction interval is a calibrated range, not a certainty.
+            </p>
+
+            {windowQuality.total > 0 ? (
+              <p className="mt-2 text-xs leading-relaxed text-muted">
+                Data quality:{" "}
+                {windowQuality.nullCount > 0
+                  ? `${windowQuality.nullCount} of ${windowQuality.total} daily records in the ${HISTORY_DAYS}-day window ending ${formatDateIso(selectedForecast.as_of_date)} are missing (null) and omitted from the chart.`
+                  : `all ${windowQuality.total} daily records in the ${HISTORY_DAYS}-day window ending ${formatDateIso(selectedForecast.as_of_date)} carry finite prices.`}
+                {windowQuality.imputedCount > 0
+                  ? ` ${windowQuality.imputedCount} ${
+                      windowQuality.imputedCount === 1 ? "value is" : "values are"
+                    } imputed fills, drawn as hollow markers.`
+                  : ""}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

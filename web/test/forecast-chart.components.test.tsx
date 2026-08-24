@@ -96,4 +96,13 @@ describe("ForecastChart (recharts under jsdom)", () => {
     const chart = await screen.findByRole("img");
     assert.doesNotMatch(chart.getAttribute("aria-label")!, /forecast segment/);
   });
+
+  it("keeps price series semantic and animations disabled", async () => {
+    const { container } = renderChart();
+    await screen.findByRole("img");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.match(container.innerHTML, /--mp-ink/);
+    assert.match(container.innerHTML, /--mp-accent/);
+    assert.doesNotMatch(container.innerHTML, /--mp-atlas[^-]/);
+  });
 });

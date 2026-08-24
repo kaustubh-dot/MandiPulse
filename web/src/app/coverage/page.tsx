@@ -14,6 +14,7 @@ import {
   StatusNotice,
   TextLink,
 } from "@/components/ui/primitives";
+import { ContourField } from "@/components/visual/ContourField";
 import {
   loadHonestResults,
   loadMandis,
@@ -156,21 +157,23 @@ export default function CoveragePage() {
   const focusedMissingPct = focusedStat ? focusedStat.unavailable_pct : 0;
 
   return (
-    <div className="space-y-10">
-      <PageHeader
-        eyebrow="Coverage provenance"
-        title="What the snapshot actually contains"
-        intro={
-          <>
-            Every figure elsewhere in this app traces back to one fixed data bundle.
-            This page shows how much of that bundle exists, where the gaps sit, and
-            which artifacts produced each number. Absence is reported as absence:
-            missing mandi-days are never filled with zeros.
-          </>
-        }
-      />
-
+    <div data-layout="quiet-coverage" className="space-y-12">
       <SnapshotNotice />
+
+      <div className="relative isolate grid gap-8 border-b border-rule pb-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(18rem,0.6fr)]">
+        <PageHeader
+          title="What the snapshot actually contains"
+          intro={
+            <>
+              Every figure elsewhere in this app traces back to one fixed data bundle.
+              This page shows how much of that bundle exists, where the gaps sit, and
+              which artifacts produced each number. Absence is reported as absence:
+              missing mandi-days are never filled with zeros.
+            </>
+          }
+        />
+        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
+      </div>
 
       {isEmpty ? (
         <EmptyState
@@ -181,16 +184,16 @@ export default function CoveragePage() {
       ) : (
         <div className="grid items-start gap-10 lg:grid-cols-12">
           <div className="space-y-10 lg:col-span-4">
-            <section aria-labelledby="snapshot-range" className="space-y-3">
+            <section aria-labelledby="snapshot-range" className="space-y-4">
               <SectionHeading id="snapshot-range">Snapshot range</SectionHeading>
               <Panel>
-                <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                <p className="text-xs text-muted">
                   Last available observation
                 </p>
-                <p className="numeric mt-1 text-4xl leading-none text-ink">
+                <p className="numeric mt-1 text-4xl font-semibold leading-none text-ink">
                   {latestDate !== null ? formatDateIso(latestDate) : "Not observed"}
                 </p>
-                <dl className="mt-4 space-y-2 text-sm">
+                <dl className="mt-6 space-y-2 text-sm">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <dt className="text-ink-2">Earliest available observation</dt>
                     <dd className="numeric text-ink">
@@ -218,7 +221,7 @@ export default function CoveragePage() {
               </Panel>
             </section>
 
-            <section aria-labelledby="scope-facts" className="space-y-3">
+            <section aria-labelledby="scope-facts" className="space-y-4">
               <SectionHeading id="scope-facts">Scope and row definitions</SectionHeading>
               <EvidenceBlock
                 title="Scope facts"
@@ -246,7 +249,7 @@ export default function CoveragePage() {
                   {
                     label: "Missing row",
                     value:
-                      "No observation exists for that mandi-day; treated as absence, never as a zero price",
+                    "No observation exists for that mandi-day; treated as absence, never as a zero price",
                   },
                   {
                     label: "Trainable row",
@@ -259,9 +262,9 @@ export default function CoveragePage() {
           </div>
 
           <div className="space-y-10 lg:col-span-8">
-            <section aria-labelledby="comparability" className="space-y-3">
+            <section aria-labelledby="comparability" className="space-y-4">
               <SectionHeading id="comparability">Per-mandi comparability</SectionHeading>
-              <p className="max-w-3xl text-base leading-7 text-ink-2">
+              <p className="max-w-3xl text-sm leading-relaxed text-ink-2">
                 Sorted by active days. Shares are computed over all rows in the displayed
                 window for each mandi. The largest unavailability gaps are called out in
                 place rather than hidden in averages.
@@ -273,7 +276,7 @@ export default function CoveragePage() {
                 role="region"
                 aria-label="Per-mandi data coverage"
                 tabIndex={0}
-                className="overflow-x-auto rounded-panel border border-rule"
+                className="overflow-x-auto border-y border-rule bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               >
                 <table className="w-full min-w-[760px] border-collapse text-sm">
                   <caption className="sr-only">
@@ -284,43 +287,43 @@ export default function CoveragePage() {
                     <tr className="border-b border-rule-strong text-left">
                       <th
                         scope="col"
-                        className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-xs font-semibold text-muted"
                       >
                         Mandi
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-right text-xs font-semibold text-muted"
                       >
                         First seen
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-right text-xs font-semibold text-muted"
                       >
                         Last seen
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-right text-xs font-semibold text-muted"
                       >
                         Active days
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-right text-xs font-semibold text-muted"
                       >
                         Available
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-right text-xs font-semibold text-muted"
                       >
                         Imputed
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-muted"
+                        className="px-3 py-2 text-right text-xs font-semibold text-muted"
                       >
                         Unavailable
                       </th>
@@ -333,7 +336,7 @@ export default function CoveragePage() {
                         row.unavailable_pct === worstUnavailablePct;
                       return (
                         <tr key={row.market_id} className="border-b border-rule last:border-b-0">
-                          <td className="px-3 py-2 font-bold text-ink">{row.market_name}</td>
+                          <td className="px-3 py-2 font-semibold text-ink">{row.market_name}</td>
                           <td className="numeric px-3 py-2 text-right text-ink-2">
                             {row.first_date !== null ? (
                               formatDateIso(row.first_date)
@@ -360,7 +363,7 @@ export default function CoveragePage() {
                           <td className="px-3 py-2 text-right">
                             <span
                               className={`numeric ${
-                                isWorstGap ? "font-bold text-warning" : "text-ink-2"
+                                isWorstGap ? "font-semibold text-warning" : "text-ink-2"
                               }`}
                             >
                               {formatPct(row.unavailable_pct)} unavailable
@@ -375,7 +378,7 @@ export default function CoveragePage() {
               </div>
             </section>
 
-            <section aria-labelledby="mandi-focus" className="space-y-3">
+            <section aria-labelledby="mandi-focus" className="space-y-4">
               <SectionHeading id="mandi-focus">Mandi focus</SectionHeading>
               <SelectField
                 id="mandi-focus-select"
@@ -426,16 +429,16 @@ export default function CoveragePage() {
                       },
                     ]}
                   />
-                  <div className="rounded-panel border border-rule bg-surface p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-muted">
+                  <div className="border-y border-rule bg-transparent py-4">
+                    <p className="text-xs text-muted">
                       Availability bar — share of window rows
                     </p>
                     <div
                       aria-hidden="true"
-                      className="mt-3 flex h-4 overflow-hidden rounded-control border border-rule bg-surface-raised"
+                      className="mt-3 flex h-3 overflow-hidden rounded-sm border border-rule bg-surface-raised"
                     >
                       <div
-                        className="bg-success"
+                        className="bg-accent"
                         style={{
                           width: `${Math.max(0, focusedStat.available_pct - focusedStat.imputed_pct)}%`,
                         }}
@@ -453,7 +456,7 @@ export default function CoveragePage() {
                       <li className="flex items-center gap-2 text-ink-2">
                         <span
                           aria-hidden="true"
-                          className="inline-block h-3 w-3 shrink-0 rounded-sm border border-rule bg-success"
+                          className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm bg-accent"
                         />
                         <span>
                           Observed {formatPct(focusedStat.available_pct - focusedStat.imputed_pct)}
@@ -462,14 +465,14 @@ export default function CoveragePage() {
                       <li className="flex items-center gap-2 text-ink-2">
                         <span
                           aria-hidden="true"
-                          className="inline-block h-3 w-3 shrink-0 rounded-sm border border-rule bg-warning"
+                          className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm bg-warning"
                         />
                         <span>Imputed {formatPct(focusedStat.imputed_pct)}</span>
                       </li>
                       <li className="flex items-center gap-2 text-ink-2">
                         <span
                           aria-hidden="true"
-                          className="inline-block h-3 w-3 shrink-0 rounded-sm border border-rule-strong bg-surface-raised"
+                          className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm border border-rule-strong bg-surface-raised"
                         />
                         <span>Missing {formatPct(focusedMissingPct)}</span>
                       </li>
@@ -483,9 +486,9 @@ export default function CoveragePage() {
               ) : null}
             </section>
 
-            <section aria-labelledby="model-honesty" className="space-y-3">
+            <section aria-labelledby="model-honesty" className="space-y-4">
               <SectionHeading id="model-honesty">Model selection honesty</SectionHeading>
-              <p className="max-w-3xl text-base leading-7 text-ink-2">
+              <p className="max-w-3xl text-sm leading-relaxed text-ink-2">
                 Held-out test error decides what ships. The 7-day moving-average baseline
                 beats every learned candidate on the test split, so only the baseline
                 ships to the forecast route.
@@ -504,7 +507,7 @@ export default function CoveragePage() {
                   <span className="sr-only">Loading held-out model comparison…</span>
                   <div
                     aria-hidden="true"
-                    className="h-40 w-full animate-pulse rounded-panel bg-paper-2"
+                    className="h-40 w-full animate-pulse rounded bg-paper-2"
                   />
                 </div>
               ) : (
@@ -518,18 +521,18 @@ export default function CoveragePage() {
               )}
             </section>
 
-            <section aria-labelledby="mandi-locations" className="space-y-3">
+            <section aria-labelledby="mandi-locations" className="space-y-4">
               <SectionHeading id="mandi-locations">Mandi locations</SectionHeading>
-              <p className="max-w-3xl text-base leading-7 text-ink-2">
+              <p className="max-w-3xl text-sm leading-relaxed text-ink-2">
                 Geographic spread of the in-scope mandis. Distances used elsewhere in the
                 app apply the road-distance factor described in the method summary.
               </p>
-              <Panel className="overflow-hidden p-2 sm:p-3">
+              <div className="overflow-hidden border-y border-rule py-3">
                 <MandiMap mandis={mandis} />
-              </Panel>
+              </div>
             </section>
 
-            <section aria-labelledby="provenance-links" className="space-y-3">
+            <section aria-labelledby="provenance-links" className="space-y-4">
               <SectionHeading id="provenance-links">Where these numbers come from</SectionHeading>
               <ul className="space-y-3 text-sm leading-relaxed text-ink-2">
                 <li>
