@@ -97,7 +97,9 @@ snapshot. The current ranking order is therefore driven by forecast price and tr
 
 ## Deployment
 
-- Streamlit Cloud: deploy `app/streamlit_app.py`.
+Deploy the release branch `finish/portfolio-release` (the tagged release commit).
+
+- Streamlit Cloud: deploy `app/streamlit_app.py` from `finish/portfolio-release`.
 - Vercel (optional): deploy with root directory `web`; no environment variables are required.
 - Render API (optional): deploy with `requirements-api.txt` and start command
   `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.

@@ -229,12 +229,18 @@ Requires a CEDA API token for the fetch step — create `.env` from `.env.exampl
 
 ## Deploy (optional)
 
+Deploy the release branch `finish/portfolio-release` — it carries the portfolio release
+(the tagged commit); `main` may not contain it yet.
+
 1. **Streamlit Cloud:** [share.streamlit.io](https://share.streamlit.io) → New app → repository,
-   branch `main`, Main file `app/streamlit_app.py`. No secrets required.
-2. **Vercel (Next.js):** import the repo with **Root Directory** set to `web`. Static export; no
-   environment variables required. See [docs/DEPLOY_FRONTEND.md](docs/DEPLOY_FRONTEND.md).
-3. **Render (FastAPI, optional):** deploy `api/` with `requirements-api.txt`; start command
-   `uvicorn api.main:app --host 0.0.0.0 --port $PORT`. See [docs/DEPLOY_API.md](docs/DEPLOY_API.md).
+   branch `finish/portfolio-release`, Main file `app/streamlit_app.py`. No secrets required.
+2. **Vercel (Next.js):** import the repo with **Root Directory** set to `web` and the
+   production branch set to `finish/portfolio-release` (or deploy that branch explicitly).
+   Static export; no environment variables required. See
+   [docs/DEPLOY_FRONTEND.md](docs/DEPLOY_FRONTEND.md).
+3. **Render (FastAPI, optional):** deploy `api/` from `finish/portfolio-release` with
+   `requirements-api.txt`; start command `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
+   See [docs/DEPLOY_API.md](docs/DEPLOY_API.md).
 
 Public URLs for this release are recorded in
 [docs/portfolio/RELEASE_GATES.md](docs/portfolio/RELEASE_GATES.md) once deployment verification
