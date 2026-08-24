@@ -115,7 +115,7 @@ describe("RecommendationControls rendering and interaction", () => {
     );
   });
 
-  it("preserves the entered value when input is invalid and shows an alert", async () => {
+  it("preserves the entered value when input is invalid and shows the stable message slot", async () => {
     const user = userEvent.setup();
     renderWithRouter(<LiveValidationHarness />);
     const lat = screen.getByLabelText("Latitude") as HTMLInputElement;
@@ -123,25 +123,28 @@ describe("RecommendationControls rendering and interaction", () => {
     await user.type(lat, "123.9");
     fireEvent.blur(lat);
     await waitFor(() => {
-      const alert = screen.getByRole("alert");
-      assert.match(alert.textContent!, /between .+ and 90 degrees/);
+      const slot = document.getElementById("wb-lat-message-slot");
+      assert.ok(slot);
+      assert.match(slot!.textContent!, /between .+ and 90 degrees/);
     });
     assert.equal(lat.value, "123.9");
     assert.equal(lat.getAttribute("aria-invalid"), "true");
   });
 
-  it("clears the error once the value becomes valid again", async () => {
+  it("restores helper text without removing the message slot", async () => {
     const user = userEvent.setup();
     renderWithRouter(<LiveValidationHarness />);
     const lat = screen.getByLabelText("Latitude") as HTMLInputElement;
     await user.clear(lat);
     await user.type(lat, "9999");
     fireEvent.blur(lat);
-    await waitFor(() => assert.ok(screen.getByRole("alert")));
+    await waitFor(() => assert.ok(document.getElementById("wb-lat-message-slot")));
+    const slot = document.getElementById("wb-lat-message-slot")!;
     await user.clear(lat);
     await user.type(lat, "19.99");
     fireEvent.blur(lat);
-    await waitFor(() => assert.equal(screen.queryByRole("alert"), null));
+    await waitFor(() => assert.equal(document.getElementById("wb-lat-message-slot"), slot));
+    assert.match(slot.textContent ?? "", /Decimal degrees/);
     assert.equal(lat.value, "19.99");
   });
 

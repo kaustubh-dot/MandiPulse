@@ -1,6 +1,6 @@
 // Market Atlas Workbench primitives.
 // Small, token-driven building blocks shared by every route. Components must
-// reference semantic tokens only — never raw color values.
+// reference semantic tokens only - never raw color values.
 
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -19,7 +19,7 @@ export function PageHeader({
   return (
     <header className="max-w-3xl space-y-2">
       {eyebrow ? (
-        <p className="text-sm font-bold uppercase tracking-wide text-muted">{eyebrow}</p>
+        <p className="text-sm font-medium leading-5 text-muted">{eyebrow}</p>
       ) : null}
       <h1 className="font-display text-4xl leading-[1.05] text-ink sm:text-5xl">{title}</h1>
       {intro ? <div className="text-base leading-7 text-ink-2">{intro}</div> : null}
@@ -29,10 +29,7 @@ export function PageHeader({
 
 export function SectionHeading({ id, children }: { id?: string; children: ReactNode }) {
   return (
-    <h2
-      id={id}
-      className="border-b border-rule pb-2 font-display text-2xl leading-tight text-ink"
-    >
+    <h2 id={id} className="border-b border-rule pb-3 font-display text-3xl font-normal leading-none text-ink">
       {children}
     </h2>
   );
@@ -46,7 +43,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-panel border border-rule bg-surface p-4 ${className}`}>
+    <section className={`border-y border-rule bg-transparent py-5 ${className}`}>
       {children}
     </section>
   );
@@ -54,11 +51,38 @@ export function Panel({
 
 type NoticeTone = "info" | "warning" | "danger" | "success";
 
-const NOTICE_TONE_STYLES: Record<NoticeTone, { border: string; label: string }> = {
-  info: { border: "border-info", label: "Notice" },
-  warning: { border: "border-warning", label: "Caution" },
-  danger: { border: "border-danger", label: "Problem" },
-  success: { border: "border-success", label: "OK" },
+const NOTICE_TONE_STYLES: Record<
+  NoticeTone,
+  { border: string; surface: string; label: string; title: string; text: string }
+> = {
+  info: {
+    border: "border-info",
+    surface: "bg-paper-2",
+    label: "Notice",
+    title: "Notice",
+    text: "text-info",
+  },
+  warning: {
+    border: "border-warning",
+    surface: "bg-paper-2",
+    label: "Caution",
+    title: "Caution",
+    text: "text-warning",
+  },
+  danger: {
+    border: "border-danger",
+    surface: "bg-paper-2",
+    label: "Problem",
+    title: "Problem",
+    text: "text-danger",
+  },
+  success: {
+    border: "border-success",
+    surface: "bg-paper-2",
+    label: "OK",
+    title: "OK",
+    text: "text-success",
+  },
 };
 
 // Status is carried by text, never by color alone: each notice renders its
@@ -78,11 +102,9 @@ export function StatusNotice({
   return (
     <div
       role={tone === "danger" ? "alert" : "status"}
-      className={`rounded-panel border-l-4 bg-paper-2 p-4 ${styles.border}`}
+      className={`border-l-2 ${styles.border} ${styles.surface} p-4`}
     >
-      <p className="text-xs font-bold uppercase tracking-wide text-muted">
-        {title ?? styles.label}
-      </p>
+      <p className={`text-xs font-semibold leading-5 ${styles.text}`}>{title ?? styles.title}</p>
       <div className="mt-1 text-sm leading-relaxed text-ink-2">{children}</div>
       {action ? <div className="mt-3">{action}</div> : null}
     </div>
@@ -99,12 +121,8 @@ export function EvidenceBlock({
   className?: string;
 }) {
   return (
-    <div
-      className={`rounded-panel border border-rule bg-paper-2 p-4${
-        className ? ` ${className}` : ""
-      }`}
-    >
-      <p className="text-xs font-bold uppercase tracking-wide text-muted">{title}</p>
+    <div className={`border-y border-rule py-4${className ? ` ${className}` : ""}`}>
+      <p className="text-xs font-semibold leading-5 text-muted">{title}</p>
       <dl className="mt-2 grid grid-cols-[minmax(9rem,auto)_1fr] gap-x-4 gap-y-1 text-sm">
         {rows.map((row) => (
           <div key={row.label} className="contents">
@@ -120,7 +138,7 @@ export function EvidenceBlock({
 export function SnapshotNotice() {
   return (
     <StatusNotice tone="info" title="Data status">
-      <span className="numeric">{SNAPSHOT_LABEL}</span> — frozen demonstration data.
+      <span className="numeric">{SNAPSHOT_LABEL}</span> - frozen demonstration data.
       Figures come from a fixed offline snapshot; no live market feed is queried.
     </StatusNotice>
   );
@@ -128,54 +146,96 @@ export function SnapshotNotice() {
 
 export const buttonClass = {
   primary:
-    "inline-flex min-h-11 items-center justify-center rounded-control bg-ink px-4 text-sm font-bold text-paper motion-safe-transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex min-h-11 items-center justify-center rounded-control bg-ink px-4 text-sm font-bold text-paper whitespace-nowrap motion-safe-transition hover:opacity-90 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-[0.55] aria-busy:cursor-wait data-[state=error]:outline-danger data-[state=success]:outline-success",
   secondary:
-    "inline-flex min-h-11 items-center justify-center rounded-control border border-rule-strong px-4 text-sm font-bold text-ink motion-safe-transition hover:bg-paper-2 disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex min-h-11 items-center justify-center rounded-control border border-rule-strong px-4 text-sm font-bold text-ink whitespace-nowrap motion-safe-transition hover:opacity-90 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-[0.55] aria-busy:cursor-wait data-[state=error]:outline-danger data-[state=success]:outline-success",
 } as const;
 
+type FieldState = "default" | "loading" | "success" | "error";
+
 const inputBaseClass =
-  "min-h-11 w-full rounded-control border bg-surface px-3 py-2 text-base text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe-transition";
+  "min-h-11 w-full rounded-control border bg-surface px-3 py-2 text-base text-ink placeholder:text-muted outline outline-1 outline-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-[0.55] motion-safe-transition";
 
 function fieldMessageId(id: string) {
-  return `${id}-message`;
+  return `${id}-message-slot`;
+}
+
+function deriveFieldState({
+  error,
+  busy,
+  valid,
+}: {
+  error?: string;
+  busy?: boolean;
+  valid?: boolean;
+}): FieldState {
+  return error ? "error" : busy ? "loading" : valid ? "success" : "default";
+}
+
+function fieldControlClass(state: FieldState) {
+  switch (state) {
+    case "error":
+      return `${inputBaseClass} border-danger data-[state=error]:outline-danger`;
+    case "loading":
+      return `${inputBaseClass} border-warning data-[state=loading]:outline-warning`;
+    case "success":
+      return `${inputBaseClass} border-success data-[state=success]:outline-success`;
+    default:
+      return `${inputBaseClass} border-rule data-[state=default]:outline-focus`;
+  }
 }
 
 function FieldFrame({
   id,
   label,
-  hint,
-  error,
   describedBy,
+  state,
+  message,
   children,
 }: {
   id: string;
   label: string;
-  hint?: string;
-  error?: string;
   describedBy?: string | undefined;
+  state: FieldState;
+  message?: string;
   children: (ariaDescribedBy: string | undefined) => ReactNode;
 }) {
-  const messageId = error || hint ? fieldMessageId(id) : undefined;
+  const messageId = fieldMessageId(id);
   const finalDescribedBy = [describedBy, messageId].filter(Boolean).join(" ") || undefined;
   return (
     <div className="space-y-1">
       <label htmlFor={id} className="block text-sm font-bold text-ink">
         {label}
       </label>
-      {hint && !error ? (
-        <p id={fieldMessageId(id)} className="text-xs leading-snug text-muted">
-          {hint}
-        </p>
-      ) : null}
       {children(finalDescribedBy)}
-      {error ? (
-        <p id={fieldMessageId(id)} role="alert" className="text-xs font-bold text-danger">
-          {error}
-        </p>
-      ) : null}
+      <p
+        id={messageId}
+        role={state === "error" ? "alert" : undefined}
+        aria-live={state === "error" ? "assertive" : "polite"}
+        className={`min-h-[1lh] text-sm leading-snug ${
+          state === "error"
+            ? "text-danger"
+            : state === "success"
+              ? "text-success"
+              : "text-muted"
+        }`}
+      >
+        {message ?? "\u00a0"}
+      </p>
     </div>
   );
 }
+
+type FieldProps = {
+  id: string;
+  label: string;
+  hint?: string;
+  error?: string;
+  busy?: boolean;
+  valid?: boolean;
+  disabled?: boolean;
+  describedBy?: string;
+};
 
 export function TextField({
   id,
@@ -184,22 +244,22 @@ export function TextField({
   onChange,
   hint,
   error,
+  busy,
+  valid,
+  disabled,
   inputMode,
   autoComplete,
   describedBy,
-}: {
-  id: string;
-  label: string;
+}: FieldProps & {
   value: string;
   onChange: (value: string) => void;
-  hint?: string;
-  error?: string;
   inputMode?: "numeric" | "decimal" | "text";
   autoComplete?: string;
-  describedBy?: string;
 }) {
+  const state = deriveFieldState({ error, busy, valid });
+  const message = error ?? hint;
   return (
-    <FieldFrame id={id} label={label} hint={hint} error={error} describedBy={describedBy}>
+    <FieldFrame id={id} label={label} state={state} message={message} describedBy={describedBy}>
       {(ariaDescribedBy) => (
         <input
           id={id}
@@ -208,11 +268,12 @@ export function TextField({
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          aria-invalid={error ? true : undefined}
+          disabled={disabled}
+          aria-busy={busy || undefined}
+          aria-invalid={state === "error"}
           aria-describedby={ariaDescribedBy}
-          className={`${inputBaseClass} ${
-            error ? "border-danger" : "border-rule"
-          } focus-visible:outline-focus`}
+          data-state={state}
+          className={fieldControlClass(state)}
         />
       )}
     </FieldFrame>
@@ -227,29 +288,30 @@ export function SelectField({
   options,
   hint,
   error,
+  busy,
+  valid,
+  disabled,
   describedBy,
-}: {
-  id: string;
-  label: string;
+}: FieldProps & {
   value: string;
   onChange: (value: string) => void;
   options: Array<{ value: string; label: string }>;
-  hint?: string;
-  error?: string;
-  describedBy?: string;
 }) {
+  const state = deriveFieldState({ error, busy, valid });
+  const message = error ?? hint;
   return (
-    <FieldFrame id={id} label={label} hint={hint} error={error} describedBy={describedBy}>
+    <FieldFrame id={id} label={label} state={state} message={message} describedBy={describedBy}>
       {(ariaDescribedBy) => (
         <select
           id={id}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          aria-invalid={error ? true : undefined}
+          disabled={disabled}
+          aria-busy={busy || undefined}
+          aria-invalid={state === "error"}
           aria-describedby={ariaDescribedBy}
-          className={`${inputBaseClass} ${
-            error ? "border-danger" : "border-rule"
-          } focus-visible:outline-focus`}
+          data-state={state}
+          className={fieldControlClass(state)}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
