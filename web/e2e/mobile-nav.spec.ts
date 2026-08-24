@@ -29,6 +29,9 @@ test.describe("mobile navigation sheet", () => {
     await expect(sheet).toBeVisible();
     await expect(sheet).toHaveAttribute("aria-modal", "true");
     await expect(menu).toHaveAttribute("aria-expanded", "true");
+    await expect
+      .poll(async () => page.evaluate(() => document.body.style.overflow))
+      .toBe("hidden");
     for (const label of SHEET_LINKS) {
       await expect(sheet.getByRole("link", { name: label })).toBeVisible();
     }
@@ -40,6 +43,9 @@ test.describe("mobile navigation sheet", () => {
     await expect(sheet).toBeHidden();
     await expect(menu).toHaveAttribute("aria-expanded", "false");
     await expect(menu).toBeFocused();
+    await expect
+      .poll(async () => page.evaluate(() => document.body.style.overflow))
+      .toBe("");
 
     expectNoPageProblems(problems);
   });

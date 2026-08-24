@@ -92,6 +92,22 @@ describe("AppShell mobile sheet", () => {
     await user.click(dialogLinks[0]!);
     await waitFor(() => assert.equal(screen.queryByRole("dialog"), null));
   });
+
+  it("traps focus inside the sheet and locks background scroll", async () => {
+    const user = userEvent.setup();
+    renderShell();
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    const dialog = screen.getByRole("dialog", { name: "Navigation" });
+    assert.equal(document.body.style.overflow, "hidden");
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      "a[href], button:not([disabled])"
+    );
+    focusable[focusable.length - 1]!.focus();
+    await user.keyboard("{Tab}");
+    assert.equal(document.activeElement, focusable[0]);
+    await user.keyboard("{Escape}");
+    assert.equal(document.body.style.overflow, "");
+  });
 });
 
 describe("AppShell theme toggle", () => {
