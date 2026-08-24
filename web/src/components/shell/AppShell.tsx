@@ -147,6 +147,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!sheetOpen) return;
     const sheet = sheetRef.current;
+    const menuButton = menuButtonRef.current;
     bodyOverflowRef.current = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -193,7 +194,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = bodyOverflowRef.current;
-      menuButtonRef.current?.focus();
+      menuButton?.focus();
     };
   }, [sheetOpen]);
 

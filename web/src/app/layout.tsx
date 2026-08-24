@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
+import { Cormorant_Garamond, IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/shell/AppShell";
+
+const cormorant = Cormorant_Garamond<"--font-cormorant">({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const manrope = Manrope<"--font-manrope">({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-manrope",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono<"--font-plex-mono">({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-plex-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "MandiPulse India",
@@ -11,11 +32,6 @@ export const metadata: Metadata = {
 
 // Applies the persisted or system theme before first paint to avoid a flash.
 const themeInitScript = `(function(){try{var s=localStorage.getItem("mp-theme");var m=window.matchMedia("(prefers-color-scheme: dark)").matches;var t=s||(m?"dark":"light");document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
-const fontVariables = {
-  "--font-cormorant": "Georgia",
-  "--font-manrope": '"Segoe UI"',
-  "--font-plex-mono": '"Cascadia Mono"',
-} as CSSProperties;
 
 export default function RootLayout({
   children,
@@ -26,7 +42,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme="light"
-      style={fontVariables}
+      className={`${cormorant.variable} ${manrope.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
       <head>
