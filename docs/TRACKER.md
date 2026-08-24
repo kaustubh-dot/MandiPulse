@@ -69,7 +69,7 @@ approved.
 | F4 | Pending | Replace the complete Next.js interface |
 | F5 | Done 2026-08-23 | Replaced the complete Streamlit interface (commit 7120c7c) |
 | F6 | Done 2026-08-23 | Added component, browser, accessibility, parity, and Streamlit smoke verification |
-| F7 | Pending | Complete two-pass visual, responsive, accessibility, and performance acceptance |
+| F7 | Done 2026-08-23 | Complete two-pass visual, responsive, accessibility, and performance acceptance |
 | F8 | Pending | Reconcile docs, deploy both interfaces, verify public URLs, and record the release |
 
 Progress and exit criteria are defined in `docs/IMPLEMENTATION_PLAN.md` and

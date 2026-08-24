@@ -62,10 +62,10 @@
   --mp-accent: oklch(69% 0.17 70);
   --mp-accent-ink: oklch(21% 0.04 60);
   --mp-focus: oklch(57% 0.19 255);
-  --mp-success: oklch(52% 0.14 150);
-  --mp-warning: oklch(63% 0.16 70);
+  --mp-success: oklch(51% 0.14 150);
+  --mp-warning: oklch(53% 0.16 70);
   --mp-danger: oklch(55% 0.19 28);
-  --mp-info: oklch(55% 0.15 250);
+  --mp-info: oklch(52.5% 0.15 250);
 
   --dur-micro: 120ms;
   --dur-short: 220ms;

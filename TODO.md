@@ -61,10 +61,10 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F7 — Acceptance
 
-- [ ] **F7-01:** Complete structural visual review pass.
-- [ ] **F7-02:** Complete refinement visual review pass and freeze reference screenshots.
-- [ ] **F7-03:** Pass keyboard, focus, contrast, zoom, and reduced-motion checks.
-- [ ] **F7-04:** Meet the documented production performance budgets.
+- [x] **F7-01:** Complete structural visual review pass.
+- [x] **F7-02:** Complete refinement visual review pass and freeze reference screenshots.
+- [x] **F7-03:** Pass keyboard, focus, contrast, zoom, and reduced-motion checks.
+- [x] **F7-04:** Meet the documented production performance budgets.
 
 ## F8 — Documentation and release
 

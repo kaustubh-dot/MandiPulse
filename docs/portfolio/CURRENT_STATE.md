@@ -18,10 +18,35 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F7 — visual, accessibility, and performance acceptance |
+| Active implementation phase | F8 — documentation and release |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending |
-| Next action | Two-pass structural and refinement visual review; freeze reference screenshots |
+| Next action | Push the release commit, deploy both surfaces, verify signed-out, and record the release record |
+
+### F7 outcome (2026-08-23)
+
+Both review passes are complete and the deferred accessibility debts are cleared. The
+four WCAG-AA token contrast failures were fixed at the token source — light-theme
+success, warning, and info darkened minimally in OKLCH space (hue and chroma
+preserved) until every pair clears 4.6:1 against paper, paper-2, and surface — and
+synchronized across `web/src/app/globals.css`, the canonical `docs/DESIGN.md` block,
+`src/mandipulse/app/design.py`, and `.streamlit/config.toml`; the e2e axe allowlist
+is now empty and stays green. Refinement fixes from the visual pass: the overview
+input-summary panel gained an explicit grid span (its labels were clipped), and the
+Decision workbench hints no longer render literal `\u2212` escape text (JSX attributes
+do not process JS escapes; real U+2212 characters are used). `formatDateIso` now
+rejects impossible day-month combinations. Performance: the forecast chart is
+lazy-loaded via `next/dynamic` (matching the existing map pattern), lifting
+`/forecast/` from Lighthouse 86 to a 93 median. Final desktop-profile medians
+(Lighthouse 13.4.1, Chrome headless, http-server on the static export, 3 runs/route):
+performance 98/94/93/94, accessibility 100 on all routes, LCP 1.12-1.64 s,
+CLS 0.019-0.043, TBT 0-96 ms. Verification sweep: 4 routes x 7 widths (320-1920) x
+2 themes with zero horizontal overflow; keyboard pass (skip link, visible focus rings
+on every tab stop, Escape restoring focus from the mobile sheet); reduced-motion
+collapses transitions (0.22 s -> 0.12 s); 200% zoom equivalence clean; Streamlit
+swept at 768/1024/1440 with zero non-benign console errors. Reference screenshots
+frozen in `web/public/screenshots/` (decision, forecast, coverage, dark overview,
+mobile sheet). Gates: pytest 230 passed, web unit 113, components 34, e2e 17 passed.
 
 ### F6 outcome (2026-08-23)
 

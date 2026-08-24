@@ -116,10 +116,10 @@ inside components. Add a named token here first when the system genuinely needs 
   --color-accent-ink: oklch(21% 0.04 60);
   --color-focus: oklch(57% 0.19 255);
 
-  --color-success: oklch(52% 0.14 150);
-  --color-warning: oklch(63% 0.16 70);
+  --color-success: oklch(51% 0.14 150);
+  --color-warning: oklch(53% 0.16 70);
   --color-danger: oklch(55% 0.19 28);
-  --color-info: oklch(55% 0.15 250);
+  --color-info: oklch(52.5% 0.15 250);
 }
 ```
 

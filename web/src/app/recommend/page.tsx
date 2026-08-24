@@ -300,10 +300,11 @@ function RecommendWorkbench() {
               {noEligibleRows ? (
                 <StatusNotice tone="warning" title="No eligible candidates">
                   {policyResult?.eligibleAsOfCount ?? 0} forecasts match the current
-                  window, {policyResult?.excludedStaleCount ?? 0} are excluded as stale,
-                  and {policyResult?.excludedRadiusCount ?? 0} sit beyond{" "}
-                  {formatKm(decision.radius, 0)}. Increase the maximum road radius, then
-                  compare again.
+                  window; {policyResult?.excludedStaleCount ?? 0} are excluded as stale
+                  by the canonical as-of policy. Of those fresh forecasts,{" "}
+                  {policyResult?.excludedRadiusCount ?? 0} sit beyond{" "}
+                  {formatKm(decision.radius, 0)}. Increase the maximum road radius,
+                  then compare again.
                 </StatusNotice>
               ) : (
                 <>
@@ -430,7 +431,7 @@ function RecommendWorkbench() {
                     value: formatCount(policyResult?.excludedStaleCount ?? 0),
                   },
                   {
-                    label: "Beyond radius excluded",
+                    label: "Beyond radius (of fresh)",
                     value: formatCount(policyResult?.excludedRadiusCount ?? 0),
                   },
                   {

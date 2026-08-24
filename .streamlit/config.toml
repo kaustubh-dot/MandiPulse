@@ -1,4 +1,4 @@
-# MandiPulse — Streamlit theme
+﻿# MandiPulse — Streamlit theme
 # Mirrors the "Market Atlas Workbench" token set (OKLCH canonical values from
 # web/src/app/globals.css direction); hex values are author-time sRGB
 # conversions computed in src/mandipulse/app/design.py (LIGHT_TOKENS).
@@ -31,7 +31,7 @@ baseRadius = "0.5rem"                # panel radius (design.RADII["panel"])
 #   forecast/signal   #dc8400 (accent), dashed
 #   confidence band   #dc8400 @ ~15% opacity
 #   gridlines         #bac6cf (rule); axis/zero lines #8c9aa7 (rule-strong)
-#   risk: low #0a7e3a (success) · medium #c57300 (warning) · high #c93029
+#   risk: low #017b37 (success) · medium #a45500 (warning) · high #c93029
 #   (danger) — always rendered WITH the level label, never color alone.
 
 [server]

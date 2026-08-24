@@ -1,9 +1,19 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import BacktestSummary from "@/components/BacktestSummary";
-import ForecastChart from "@/components/ForecastChart";
+const ForecastChart = dynamic(() => import("@/components/ForecastChart"), {
+  ssr: false,
+  loading: () => (
+    <div
+      role="img"
+      aria-label="Price chart loading"
+      className="h-[320px] w-full rounded-panel border border-rule bg-paper-2"
+    />
+  ),
+});
 import {
   PageHeader,
   Panel,

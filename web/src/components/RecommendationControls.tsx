@@ -1,4 +1,4 @@
-import type { Meta } from "@/lib/types";
+﻿import type { Meta } from "@/lib/types";
 import { Panel, SelectField, TextField, buttonClass } from "@/components/ui/primitives";
 
 export const FARMER_PRESETS = [
@@ -175,7 +175,7 @@ export default function RecommendationControls({
             value={drafts.lat}
             onChange={(value) => onChange("lat", value)}
             error={errors.lat}
-            hint="Decimal degrees, \u221290 to 90."
+            hint="Decimal degrees, −90 to 90."
             inputMode="decimal"
           />
         </div>
@@ -187,7 +187,7 @@ export default function RecommendationControls({
             value={drafts.lon}
             onChange={(value) => onChange("lon", value)}
             error={errors.lon}
-            hint="Decimal degrees, \u2212180 to 180."
+            hint="Decimal degrees, −180 to 180."
             inputMode="decimal"
           />
         </div>

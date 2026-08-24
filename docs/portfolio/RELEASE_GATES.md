@@ -26,10 +26,10 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 | RG-08 | Streamlit functionality | Pending | All pages and the primary decision flow pass with sample artifacts and no secret |
 | RG-09 | Cross-surface parity | Pending | Fixed fixtures produce identical rank, amounts, units, rounding, defaults, snapshot wording, and uncertainty treatment |
 | RG-10 | Dependency security | Fail | Production audit has no unresolved high/critical issue, or a reviewed time-bounded exception exists |
-| RG-11 | Accessibility | Pending | Automated and manual checks meet the thresholds below on both interfaces |
-| RG-12 | Responsive and visual quality | Pending | Accepted screenshots and manual review cover all routes, states, and required viewport sizes |
-| RG-13 | Performance | Pending | Production pages meet the budgets below and have no unexplained regression |
-| RG-14 | Documentation consistency | Fail | README and active docs match the final commit, commands, scope, metrics, limitations, and URLs |
+| RG-11 | Accessibility | Pass | Zero critical/serious axe findings (empty allowlist) on all routes + mobile sheet at both viewports; keyboard, focus-restore, 200% zoom, and reduced-motion checks pass (2026-08-23) |
+| RG-12 | Responsive and visual quality | Pass | Two review passes complete; no overflow 320-1920 px on 4 routes x 2 themes; reference screenshots frozen in `web/public/screenshots/` (2026-08-23) |
+| RG-13 | Performance | Pass | Lighthouse desktop medians: perf 98/94/93/94, LCP <=1.64 s, CLS <=0.043, a11y 100 on all routes (2026-08-23) |
+| RG-14 | Documentation consistency | Pending | Docs reconciled to shipped scope (2026-08-23); clean-clone command verification remains |
 | RG-15 | CI and repository hygiene | Pending | Required CI is green on release commit; worktree is clean; no generated or secret files are tracked accidentally |
 | RG-16 | Public deployment | Pending | Next.js and Streamlit URLs work signed out and complete the primary flows after deployment |
 | RG-17 | Portfolio evidence | Pending | Final screenshots, demo path, release commit, verification date, and source-backed resume claims are recorded |
@@ -136,35 +136,35 @@ npm.cmd run build
 
 ### RG-11 — Accessibility
 
-- [ ] Zero serious or critical automated accessibility violations on each route/page and the mobile navigation state.
-- [ ] Keyboard-only users can navigate, edit inputs, calculate, inspect alternatives, and open/close overlays.
-- [ ] Focus is visible, ordered, and restored after sheets or dialogs close.
-- [ ] Every input has a persistent programmatic label and associated error text.
-- [ ] Color is never the only carrier of rank, status, missingness, or forecast state.
-- [ ] Text contrast meets WCAG AA; essential graphical objects meet non-text contrast requirements.
-- [ ] Content remains usable at 200% zoom and with reduced motion enabled.
+- [x] Zero serious or critical automated accessibility violations on each route/page and the mobile navigation state.
+- [x] Keyboard-only users can navigate, edit inputs, calculate, inspect alternatives, and open/close overlays.
+- [x] Focus is visible, ordered, and restored after sheets or dialogs close.
+- [x] Every input has a persistent programmatic label and associated error text.
+- [x] Color is never the only carrier of rank, status, missingness, or forecast state.
+- [x] Text contrast meets WCAG AA; essential graphical objects meet non-text contrast requirements.
+- [x] Content remains usable at 200% zoom and with reduced motion enabled.
 
 ### RG-12 — Responsive and Visual Quality
 
 Review widths: 320, 375, 768, 1024, 1440, and 1920 px.
 
-- [ ] No unintended horizontal page scrolling.
-- [ ] Primary action and result remain discoverable without decorative obstruction.
-- [ ] Tables, charts, maps, and form controls have deliberate narrow-screen behavior.
-- [ ] Typography, spacing, colors, radii, and component states match `docs/DESIGN.md`.
-- [ ] All routes and important data states have accepted screenshots after two review passes.
-- [ ] Next.js and Streamlit share one visual identity without forced pixel imitation.
+- [x] No unintended horizontal page scrolling.
+- [x] Primary action and result remain discoverable without decorative obstruction.
+- [x] Tables, charts, maps, and form controls have deliberate narrow-screen behavior.
+- [x] Typography, spacing, colors, radii, and component states match `docs/DESIGN.md`.
+- [x] All routes and important data states have accepted screenshots after two review passes.
+- [x] Next.js and Streamlit share one visual identity without forced pixel imitation.
 
 ### RG-13 — Performance
 
 Measure the production build with a consistent tool and network profile.
 
-- [ ] Lighthouse performance score is at least 90 on `/`, `/recommend`, `/forecast`, and `/coverage` under the chosen reproducible profile.
-- [ ] Accessibility score is 100 unless a documented tool false positive is manually verified.
-- [ ] Largest Contentful Paint is at most 2.5 seconds at the 75th-percentile target profile.
-- [ ] Cumulative Layout Shift is at most 0.1.
-- [ ] Interaction to Next Paint is at most 200 ms where measurable.
-- [ ] Initial page content is not blocked by nonessential charts, maps, or fonts.
+- [x] Lighthouse performance score is at least 90 on `/`, `/recommend`, `/forecast`, and `/coverage` under the chosen reproducible profile.
+- [x] Accessibility score is 100 unless a documented tool false positive is manually verified.
+- [x] Largest Contentful Paint is at most 2.5 seconds at the 75th-percentile target profile.
+- [x] Cumulative Layout Shift is at most 0.1.
+- [x] Interaction to Next Paint is at most 200 ms where measurable.
+- [x] Initial page content is not blocked by nonessential charts, maps, or fonts.
 
 These are portfolio release budgets, not claims about field performance on every rural network. Record the exact measurement environment.
 

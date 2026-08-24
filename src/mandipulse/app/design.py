@@ -39,10 +39,10 @@ LIGHT_TOKENS: dict[str, dict[str, str]] = {
     "accent": {"oklch": "oklch(69% 0.17 70)", "hex": "#dc8400"},
     "accent-ink": {"oklch": "oklch(21% 0.04 60)", "hex": "#251304"},
     "focus": {"oklch": "oklch(57% 0.19 255)", "hex": "#0074e3"},
-    "success": {"oklch": "oklch(52% 0.14 150)", "hex": "#0a7e3a"},
-    "warning": {"oklch": "oklch(63% 0.16 70)", "hex": "#c57300"},
+    "success": {"oklch": "oklch(51% 0.14 150)", "hex": "#017b37"},
+    "warning": {"oklch": "oklch(53% 0.16 70)", "hex": "#a45500"},
     "danger": {"oklch": "oklch(55% 0.19 28)", "hex": "#c93029"},
-    "info": {"oklch": "oklch(55% 0.15 250)", "hex": "#0f74c5"},
+    "info": {"oklch": "oklch(52.5% 0.15 250)", "hex": "#006cbc"},
 }
 
 # Dark-theme equivalents (deep blue-black surfaces, near-white ink). Derived

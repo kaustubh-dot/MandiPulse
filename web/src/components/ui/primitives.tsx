@@ -92,12 +92,18 @@ export function StatusNotice({
 export function EvidenceBlock({
   title,
   rows,
+  className,
 }: {
   title: string;
   rows: Array<{ label: string; value: ReactNode }>;
+  className?: string;
 }) {
   return (
-    <div className="rounded-panel border border-rule bg-paper-2 p-4">
+    <div
+      className={`rounded-panel border border-rule bg-paper-2 p-4${
+        className ? ` ${className}` : ""
+      }`}
+    >
       <p className="text-xs font-bold uppercase tracking-wide text-muted">{title}</p>
       <dl className="mt-2 grid grid-cols-[minmax(9rem,auto)_1fr] gap-x-4 gap-y-1 text-sm">
         {rows.map((row) => (

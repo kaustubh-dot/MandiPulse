@@ -285,9 +285,10 @@ with results_col:
     if ranked.empty:
         st.warning(
             f"No candidates within {format_km(radius_km, 0)}: {len(candidates)} eligible "
-            f"forecasts, {stale_excluded} excluded as stale by the canonical as-of policy, "
-            f"and {beyond_radius_excluded} beyond the radius. Increase the maximum road "
-            "radius, then compare again."
+            f"forecasts at the canonical as-of date ({stale_excluded} excluded as stale "
+            "by the canonical as-of policy), and "
+            f"{beyond_radius_excluded} of those fresh forecasts sit beyond the radius. "
+            "Increase the maximum road radius, then compare again."
         )
         st.stop()
     ranked["rank"] = range(1, len(ranked) + 1)
@@ -303,7 +304,7 @@ with results_col:
     st.caption(
         f"{len(candidates)} eligible forecasts at canonical as-of "
         f"{format_date_iso(canonical_as_of)} · {stale_excluded} stale excluded · "
-        f"{beyond_radius_excluded} beyond {format_km(radius_km, 0)} radius · "
+        f"{beyond_radius_excluded} of those beyond {format_km(radius_km, 0)} radius · "
         f"showing {len(display_frame)} of up to {MAX_ALTERNATIVES}."
     )
 

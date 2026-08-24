@@ -127,6 +127,9 @@ describe("formatDateIso", () => {
     assert.strictEqual(formatDateIso("30/10/2025"), "30/10/2025");
     assert.strictEqual(formatDateIso("2025-13-01"), "2025-13-01");
     assert.strictEqual(formatDateIso("2025-00-10"), "2025-00-10");
+    assert.strictEqual(formatDateIso("2025-02-30"), "2025-02-30");
+    assert.strictEqual(formatDateIso("2025-04-31"), "2025-04-31");
+    assert.strictEqual(formatDateIso("2023-02-29"), "2023-02-29");
   });
 });
 

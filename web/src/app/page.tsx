@@ -174,6 +174,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <EvidenceBlock
+              className="lg:col-span-4"
               title="Input summary"
               rows={[
                 {
@@ -191,14 +192,13 @@ export default function Home() {
             />
             <Panel className="lg:col-span-8">
               <p className="text-sm leading-relaxed text-ink-2">
-                This preview ranks candidates for the default location without any
-                configuration. Open the workbench to set your own coordinates, lot
+                This preview ranks candidates for the default location without any                configuration. Open the workbench to set your own coordinates, lot
                 size, rate, and radius.
               </p>
               <p className="mt-2 numeric text-xs text-muted">
                 Eligible forecasts: {formatCount(policyResult?.eligibleAsOfCount ?? 0)}{" "}
                 · stale excluded: {formatCount(policyResult?.excludedStaleCount ?? 0)} ·
-                beyond radius excluded:{" "}
+                beyond radius (of fresh):{" "}
                 {formatCount(policyResult?.excludedRadiusCount ?? 0)}
               </p>
             </Panel>

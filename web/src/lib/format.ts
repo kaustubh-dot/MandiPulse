@@ -63,6 +63,13 @@ export function formatDateIso(iso: string): string {
   const [, year, month, day] = match;
   const monthIndex = Number(month) - 1;
   if (monthIndex < 0 || monthIndex > 11) return iso;
+  const probe = new Date(Number(year), monthIndex, Number(day));
+  if (
+    probe.getMonth() !== monthIndex ||
+    probe.getDate() !== Number(day)
+  ) {
+    return iso;
+  }
   return `${Number(day)} ${SHORT_MONTHS[monthIndex]} ${year}`;
 }
 
