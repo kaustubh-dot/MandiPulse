@@ -2,8 +2,8 @@
 
 **Transport-cost-aware mandi decision intelligence for Maharashtra onion farmers.**
 
-[![Tests](https://img.shields.io/badge/tests-230%20passed-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-77.85%25-green)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-235%20passed-brightgreen)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-78.05%25-green)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 
 ## What it does
@@ -114,7 +114,7 @@ black --check api app src scripts tests
 pytest -q
 ```
 
-230 Python tests pass at 77.85% coverage against a 70% floor. The suite covers pipeline smoke tests,
+235 Python tests pass at 78.05% coverage against a 70% floor. The suite covers pipeline smoke tests,
 leakage guards, temporal-split validation, recommendation scoring, schema validation, Streamlit
 smoke tests, and golden-fixture comparisons under `tests/golden/`.
 

@@ -2,9 +2,52 @@ from __future__ import annotations
 
 import math
 import uuid
-from datetime import UTC, datetime
 
 import pandas as pd
+
+
+_FALLBACK_GENERATED_AT = "1970-01-01T00:00:00+00:00"
+
+
+def _stable_generation_timestamp(forecasts: pd.DataFrame) -> str:
+    """Use source-artifact time so identical inputs produce identical output."""
+    for column in ("generated_at", "as_of_date"):
+        if column not in forecasts.columns:
+            continue
+        parsed = pd.to_datetime(forecasts[column], utc=True, errors="coerce").dropna()
+        if not parsed.empty:
+            return parsed.max().isoformat()
+    return _FALLBACK_GENERATED_AT
+
+
+def _stable_recommendation_id(
+    row: pd.Series,
+    generated_at: str,
+    farmer_latitude: float,
+    farmer_longitude: float,
+    cost_per_km_per_quintal: float,
+    road_distance_factor: float,
+    uncertainty_penalty_weight: float,
+    candidate_state: str,
+) -> str:
+    """Create a stable candidate identifier for a reproducible decision snapshot."""
+    forecast_identity = row.get("forecast_id", row["market_id"])
+    if pd.isna(forecast_identity):
+        forecast_identity = row["market_id"]
+    identity = "|".join(
+        [
+            candidate_state,
+            generated_at,
+            str(forecast_identity),
+            str(int(row["market_id"])),
+            f"{farmer_latitude:.12g}",
+            f"{farmer_longitude:.12g}",
+            f"{cost_per_km_per_quintal:.12g}",
+            f"{road_distance_factor:.12g}",
+            f"{uncertainty_penalty_weight:.12g}",
+        ]
+    )
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, identity))
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -100,8 +143,21 @@ def score_recommendations(
         ascending=[False, True],
     ).reset_index(drop=True)
     merged["rank"] = range(1, len(merged) + 1)
-    merged["recommendation_id"] = [str(uuid.uuid4()) for _ in range(len(merged))]
-    merged["generated_at"] = datetime.now(UTC).replace(microsecond=0).isoformat()
+    generated_at = _stable_generation_timestamp(forecasts)
+    merged["recommendation_id"] = merged.apply(
+        lambda row: _stable_recommendation_id(
+            row,
+            generated_at=generated_at,
+            farmer_latitude=farmer_latitude,
+            farmer_longitude=farmer_longitude,
+            cost_per_km_per_quintal=cost_per_km_per_quintal,
+            road_distance_factor=road_distance_factor,
+            uncertainty_penalty_weight=uncertainty_penalty_weight,
+            candidate_state=candidate_state,
+        ),
+        axis=1,
+    )
+    merged["generated_at"] = generated_at
     merged["candidate_states"] = candidate_state
     merged["state"] = candidate_state
     merged["mandi"] = merged["market_name"]

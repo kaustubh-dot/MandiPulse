@@ -13,15 +13,15 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Field | Value |
 |---|---|
 | Branch | `finish/portfolio-release` (created from `main` at `ef4f393`) |
-| Local HEAD | See git log; `main` remains ahead of `origin/main` |
-| Remote relationship | Finish branch is local-only until release gates pass |
-| Worktree | Inherited `web/` changes classified (see F0 classification below) and committed as the F0 baseline; regenerated export artifacts committed with them |
+| Local HEAD | Non-UI hardening commit; see `git log` for the exact hash |
+| Remote relationship | Baseline `ba9535e` was pushed; this non-UI hardening commit still needs CI/push |
+| Worktree | Non-UI changes are committed; UI/design artifacts remain intentionally unstaged for the later redesign |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | F8 — documentation and release |
+| Active implementation phase | Non-UI release hardening complete; UI redo intentionally deferred |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending public deployment verification (RG-16) |
-| Next action | Deploy both surfaces from `finish/portfolio-release`, verify signed-out at desktop and mobile sizes, record URLs in the release record, tag the release commit |
+| Next action | Complete the dedicated UI redesign, then deploy and verify both surfaces; non-UI checks are already rerun |
 
 ### F8 progress (2026-08-24)
 
@@ -35,9 +35,9 @@ repo-relative provenance paths and the reports were regenerated through it), no 
 exercised the API internal-error envelope (added), and cross-surface parity had only two
 committed scenarios (a third fixed far-haul scenario, Nagpur 60 qtl, now has a shared
 golden fixture asserted by both the Python smoke suite and a TypeScript unit test).
-Gates: pytest 233 passed (77.85% coverage), web unit 137, components 34, e2e 17 passed,
-ruff/black clean. Remaining for release: deploy both surfaces, verify signed out,
-record URLs, tag.
+Gates: pytest 235 passed (78.05% coverage), web unit 137, components 34, e2e 17 passed,
+ruff/black clean. Non-UI hardening is complete. Remaining for release: complete the dedicated UI
+redo, deploy both surfaces, verify signed out, record URLs, and tag.
 
 ### F7 outcome (2026-08-23)
 
@@ -203,7 +203,11 @@ recommendations capped by `max_alternatives`). Regeneration re-aligned data with
 | Generated evidence | `public/screenshots/recommendation-flow.svg` | Committed as inherited evidence; reviewed again during F7 freeze |
 | Regenerated | `public/data/*.json` + `manifest.json` | Restored from HEAD, then rebuilt by `build_web_export.py` to realign with the evolved generator |
 
-## 3. Verified Baseline
+## 3. Historical Baseline
+
+The phase notes below preserve the implementation history and are not the current status. The active
+state is the repository snapshot in sections 1–2 and the release gates in
+`docs/portfolio/RELEASE_GATES.md`.
 
 ### Analytical and Python layer (rerun on `finish/portfolio-release`, 2026-08-22)
 
@@ -253,7 +257,8 @@ The locked direction is **Market Atlas Workbench**: a calm, exact decision tool 
 - Structure: persistent decision rail, recommendation workbench, map and evidence views, and a readable long-form method page.
 - Explicit removals: generic card grids, blue software-dashboard chrome, marketing hero composition, decorative farming imagery, glass effects, and constant entrance animation.
 
-The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source interface code has been changed as part of the planning pass.
+The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. Visual/UI acceptance is
+intentionally deferred for a later redesign pass; this review does not certify the current UI as final.
 
 ## 6. Active Blockers
 
@@ -261,9 +266,9 @@ The complete contract is in `docs/DESIGN.md` and `docs/APP_FLOW.md`. No source i
 |---|---|---|
 | P0 | Public ranking vocabulary overstates uncertainty behavior | RESOLVED in F1 — transport-adjusted contract shipped (v2.0.0 export) |
 | P0 | Three high-severity production dependency findings | RESOLVED in F2 — zero audit findings on supported Next.js 16/React 19 |
-| P0 | Both interfaces are explicitly non-final | RESOLVED in F4 (Next.js) and F5 (Streamlit) — both surfaces rebuilt under the locked design contracts |
-| P0 | Frontend verification is logic-heavy and experience-light | RESOLVED in F6 — component, browser, accessibility, responsive, and Streamlit smoke gates are automated and pinned in CI |
-| P0 | Active and historical docs contradict current repository state | Reconcile public docs before release |
+| P0 | Both interfaces are explicitly non-final | Deferred — the existing Next.js and Streamlit surfaces are retained while the dedicated UI redo is pending |
+| P0 | Frontend verification is logic-heavy and experience-light | Deferred — non-UI logic/build checks pass; visual, responsive, accessibility, and performance acceptance follows the UI redo |
+| P0 | Active and historical docs contradict current repository state | Resolved in this documentation cleanup; historical entries are explicitly labeled |
 | P0 | Final public URLs and CI evidence do not exist | Deploy, verify signed out, and record the exact release commit |
 
 Resolved in F0: inherited `web/` work is classified (see F0 classification in section 2) and

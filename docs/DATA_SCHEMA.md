@@ -283,8 +283,8 @@ Table or artifact: `recommendation_outputs`
 
 | Column | Type | Required | Description |
 |---|---|---:|---|
-| `recommendation_id` | string | Yes | Unique recommendation ID |
-| `generated_at` | datetime | Yes | Recommendation timestamp |
+| `recommendation_id` | string | Yes | Stable candidate ID derived from the source forecast and decision inputs |
+| `generated_at` | datetime | Yes | Source forecast artifact timestamp used for reproducible recommendation generation |
 | `crop` | string | Yes | Crop |
 | `horizon_days` | integer | Yes | 7 for MVP; 14 and 30 are post-MVP |
 | `quantity_quintal` | float | Yes | User quantity |

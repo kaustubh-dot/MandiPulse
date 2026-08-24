@@ -17,24 +17,25 @@ The active portfolio execution and review contract lives in these documents:
 ## Scope
 
 Active product scope remains Onion/Maharashtra, 15 mandis, and a 7-day horizon. The analytical core,
-Streamlit, FastAPI, and static Next.js surface already exist. The active finish track replaces both
-interface designs, corrects the public recommendation vocabulary, hardens frontend dependencies and
-tests, reconciles documentation, and completes verified public deployment. Additional commodities,
-regions, horizons, and infrastructure remain deferred.
+Streamlit, FastAPI, and static Next.js surface exist. The current non-UI finish track corrects the
+public recommendation vocabulary, hardens frontend dependencies and tests, reconciles documentation,
+and prepares verified public deployment. Visual/UI acceptance and redesign are intentionally deferred
+for a later dedicated pass. Additional commodities, regions, horizons, and infrastructure remain
+deferred.
 
 ## Current Status
 
 | Area | Status | Notes |
 |---|---|---|
 | Python MVP pipeline | Done | Clean panel, feature table, baselines, LightGBM comparison, intervals, recommendations, backtest |
-| Product/calculation contract | Correction required | Public ranking must be described as transport-adjusted; uncertainty remains separate evidence |
-| Streamlit dashboard | Replaced (F5, 2026-08-23) | Decision workbench, forecast exploration, and coverage provenance rebuilt under the shared design system |
+| Product/calculation contract | Done | Public ranking is transport-adjusted; uncertainty remains separate evidence |
+| Streamlit dashboard | UI redo deferred | Non-UI smoke and parity checks pass; visual/UI acceptance is intentionally not part of this pass |
 | FastAPI additive surface | Done | `/health`, `/forecast`, `/recommend`; tested via TestClient |
-| Next.js static frontend | Replacement pending | Current local package passes tests/build but is intentionally uncommitted and will be rebuilt under F2-F4 |
-| Frontend dependencies | Release blocker | Current production audit reports three high-severity findings; controlled migration required |
-| Frontend experience tests | Incomplete | 52 logic/parity assertions pass; browser, component-state, accessibility, and performance coverage remain |
+| Next.js static frontend | UI redo deferred | Non-visual logic, typecheck, lint, build, and parity pass; visual/UI acceptance is intentionally excluded |
+| Frontend dependencies | Done with upstream ESLint note | Next.js 16/React 19 audit is clean; bundled lint plugins currently support ESLint 9, whose upstream support window has ended |
+| Frontend experience tests | Non-visual checks done | 137 logic/parity assertions pass; visual/UI review is intentionally deferred |
 | Public deployment | Pending | Final Next.js and redesigned Streamlit URLs are not yet verified |
-| GitHub Actions CI | Added, final rerun pending | Existing workflow covers Python and web gates; final release commit must pass expanded checks |
+| GitHub Actions CI | Green on `ba9535e` | Python and web jobs pass on the exact pushed release commit |
 
 ## Local Verification
 
@@ -47,11 +48,9 @@ black --check api app src scripts tests
 pytest -q
 ```
 
-Expected current non-frontend results: 206 Python tests with 74.90% coverage (70% floor), plus a
-schema-valid deterministic export. On 2026-08-22, the current local frontend also passed 52
-assertions and produced a successful static export. `npm audit --omit=dev` failed the release gate
-with three high-severity production dependency findings. All results must be rerun after the
-calculation-contract correction, dependency migration, and UI replacements.
+Expected current results: 235 Python tests with 78.05% coverage (70% floor), a schema-valid
+deterministic export, 137 non-visual web assertions, a clean typecheck/lint/build, and zero
+production npm audit findings. Visual/UI acceptance remains intentionally deferred.
 
 CP-001 and CP-003 are Approved and Complete. CP-002 has approved local evidence, but its frontend
 packaging and publication remain unfinished. Phase 3 technical evidence is generated in
@@ -65,11 +64,11 @@ approved.
 | F0 | Done (2026-08-22) | Preserve and classify the current frontend work; establish a reproducible baseline |
 | F1 | Done (2026-08-22) | Align ranking vocabulary, schemas, exports, tests, reports, and UI copy with the implemented calculation |
 | F2 | Done (2026-08-22) | Migrate the frontend to supported dependencies and clear the production security gate |
-| F3 | Pending | Implement the shared design system, shell, controls, formatting, and data states |
-| F4 | Pending | Replace the complete Next.js interface |
-| F5 | Done 2026-08-23 | Replaced the complete Streamlit interface (commit 7120c7c) |
-| F6 | Done 2026-08-23 | Added component, browser, accessibility, parity, and Streamlit smoke verification |
-| F7 | Done 2026-08-23 | Complete two-pass visual, responsive, accessibility, and performance acceptance |
+| F3 | UI redo deferred | Existing design-system implementation is retained as a reference; visual acceptance is not part of this pass |
+| F4 | UI redo deferred | Existing Next.js surface is not accepted as final; redesign is intentionally deferred |
+| F5 | UI redo deferred | Existing Streamlit surface is not accepted as final; redesign is intentionally deferred |
+| F6 | Non-UI checks done | Logic, parity, typecheck, lint, build, and CI checks pass; visual/UI checks intentionally skipped |
+| F7 | UI redo deferred | Responsive, accessibility, and visual acceptance will follow the dedicated UI redesign |
 | F8 | Pending | Reconcile docs, deploy both interfaces, verify public URLs, and record the release |
 
 Progress and exit criteria are defined in `docs/IMPLEMENTATION_PLAN.md` and

@@ -231,6 +231,24 @@ class TestScoreRecommendations:
         assert required.issubset(set(recs.columns))
         assert "risk_adjusted_score" not in recs.columns
 
+    def test_recommendation_metadata_is_reproducible(
+        self, minimal_forecasts, minimal_mandis
+    ) -> None:
+        kwargs = dict(
+            farmer_latitude=19.9975,
+            farmer_longitude=73.7898,
+            cost_per_km_per_quintal=4.0,
+            road_distance_factor=1.3,
+            uncertainty_penalty_weight=0.3,
+            low_max_interval_pct=0.10,
+            high_min_interval_pct=0.25,
+            candidate_state="maharashtra",
+        )
+        first = score_recommendations(minimal_forecasts, minimal_mandis, **kwargs)
+        second = score_recommendations(minimal_forecasts, minimal_mandis, **kwargs)
+
+        pd.testing.assert_frame_equal(first, second)
+
     def test_raises_when_mandi_missing_coords(self, minimal_forecasts, minimal_mandis) -> None:
         mandis_missing = minimal_mandis.copy()
         mandis_missing.loc[0, "latitude"] = float("nan")

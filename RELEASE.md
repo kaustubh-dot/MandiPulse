@@ -12,8 +12,8 @@ MandiPulse is a clone-runnable mandi decision-intelligence release candidate:
 - Data mode: clone-runnable committed demo bundle; live CEDA refresh is optional
 
 The modeling scope remains intentionally narrow. Future research work such as calendar features,
-conformal intervals, additional crops/states, and 14/30-day horizons must be promoted in the
-tracker before implementation.
+additional crops/states, and 14/30-day horizons must be promoted in the tracker before
+implementation. Split-conformal intervals are already included in the Phase 3 evaluation evidence.
 
 ## Install
 
@@ -39,6 +39,7 @@ python scripts\train_lightgbm_7d.py
 python scripts\build_forecast_intervals_7d.py
 python scripts\build_recommendations_7d.py
 python scripts\run_recommendation_backtest_7d.py
+python scripts\run_phase3_evaluation.py
 python scripts\build_demo_sample.py
 python scripts\build_web_export.py
 python scripts\validate_web_export.py
@@ -77,7 +78,7 @@ npm test
 npm run build
 ```
 
-Current gates: 230 Python tests pass at 77.85% coverage against a 70% floor. The web gate runs lint,
+Current gates: 235 Python tests pass at 78.05% coverage against a 70% floor. The web gate runs lint,
 typecheck, parity tests, component tests, the static build, and the Playwright browser/accessibility
 suite in CI (`.github/workflows/ci.yml`).
 

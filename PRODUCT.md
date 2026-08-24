@@ -90,7 +90,7 @@ configuration, and evaluation evidence.
   split-conformal coverage for the internal evaluation population.
 - Public recommendation backtest: mean regret@1 of 296.3 INR/qtl versus 370.1 INR/qtl for the
   nearest-mandi baseline; the recommendation beats nearest on 74.4% of evaluated dates.
-- 230 passing Python tests with 77.85% coverage from the latest verification.
+- 235 passing Python tests with 78.05% coverage from the latest verification.
 - 113 web unit assertions, 34 component suites, and 17 Playwright end-to-end checks
   (desktop and mobile, with automated accessibility scans) on the release branch.
 - Eight strict web JSON artifacts with verified schema, finite-value, and manifest-hash checks.

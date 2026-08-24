@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mandipulse.config import load_yaml_config  # noqa: E402
 from mandipulse.data.store import read_csv_via_duckdb  # noqa: E402
+from mandipulse.policy import select_recommendation_candidates  # noqa: E402
 from mandipulse.recommend.engine import score_recommendations  # noqa: E402
 from mandipulse.utils.formatting import dataframe_to_markdown  # noqa: E402
 from mandipulse.utils.text import make_mandi_id, slugify  # noqa: E402
@@ -97,7 +98,7 @@ def load_forecasts(path: Path, candidate_state: str) -> pd.DataFrame:
     filtered = forecasts[forecasts["state"].str.lower() == candidate_state.lower()].copy()
     if filtered.empty:
         raise ValueError(f"No forecasts found for candidate state '{candidate_state}'.")
-    return filtered
+    return select_recommendation_candidates(filtered)
 
 
 def load_mandi_metadata(path: Path) -> pd.DataFrame:

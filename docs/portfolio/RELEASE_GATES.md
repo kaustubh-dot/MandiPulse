@@ -20,21 +20,24 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 | RG-02 | Data and artifact integrity | Pass | Export validation 8/8 in CI; provenance paths repo-relative after generator fix; no secrets or absolute local paths tracked (2026-08-24) |
 | RG-03 | Forecast and evaluation integrity | Pass | Purge/split tests green; MAE 139.57 / 133.61 and coverage metrics reproduce from committed reports (2026-08-24) |
 | RG-04 | Recommendation integrity | Pass | Regret 296.3 vs 370.1 traceable; TS/Python fixtures match at 0.01 INR/qtl; deterministic tie-break tested (2026-08-24) |
-| RG-05 | Python quality | Pass | Ruff/black clean; pytest 233 passed, 77.85% coverage recorded in CURRENT_STATE.md (2026-08-24) |
+| RG-05 | Python quality | Pass | Ruff/black clean; pytest 235 passed, 78.05% coverage recorded in CURRENT_STATE.md (2026-08-24) |
 | RG-06 | API contract | Pass | OpenAPI matches routes; success, validation, missing-artifact, and internal-error envelopes all tested (2026-08-24) |
-| RG-07 | Next.js functionality | Pass | 17 e2e checks on the production static export; zero console/hydration errors; URL state round-trips (2026-08-24) |
-| RG-08 | Streamlit functionality | Pass | Keyless startup; 11 smoke tests execute every page against committed artifacts with golden parity (2026-08-24) |
+| RG-07 | Next.js functionality | Non-visual pass; UI redo deferred | Logic, typecheck, lint, build, and parity pass; final UI acceptance is intentionally deferred |
+| RG-08 | Streamlit functionality | Non-visual pass; UI redo deferred | Keyless smoke/parity checks pass; final UI acceptance is intentionally deferred |
 | RG-09 | Cross-surface parity | Pass | Three fixed scenarios (default, Pune golden, Nagpur far-haul) match across Python/TS within declared tolerance (2026-08-24) |
 | RG-10 | Dependency security | Pass | `npm audit --omit=dev` zero findings on pinned Next.js 16 / React 19 lockfile (2026-08-24) |
-| RG-11 | Accessibility | Pass | Zero critical/serious axe findings (empty allowlist) on all routes + mobile sheet at both viewports; keyboard, focus-restore, 200% zoom, and reduced-motion checks pass (2026-08-23) |
-| RG-12 | Responsive and visual quality | Pass | Two review passes complete; no overflow 320-1920 px on 4 routes x 2 themes; reference screenshots frozen in `web/public/screenshots/` (2026-08-23) |
-| RG-13 | Performance | Pass | Lighthouse desktop medians: perf 98/94/93/94, LCP <=1.64 s, CLS <=0.043, a11y 100 on all routes (2026-08-23) |
+| RG-11 | Accessibility | Deferred with UI redo | Existing checks are retained as historical evidence; final accessibility acceptance follows the new UI |
+| RG-12 | Responsive and visual quality | Deferred with UI redo | Existing screenshots are reference evidence only; final visual acceptance follows the new UI |
+| RG-13 | Performance | Deferred with UI redo | Existing Lighthouse measurements are reference evidence only; final performance acceptance follows the new UI |
 | RG-14 | Documentation consistency | Pending | Docs reconciled and audited against shipped scope (2026-08-24); commands proven from clean CI checkout; public URLs pending deployment record |
 | RG-15 | CI and repository hygiene | Pending | Required CI green on release commits (2026-08-24); final worktree-clean confirmation pending the release-record commit |
 | RG-16 | Public deployment | Pending | Next.js and Streamlit URLs work signed out and complete the primary flows after deployment |
 | RG-17 | Portfolio evidence | Pending | Final screenshots, demo path, release commit, verification date, and source-backed resume claims are recorded |
 
 ## 3. Detailed Acceptance Criteria
+
+The existing interface checks remain useful regression evidence, but RG-07, RG-08, RG-11, RG-12,
+and RG-13 are intentionally not final release gates until the user completes the planned UI redo.
 
 ### RG-01 — Scope and Product Truth
 
