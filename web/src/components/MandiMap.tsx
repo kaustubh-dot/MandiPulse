@@ -6,17 +6,17 @@ import type { MandiMeta } from "@/lib/types";
 
 const MAP_TOKEN_STYLE = `
   .mp-map-farmer { stroke: var(--mp-accent-ink); stroke-width: 2.5px; fill: var(--mp-accent); fill-opacity: 0.35; }
-  .mp-map-mandi { stroke: var(--mp-rule-strong); stroke-width: 1.25px; fill: var(--mp-muted); fill-opacity: 0.8; }
+  .mp-map-mandi { stroke: var(--mp-rule-strong); stroke-width: 1.25px; fill: var(--mp-atlas); fill-opacity: 0.85; }
   .mp-map-top { stroke: var(--mp-ink); stroke-width: 2.5px; fill: var(--mp-accent); fill-opacity: 0.95; }
   .mp-map-label.leaflet-tooltip {
     background: var(--mp-surface-raised);
     border: 1px solid var(--mp-rule-strong);
-    border-radius: 999px;
+    border-radius: 2px;
     box-shadow: none;
     color: var(--mp-ink);
     font-family: inherit;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     padding: 1px 6px;
   }
   .mp-map-label.leaflet-tooltip::before { display: none; }
