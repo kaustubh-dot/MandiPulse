@@ -1,22 +1,22 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from fastapi import FastAPI  # noqa: E402
-from fastapi.exceptions import RequestValidationError  # noqa: E402
-from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 
-from api.config import ALLOWED_ORIGINS, API_VERSION  # noqa: E402
-from api.errors import (  # noqa: E402
+from api.config import ALLOWED_ORIGINS, API_VERSION
+from api.errors import (
     ApiError,
     api_error_handler,
     internal_error_handler,
     validation_error_handler,
 )
-from api.routes import router  # noqa: E402
+from api.routes import router
 
 app = FastAPI(
     title="MandiPulse India API",
