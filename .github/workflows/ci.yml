@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "finish/portfolio-release"]
   pull_request:
     branches: ["main"]
 
