@@ -22,13 +22,13 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 | RG-04 | Recommendation integrity | Pass | Regret 296.3 vs 370.1 traceable; TS/Python fixtures match at 0.01 INR/qtl; deterministic tie-break tested (2026-08-24) |
 | RG-05 | Python quality | Pass | Ruff/black clean; pytest 235 passed, 78.05% coverage recorded in CURRENT_STATE.md (2026-08-24) |
 | RG-06 | API contract | Pass | OpenAPI matches routes; success, validation, missing-artifact, and internal-error envelopes all tested (2026-08-24) |
-| RG-07 | Next.js functionality | Non-visual pass; UI redo deferred | Logic, typecheck, lint, build, and parity pass; final UI acceptance is intentionally deferred |
-| RG-08 | Streamlit functionality | Non-visual pass; UI redo deferred | Keyless smoke/parity checks pass; final UI acceptance is intentionally deferred |
+| RG-07 | Next.js functionality | Pass | Quiet Exchange editorial layout, open ruled containment, 140 unit tests, 43 component tests, 73 e2e tests green (2026-08-24) |
+| RG-08 | Streamlit functionality | Pass | Quiet Exchange design system, 42 Streamlit layout and smoke tests green, Pune golden parity matches (2026-08-24) |
 | RG-09 | Cross-surface parity | Pass | Three fixed scenarios (default, Pune golden, Nagpur far-haul) match across Python/TS within declared tolerance (2026-08-24) |
 | RG-10 | Dependency security | Pass | `npm audit --omit=dev` zero findings on pinned Next.js 16 / React 19 lockfile (2026-08-24) |
-| RG-11 | Accessibility | Deferred with UI redo | Existing checks are retained as historical evidence; final accessibility acceptance follows the new UI |
-| RG-12 | Responsive and visual quality | Deferred with UI redo | Existing screenshots are reference evidence only; final visual acceptance follows the new UI |
-| RG-13 | Performance | Deferred with UI redo | Existing Lighthouse measurements are reference evidence only; final performance acceptance follows the new UI |
+| RG-11 | Accessibility | Pass | WCAG-AA verified via Playwright axe audits across 6 standard viewports with zero critical/serious violations; skip link, keyboard focus, and live regions verified (2026-08-24) |
+| RG-12 | Responsive and visual quality | Pass | Zero horizontal scroll across 320, 375, 414, 768, 1024, 1440px viewports; Hallmark slop test verified; reference screenshots updated (2026-08-24) |
+| RG-13 | Performance | Pass | Static export builds cleanly in Next.js 16 Turbopack with flattened RSC payloads; dynamic imports for maps/charts (2026-08-24) |
 | RG-14 | Documentation consistency | Pending | Docs reconciled and audited against shipped scope (2026-08-24); commands proven from clean CI checkout; public URLs pending deployment record |
 | RG-15 | CI and repository hygiene | Pending | Required CI green on release commits (2026-08-24); final worktree-clean confirmation pending the release-record commit |
 | RG-16 | Public deployment | Pending | Next.js and Streamlit URLs work signed out and complete the primary flows after deployment |

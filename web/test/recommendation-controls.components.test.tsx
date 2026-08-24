@@ -123,7 +123,7 @@ describe("RecommendationControls rendering and interaction", () => {
     await user.type(lat, "123.9");
     fireEvent.blur(lat);
     await waitFor(() => {
-      const slot = document.getElementById("wb-lat-message-slot");
+      const slot = document.getElementById("wb-lat-message");
       assert.ok(slot);
       assert.match(slot!.textContent!, /between .+ and 90 degrees/);
     });
@@ -138,12 +138,12 @@ describe("RecommendationControls rendering and interaction", () => {
     await user.clear(lat);
     await user.type(lat, "9999");
     fireEvent.blur(lat);
-    await waitFor(() => assert.ok(document.getElementById("wb-lat-message-slot")));
-    const slot = document.getElementById("wb-lat-message-slot")!;
+    await waitFor(() => assert.ok(document.getElementById("wb-lat-message")));
+    const slot = document.getElementById("wb-lat-message")!;
     await user.clear(lat);
     await user.type(lat, "19.99");
     fireEvent.blur(lat);
-    await waitFor(() => assert.equal(document.getElementById("wb-lat-message-slot"), slot));
+    await waitFor(() => assert.equal(document.getElementById("wb-lat-message"), slot));
     assert.match(slot.textContent ?? "", /Decimal degrees/);
     assert.equal(lat.value, "19.99");
   });

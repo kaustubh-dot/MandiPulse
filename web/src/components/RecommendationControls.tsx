@@ -168,65 +168,60 @@ export default function RecommendationControls({
           ]}
         />
 
-        <div onBlur={() => onBlurField("lat")}>
-          <TextField
-            id="wb-lat"
-            label="Latitude"
-            value={drafts.lat}
-            onChange={(value) => onChange("lat", value)}
-            error={errors.lat}
-            hint="Decimal degrees, −90 to 90."
-            inputMode="decimal"
-          />
-        </div>
+        <TextField
+          id="wb-lat"
+          label="Latitude"
+          value={drafts.lat}
+          onChange={(value) => onChange("lat", value)}
+          onBlur={() => onBlurField("lat")}
+          error={errors.lat}
+          hint="Decimal degrees, −90 to 90."
+          inputMode="decimal"
+        />
 
-        <div onBlur={() => onBlurField("lon")}>
-          <TextField
-            id="wb-lon"
-            label="Longitude"
-            value={drafts.lon}
-            onChange={(value) => onChange("lon", value)}
-            error={errors.lon}
-            hint="Decimal degrees, −180 to 180."
-            inputMode="decimal"
-          />
-        </div>
+        <TextField
+          id="wb-lon"
+          label="Longitude"
+          value={drafts.lon}
+          onChange={(value) => onChange("lon", value)}
+          onBlur={() => onBlurField("lon")}
+          error={errors.lon}
+          hint="Decimal degrees, −180 to 180."
+          inputMode="decimal"
+        />
 
-        <div onBlur={() => onBlurField("quantity")}>
-          <TextField
-            id="wb-quantity"
-            label="Quantity (quintals)"
-            value={drafts.quantity}
-            onChange={(value) => onChange("quantity", value)}
-            error={errors.quantity}
-            hint="Lot size used for the net estimate."
-            inputMode="numeric"
-          />
-        </div>
+        <TextField
+          id="wb-quantity"
+          label="Quantity (quintals)"
+          value={drafts.quantity}
+          onChange={(value) => onChange("quantity", value)}
+          onBlur={() => onBlurField("quantity")}
+          error={errors.quantity}
+          hint="Lot size used for the net estimate."
+          inputMode="numeric"
+        />
 
-        <div onBlur={() => onBlurField("rate")}>
-          <TextField
-            id="wb-rate"
-            label="Transport rate (INR/km/quintal)"
-            value={drafts.rate}
-            onChange={(value) => onChange("rate", value)}
-            error={errors.rate}
-            hint="Scenario assumption, not a carrier quotation."
-            inputMode="decimal"
-          />
-        </div>
+        <TextField
+          id="wb-rate"
+          label="Transport rate (INR/km/quintal)"
+          value={drafts.rate}
+          onChange={(value) => onChange("rate", value)}
+          onBlur={() => onBlurField("rate")}
+          error={errors.rate}
+          hint="Scenario assumption, not a carrier quotation."
+          inputMode="decimal"
+        />
 
-        <div onBlur={() => onBlurField("radius")}>
-          <TextField
-            id="wb-radius"
-            label="Maximum road radius (km)"
-            value={drafts.radius}
-            onChange={(value) => onChange("radius", value)}
-            error={errors.radius}
-            hint="Candidates beyond this estimated road distance are excluded."
-            inputMode="numeric"
-          />
-        </div>
+        <TextField
+          id="wb-radius"
+          label="Maximum road radius (km)"
+          value={drafts.radius}
+          onChange={(value) => onChange("radius", value)}
+          onBlur={() => onBlurField("radius")}
+          error={errors.radius}
+          hint="Candidates beyond this estimated road distance are excluded."
+          inputMode="numeric"
+        />
 
         <button type="submit" className={`${buttonClass.primary} w-full`}>
           Compare mandis

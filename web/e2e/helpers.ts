@@ -26,8 +26,12 @@ export function expectNoPageProblems(problems: PageProblems): void {
 export async function waitForRouteReady(page: Page, route: string): Promise<void> {
   switch (route) {
     case "/":
+      await expect(page.locator('[data-layout="quiet-overview"]')).toBeVisible();
+      await expect(page.getByRole("article", { name: /rank 1 recommendation/i })).toBeVisible();
+      break;
     case "/recommend/":
-      await expect(page.getByRole("heading", { name: "Recommended mandi" })).toBeVisible();
+      await expect(page.locator('[data-layout="quiet-workbench"]')).toBeVisible();
+      await expect(page.getByRole("article", { name: /rank 1 recommendation/i })).toBeVisible();
       break;
     case "/forecast/":
       await expect(page.locator("#forecast-mandi")).toBeVisible();
@@ -63,4 +67,11 @@ export function expectNoSeriousAxeViolations(outcome: AxeScanOutcome): void {
     outcome.failures,
     `unexpected critical/serious axe violations:\n${JSON.stringify(outcome.failures, null, 2)}`
   ).toEqual([]);
+}
+
+export async function expectNoHorizontalScroll(page: Page): Promise<void> {
+  const hasScroll = await page.evaluate(() => {
+    return document.documentElement.scrollWidth > window.innerWidth;
+  });
+  expect(hasScroll, "expected page not to have horizontal overflow/scroll").toBe(false);
 }

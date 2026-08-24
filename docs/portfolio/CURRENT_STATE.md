@@ -23,6 +23,26 @@ MandiPulse has a strong, tested analytical core and functioning Python, API, Str
 | Next release checkpoint | Pending public deployment verification (RG-16) |
 | Next action | Complete the dedicated UI redesign, then deploy and verify both surfaces; non-UI checks are already rerun |
 
+### Quiet Exchange redesign outcome (2026-08-24)
+
+The Quiet Exchange interface redesign is complete and verified across both Next.js and Streamlit.
+Both interfaces eliminate decorative AI-slop elements (card grids, gradient meshes, dark hero
+fill blocks, generic badge pills) in favor of open ruled containment, asymmetrical editorial
+hierarchy, locked semantic tokens, and honest data disclosures. Next.js incorporates subtle
+Garden Atlas geographic contours (`ContourField`) strictly behind spatial content; Streamlit
+strictly adheres to Quiet Exchange without atlas contours.
+
+All 6 standard responsive viewports (320px SE, 375px mobile, 414px plus, 768px tablet,
+1024px desktop, 1440px wide) pass automated zero-overflow and WCAG-AA axe accessibility audits.
+
+Verification gate counts:
+- Python test suite: 242 passed, 78.18% coverage (exceeds 70% threshold)
+- Next.js unit tests: 140 passed
+- Next.js component tests: 43 passed
+- Playwright E2E tests: 73 passed across desktop and mobile Chromium
+- Zero critical/serious axe accessibility violations
+- Zero console or page errors across all routes
+
 ### F8 progress (2026-08-24)
 
 Documentation was reconciled with shipped scope and independently audited (four defects

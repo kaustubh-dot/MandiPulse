@@ -156,8 +156,8 @@ type FieldState = "default" | "loading" | "success" | "error";
 const inputBaseClass =
   "min-h-11 w-full rounded-control border bg-surface px-3 py-2 text-base text-ink placeholder:text-muted outline outline-1 outline-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-[0.55] motion-safe-transition";
 
-function fieldMessageId(id: string) {
-  return `${id}-message-slot`;
+export function fieldMessageId(id: string): string {
+  return `${id}-message`;
 }
 
 function deriveFieldState({
@@ -235,6 +235,7 @@ type FieldProps = {
   valid?: boolean;
   disabled?: boolean;
   describedBy?: string;
+  onBlur?: () => void;
 };
 
 export function TextField({
@@ -242,6 +243,7 @@ export function TextField({
   label,
   value,
   onChange,
+  onBlur,
   hint,
   error,
   busy,
@@ -268,6 +270,7 @@ export function TextField({
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onBlur={onBlur}
           disabled={disabled}
           aria-busy={busy || undefined}
           aria-invalid={state === "error"}

@@ -236,7 +236,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           aria-modal="true"
           aria-label="Navigation"
           tabIndex={-1}
-          className="fixed inset-x-0 top-[57px] bottom-0 z-modal flex flex-col gap-5 overflow-y-auto border-t border-rule-strong bg-paper px-4 pb-4 pt-5 lg:hidden"
+          className="fixed inset-x-0 top-[57px] bottom-0 z-50 flex flex-col gap-5 overflow-y-auto border-t border-rule-strong bg-paper px-4 pb-4 pt-5 lg:hidden"
         >
           <div className="border-b border-rule pb-3">
             <h2 className="font-display text-[2rem] leading-none text-ink">

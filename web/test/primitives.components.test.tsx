@@ -40,7 +40,7 @@ describe("Quiet Exchange primitives", () => {
     const input = screen.getByLabelText("Quantity");
     assert.equal(input.hasAttribute("disabled"), true);
     assert.equal(input.getAttribute("data-state"), "success");
-    assert.ok(document.querySelector("#quantity-message-slot"));
+    assert.ok(document.querySelector("#quantity-message"));
   });
 
   it("keeps status and evidence regions semantically distinct", () => {
