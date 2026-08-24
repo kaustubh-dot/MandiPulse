@@ -13,6 +13,7 @@ import {
   TextLink,
   buttonClass,
 } from "@/components/ui/primitives";
+import { ContourField } from "@/components/visual/ContourField";
 import RecommendTable from "@/components/RecommendTable";
 import RecommendationControls, {
   DECISION_DEFAULTS,
@@ -261,14 +262,16 @@ function RecommendWorkbench() {
       : `Rankings updated for latitude ${decision.lat}, longitude ${decision.lon}. Rank 1: ${top.mandi}, ${formatInrPerQtl(top.transport_adjusted_net_price_inr_qtl)}.`;
 
   return (
-    <div className="space-y-8">
+    <div data-layout="quiet-workbench" className="space-y-12">
       <SnapshotNotice />
 
-      <PageHeader
-        eyebrow="Decision workbench"
-        title="Compare mandis for your next sale"
-        intro="Set your location, lot size, and transport assumptions. Mandis rank by transport-adjusted net expected price from a frozen seven-day forecast."
-      />
+      <div className="relative isolate grid gap-8 border-b border-rule pb-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(18rem,0.6fr)]">
+        <PageHeader
+          title="Compare mandis for your next sale"
+          intro="Set your location, lot size, and transport assumptions. Mandis rank by transport-adjusted net expected price from a frozen seven-day forecast."
+        />
+        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
+      </div>
 
       {noSourceData ? (
         <StatusNotice tone="warning" title="No source rows">
@@ -277,7 +280,7 @@ function RecommendWorkbench() {
         </StatusNotice>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <div className="lg:col-span-4">
               <RecommendationControls
                 meta={meta}
@@ -292,7 +295,7 @@ function RecommendWorkbench() {
               />
             </div>
 
-            <div className="space-y-8 lg:col-span-8">
+            <div className="space-y-10 lg:col-span-8">
               <p aria-live="polite" className="sr-only">
                 {announce}
               </p>
@@ -315,18 +318,18 @@ function RecommendWorkbench() {
                     quantityQtl={decision.quantity}
                   />
 
-                  <section aria-labelledby="all-mandis-heading" className="space-y-3">
+                  <section aria-labelledby="all-mandis-heading" className="space-y-4">
                     <SectionHeading id="all-mandis-heading">
                       All eligible mandis
                     </SectionHeading>
                     <RecommendTable rows={ranked} canonicalAsOfDate={canonicalAsOfDate} />
                     <p className="text-xs leading-relaxed text-muted">
-                      Shaded row marks rank 1. Ranking: transport-adjusted net expected
+                      Ranking: transport-adjusted net expected
                       price, highest first; equal prices break by market identifier.
                     </p>
                   </section>
 
-                  <section aria-labelledby="map-heading" className="space-y-3">
+                  <section aria-labelledby="map-heading" className="space-y-4">
                     <SectionHeading id="map-heading">Candidate map</SectionHeading>
                     {!hasFarmerCoords ? (
                       <StatusNotice tone="warning" title="Map incomplete">
@@ -360,9 +363,9 @@ function RecommendWorkbench() {
             </div>
           </div>
 
-          <section aria-labelledby="method-evidence-heading" className="space-y-4">
+          <section aria-labelledby="method-evidence-heading" className="space-y-6">
             <SectionHeading id="method-evidence-heading">Method and evidence</SectionHeading>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <EvidenceBlock
                 title="Interval method"
                 rows={[

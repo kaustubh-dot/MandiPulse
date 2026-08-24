@@ -12,6 +12,7 @@ import {
   TextLink,
   buttonClass,
 } from "@/components/ui/primitives";
+import { ContourField } from "@/components/visual/ContourField";
 import TopRecommendations from "@/components/TopRecommendations";
 import { ErrorState, LoadingState } from "@/components/DataState";
 import {
@@ -131,23 +132,18 @@ export default function Home() {
   const canonicalAsOfDate = policyResult?.canonicalAsOfDate ?? meta.as_of_date;
 
   return (
-    <div className="space-y-8">
+    <div data-layout="quiet-overview" className="space-y-12">
       <SnapshotNotice />
 
-      <PageHeader
-        eyebrow="Market Atlas overview"
-        title={`Sell where the transport-adjusted net price is strongest.`}
-        intro={
-          <>
-            MandiPulse ranks {formatCount(mandis.length)} supported Maharashtra
-            onion mandis by expected net price after estimated transport, using a
-            frozen seven-day forecast. Every figure traces to a committed
-            artifact; nothing is live.
-          </>
-        }
-      />
+      <div className="relative isolate grid gap-8 border-b border-rule pb-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(18rem,0.6fr)]">
+        <PageHeader
+          title="One recommendation. Every assumption visible."
+          intro="MandiPulse compares supported Maharashtra onion mandis by transport-adjusted expected net price from a frozen seven-day forecast."
+        />
+        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
+      </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <Link href="/recommend" className={buttonClass.primary}>
           Compare mandis
         </Link>
@@ -167,12 +163,12 @@ export default function Home() {
           regenerated.
         </StatusNotice>
       ) : (
-        <section aria-labelledby="preview-heading" className="space-y-4">
+        <section aria-labelledby="preview-heading" className="space-y-6">
           <SectionHeading id="preview-heading">
             Decision preview at default assumptions
           </SectionHeading>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <EvidenceBlock
               className="lg:col-span-4"
               title="Input summary"
@@ -192,10 +188,11 @@ export default function Home() {
             />
             <Panel className="lg:col-span-8">
               <p className="text-sm leading-relaxed text-ink-2">
-                This preview ranks candidates for the default location without any                configuration. Open the workbench to set your own coordinates, lot
+                This preview ranks candidates for the default location without any
+                configuration. Open the workbench to set your own coordinates, lot
                 size, rate, and radius.
               </p>
-              <p className="mt-2 numeric text-xs text-muted">
+              <p className="mt-4 numeric text-xs text-muted">
                 Eligible forecasts: {formatCount(policyResult?.eligibleAsOfCount ?? 0)}{" "}
                 · stale excluded: {formatCount(policyResult?.excludedStaleCount ?? 0)} ·
                 beyond radius (of fresh):{" "}
@@ -228,9 +225,9 @@ export default function Home() {
         </section>
       )}
 
-      <section aria-labelledby="evaluation-heading" className="space-y-4">
+      <section aria-labelledby="evaluation-heading" className="space-y-6">
         <SectionHeading id="evaluation-heading">Evaluation facts</SectionHeading>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <EvidenceBlock
             title="Scope"
             rows={[
@@ -305,9 +302,9 @@ export default function Home() {
         </p>
       </section>
 
-      <section aria-labelledby="flow-heading" className="space-y-4">
+      <section aria-labelledby="flow-heading" className="space-y-6">
         <SectionHeading id="flow-heading">How a ranking is produced</SectionHeading>
-        <ol className="space-y-3">
+        <ol className="space-y-4">
           {[
             {
               title: "Frozen data snapshot",
@@ -327,11 +324,11 @@ export default function Home() {
             },
           ].map((step, index) => (
             <li key={step.title} className="flex gap-4">
-              <span className="numeric mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill border border-rule-strong text-sm font-bold text-ink">
+              <span className="numeric mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-panel border border-rule-strong text-sm font-semibold text-ink">
                 {index + 1}
               </span>
               <div>
-                <p className="font-bold text-ink">{step.title}</p>
+                <p className="font-semibold text-ink">{step.title}</p>
                 <p className="mt-0.5 text-sm leading-relaxed text-ink-2">{step.body}</p>
               </div>
             </li>
@@ -345,10 +342,10 @@ export default function Home() {
         </p>
       </section>
 
-      <section id="method" aria-labelledby="method-heading" className="space-y-4 scroll-mt-6">
+      <section id="method" aria-labelledby="method-heading" className="space-y-6 scroll-mt-6">
         <SectionHeading id="method-heading">Method and limitations</SectionHeading>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <Panel className="space-y-3 text-sm leading-relaxed text-ink-2 lg:col-span-7">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <Panel className="space-y-4 text-sm leading-relaxed text-ink-2 lg:col-span-7">
             <p>
               <strong className="text-ink">Scope.</strong> One commodity (onion),
               one state (Maharashtra), {formatCount(mandis.length)} mandis, a
@@ -386,10 +383,10 @@ export default function Home() {
               candidate instead.
             </p>
           </Panel>
-          <Panel className="space-y-3 text-sm leading-relaxed text-ink-2 lg:col-span-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted">
+          <Panel className="space-y-4 text-sm leading-relaxed text-ink-2 lg:col-span-5">
+            <h3 className="font-display text-xl font-normal text-ink">
               What this product does not do
-            </p>
+            </h3>
             <ul className="list-disc space-y-1.5 pl-5">
               <li>No live prices, market feed, or real-time freshness of any kind.</li>
               <li>No guaranteed, optimal, or risk-adjusted outcome claims.</li>
