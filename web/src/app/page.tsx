@@ -12,7 +12,6 @@ import {
   TextLink,
   buttonClass,
 } from "@/components/ui/primitives";
-import { ContourField } from "@/components/visual/ContourField";
 import TopRecommendations from "@/components/TopRecommendations";
 import { ErrorState, LoadingState } from "@/components/DataState";
 import {
@@ -140,7 +139,6 @@ export default function Home() {
           title="One recommendation. Every assumption visible."
           intro="MandiPulse compares supported Maharashtra onion mandis by transport-adjusted expected net price from a frozen seven-day forecast."
         />
-        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
       </div>
 
       <div className="flex flex-wrap items-center gap-4">

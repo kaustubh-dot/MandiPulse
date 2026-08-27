@@ -134,6 +134,12 @@ export default function RecommendationControls({
     onChange("lon", String(example.lon));
   }
 
+  const activePresetIndex = FARMER_PRESETS.findIndex(
+    (preset) =>
+      Number(drafts.lat) === preset.lat && Number(drafts.lon) === preset.lon
+  );
+  const selectedPresetValue = activePresetIndex >= 0 ? String(activePresetIndex) : "";
+
   return (
     <Panel className="space-y-5">
       <form
@@ -156,7 +162,7 @@ export default function RecommendationControls({
         <SelectField
           id="wb-example-location"
           label="Example locations"
-          value=""
+          value={selectedPresetValue}
           onChange={applyExample}
           hint="Choosing an example fills the coordinate fields; they stay editable."
           options={[
@@ -198,7 +204,7 @@ export default function RecommendationControls({
           onBlur={() => onBlurField("quantity")}
           error={errors.quantity}
           hint="Lot size used for the net estimate."
-          inputMode="numeric"
+          inputMode="decimal"
         />
 
         <TextField
@@ -220,7 +226,7 @@ export default function RecommendationControls({
           onBlur={() => onBlurField("radius")}
           error={errors.radius}
           hint="Candidates beyond this estimated road distance are excluded."
-          inputMode="numeric"
+          inputMode="decimal"
         />
 
         <button type="submit" className={`${buttonClass.primary} w-full`}>

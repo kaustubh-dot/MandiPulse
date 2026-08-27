@@ -31,7 +31,6 @@ is marked complete. A passing build is evidence of buildability, not portfolio c
 | Data snapshot | October 30, 2025 |
 | Flagship product surface | Next.js |
 | Secondary surface | Streamlit |
-| API role | FastAPI is a local snapshot API unless connected to a real consumer |
 
 The scope, the task IDs below, and the phase gates are stable. Any material change requires the
 repository-owner approval and an update to the canonical documents before implementation.
@@ -41,7 +40,7 @@ repository-owner approval and an update to the canonical documents before implem
 ### Goal
 
 Make the existing MVP trustworthy as a reproducible ML Engineer portfolio artifact. Repair export
-validity, metric and wording drift, as-of semantics, API boundaries, provenance, product-surface
+validity, metric and wording drift, as-of semantics, export boundaries, provenance, product-surface
 positioning, and release hygiene while keeping the frozen Onion/Maharashtra/15-mandi/7-day scope.
 
 ### Task table
@@ -51,7 +50,7 @@ positioning, and release hygiene while keeping the frozen Onion/Maharashtra/15-m
 | P1-01 | Strict, finite, schema-validated JSON exports. |
 | P1-02 | Canonical metrics and corrected public wording. |
 | P1-03 | Shared forecast as-of and candidate-availability policy. |
-| P1-04 | API validation, configured limits, and health semantics. |
+| P1-04 | Cross-surface validation, configured limits, and parity. |
 | P1-05 | Versioned artifact manifest and provenance metadata. |
 | P1-06 | Next.js flagship deployment and product-surface positioning. |
 | P1-07 | Documentation and release hygiene. |
@@ -60,7 +59,7 @@ positioning, and release hygiene while keeping the frozen Onion/Maharashtra/15-m
 ### Dependencies
 
 - Baseline audit checkpoint CP-000 and the frozen scope above.
-- Existing sample artifacts, reports, API schemas, frontend routes, and CI configuration remain the
+- Existing sample artifacts, reports, export schemas, frontend routes, and CI configuration remain the
   starting point; no silent replacement of historical milestone documents.
 - P1-01 through P1-05 establish the data, metric, interface, and provenance contracts required by
   P1-06 and P1-07.
@@ -70,13 +69,11 @@ positioning, and release hygiene while keeping the frozen Onion/Maharashtra/15-m
 
 - Exported JSON becomes a strict finite-value contract with explicit schemas and stable field names.
 - Forecast and recommendation consumers share one forecast as-of and candidate-availability policy.
-- FastAPI validates supported crop, state, horizon, mandi, coordinates, quantity, radius, and
-  alternative limits; `/health` reports readiness semantics rather than merely process liveness.
 - Artifact metadata exposes version, snapshot, as-of, source, configuration, model, and generation
   provenance sufficient to identify the exact public bundle.
-- Next.js is the flagship public surface; Streamlit is secondary; FastAPI remains a local snapshot
-  API unless a real consumer is intentionally connected.
-- Any changed public contract must be reflected in the API spec, frontend types/loaders, README,
+- Next.js is the flagship public surface; Streamlit is the secondary analytical showcase. Both read
+  the locked demonstration bundle.
+- Any changed public contract must be reflected in export schemas, frontend types/loaders, README,
   reports, generated exports, and the checkpoint evidence.
 
 ### Acceptance criteria
@@ -85,12 +82,11 @@ positioning, and release hygiene while keeping the frozen Onion/Maharashtra/15-m
 - No exported JSON value is `NaN`, `Infinity`, or `-Infinity`.
 - Real browser smoke tests cover the coverage, forecast, and recommendation routes.
 - The smoke tests show no blank pages and no uncaught promise errors or page errors.
-- Displayed metrics agree across reports, README, API responses, and the frontend; labels describe
+- Displayed metrics agree across reports, README, exported artifacts, and the frontend; labels describe
   the same denominator, split, confidence level, and snapshot.
 - Forecast as-of dates, candidate availability, radius filtering, and alternative limits are
-  explicit and consistent across the API, Streamlit, Next.js, reports, and exports.
-- API edge cases return the documented typed errors and configured limits; health semantics clearly
-  distinguish service availability from data readiness.
+  explicit and consistent across Python, Streamlit, Next.js, reports, and exports.
+- Export validation and frontend controls enforce the documented input bounds and artifact contract.
 - The artifact manifest and provenance metadata identify the data snapshot, code/config/model
   versions, generation inputs, and validation result.
 - Ruff, Black, Python tests, frontend parity tests, and the production build remain green at the
@@ -105,20 +101,17 @@ positioning, and release hygiene while keeping the frozen Onion/Maharashtra/15-m
    against its committed schema and fail on the first error.
 2. Scan all exported JSON text and parsed numeric values for `NaN`, `Infinity`, and `-Infinity`;
    the expected result is zero occurrences and zero non-finite values.
-3. Run the repository quality gates: `ruff check api app src scripts tests`,
-   `black --check api app src scripts tests`, `pytest -q`, `cd web; npm test`, and
+3. Run the repository quality gates: `ruff check app src scripts tests`,
+   `black --check app src scripts tests`, `pytest -q`, `cd web; npm test`, and
    `cd web; npm run build`. Record exact command output, test counts, and coverage.
 4. Start the production Next.js surface and use a real browser to visit `/coverage`, `/forecast`,
    and `/recommend`. Record route URLs, selected inputs, screenshots or equivalent runtime
    evidence, console errors, page errors, and uncaught promise errors. All three routes must render
    meaningful content.
-5. Exercise FastAPI with valid requests and invalid crop, state, horizon, mandi, coordinate,
-   quantity, radius, and alternative-limit cases. Exercise both ready and unavailable data states
-   for `/health`. Record HTTP status, error code, response shape, and limit behavior.
-6. Reconcile the canonical metric values from the reports to README, API payloads, and frontend
+5. Reconcile the canonical metric values from the reports to README, exported artifacts, and frontend
    displays. Record the compared paths, fields, denominators, dates, and exact values; any mismatch
    fails the gate.
-7. Inspect the manifest/provenance entry for every public artifact and confirm that the recorded
+6. Inspect the manifest/provenance entry for every public artifact and confirm that the recorded
    snapshot, as-of policy, source, configuration, model, and validation results reproduce the
    bundle identity.
 

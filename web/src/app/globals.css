@@ -14,8 +14,6 @@
   --color-accent: var(--mp-accent);
   --color-accent-soft: var(--mp-accent-soft);
   --color-accent-ink: var(--mp-accent-ink);
-  --color-atlas: var(--mp-atlas);
-  --color-atlas-soft: var(--mp-atlas-soft);
   --color-focus: var(--mp-focus);
   --color-success: var(--mp-success);
   --color-warning: var(--mp-warning);
@@ -32,9 +30,9 @@
 
   --shadow-whisper: 0 1px 2px oklch(20% 0.02 248 / 0.06);
 
-  --ease-out-atlas: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-atlas: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out-atlas: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out-quiet: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-quiet: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out-quiet: cubic-bezier(0.65, 0, 0.35, 1);
 
   --z-base: 1;
   --z-raised: 10;
@@ -49,6 +47,12 @@
   html,
   body {
     overflow-x: clip;
+  }
+
+  @media (max-width: 359px) {
+    .mp-mobile-snapshot {
+      display: none;
+    }
   }
 
   body {
@@ -92,7 +96,7 @@
   .motion-safe-transition {
     transition-property: transform, opacity;
     transition-duration: var(--dur-short);
-    transition-timing-function: var(--ease-out-atlas);
+    transition-timing-function: var(--ease-out-quiet);
   }
 }
 

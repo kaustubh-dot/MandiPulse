@@ -26,7 +26,11 @@ from mandipulse.app.data_access import (  # noqa: E402
     load_recommendation_backtest,
 )
 from mandipulse.app.design import (  # noqa: E402
+    DEFAULT_LAT,
+    DEFAULT_LON,
+    DEFAULT_QUANTITY_QTL,
     SNAPSHOT_LABEL,
+    format_date_iso,
     format_inr_per_qtl,
     format_pct,
     inject_base_css,
@@ -62,23 +66,13 @@ LOW_MAX_PCT = float(_rt.get("low_max_interval_pct", 10)) / 100
 HIGH_MIN_PCT = float(_rt.get("high_min_interval_pct", 25)) / 100
 PENALTY_WEIGHT = float(_rk.get("uncertainty_penalty_weight", 0.3))
 
-# Default farmer mirrors the web client's meta.default_farmer (Nashik).
-DEFAULT_LAT = 19.9975
-DEFAULT_LON = 73.7898
-DEFAULT_QUANTITY_QTL = 100
-
 # ---------------------------------------------------------------------------
 # Header: wordmark, snapshot status, frozen-data notice.
 # ---------------------------------------------------------------------------
-render_page_header("Recommended mandi", "One recommendation with every assumption and evidence visible.")
+render_page_header(
+    "Recommended mandi", "One recommendation with every assumption and evidence visible."
+)
 render_frozen_notice()
-
-if RUNNING_ON_SAMPLE():
-    st.info(
-        "Offline demo mode — running on the bundled Oct 2025 sample snapshot. "
-        "No API key or live feed is used.",
-        icon=":material/info:",
-    )
 
 st.markdown(
     "MandiPulse ranks supported Maharashtra onion mandis by expected net price "
@@ -96,8 +90,19 @@ except Exception as exc:  # artifact missing entirely
     )
     st.stop()
 
+if RUNNING_ON_SAMPLE():
+    st.info(
+        "Offline demo mode — running on the bundled Oct 2025 sample snapshot. "
+        "No API key or live feed is used.",
+        icon=":material/info:",
+    )
+
 _canonical_as_of = canonical_forecast_as_of(_all_forecasts)
-_candidates = select_recommendation_candidates(_all_forecasts)
+try:
+    _candidates = select_recommendation_candidates(_all_forecasts)
+except ValueError as e:
+    st.warning(str(e))
+    st.stop()
 _mandis_coords = _mandis.dropna(subset=["latitude", "longitude"]).copy()
 
 try:
@@ -135,7 +140,7 @@ else:
     c_main, c_alt = st.columns([2, 3], gap="large")
     with c_main:
         st.metric(
-            "Transport-adjusted net price",
+            "Transport-adjusted net expected price",
             format_inr_per_qtl(top["transport_adjusted_net_price_inr_qtl"]),
             help=(
                 f"{top['mandi']} ({top['district_name']}): forecast "
@@ -153,17 +158,18 @@ else:
         if staleness > 0:
             st.warning(f"This forecast is {staleness} days behind the current snapshot window.")
     with c_alt:
-        st.markdown("**Alternative recommendations**")
-        for _, alt in alts.iterrows():
-            diff = (
-                alt["transport_adjusted_net_price_inr_qtl"]
-                - top["transport_adjusted_net_price_inr_qtl"]
-            )
-            st.markdown(
-                f"- **#{int(alt['rank'])} {alt['mandi']}** ({alt['district_name']}) — "
-                f"{format_inr_per_qtl(alt['transport_adjusted_net_price_inr_qtl'])} "
-                f"({format_inr_per_qtl(diff)} vs rank 1)"
-            )
+        if not alts.empty:
+            st.markdown("**Alternative recommendations**")
+            for _, alt in alts.iterrows():
+                diff = (
+                    alt["transport_adjusted_net_price_inr_qtl"]
+                    - top["transport_adjusted_net_price_inr_qtl"]
+                )
+                st.markdown(
+                    f"- **#{int(alt['rank'])} {alt['mandi']}** ({alt['district_name']}) — "
+                    f"{format_inr_per_qtl(alt['transport_adjusted_net_price_inr_qtl'])} "
+                    f"({format_inr_per_qtl(diff)} vs rank 1)"
+                )
         st.caption(
             f"Default assumptions: ({DEFAULT_LAT:.4f}, {DEFAULT_LON:.4f}) · "
             f"{DEFAULT_QUANTITY_QTL} qtl · {COST_PER_KM} INR/km/qtl · {MAX_RADIUS_KM:.0f} km radius."
@@ -208,7 +214,7 @@ with f_model:
         st.markdown("_Run the pipeline to see the model comparison table._")
 with f_iv:
     st.markdown("**Prediction interval**")
-    levels = sorted(set(_candidates["confidence_level"].unique()))
+    levels = sorted(_candidates["confidence_level"].dropna().unique())
     level_label = " / ".join(format_pct(lv * 100, 0) for lv in levels) if levels else "—"
     st.markdown(f"Nominal level {level_label}")
     st.markdown("Empirical coverage below nominal on held-out dates; stated as such.")
@@ -219,7 +225,7 @@ with f_rank:
             f"Mean regret@1 {format_inr_per_qtl(bt['regret_at_1_mean'], 1)}<br>"
             f"Nearest-mandi baseline {format_inr_per_qtl(bt['nearest_mandi_regret_mean'], 1)}<br>"
             f"Wins vs nearest {format_pct(bt['beats_nearest_1'] * 100)}<br>"
-            f"{bt['n_dates']} dates, {bt['date_min']} – {bt['date_max']}",
+            f"{bt['n_dates']} dates, {format_date_iso(bt['date_min'])} – {format_date_iso(bt['date_max'])}",
             unsafe_allow_html=True,
         )
     else:

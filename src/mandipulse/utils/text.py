@@ -5,6 +5,7 @@ import re
 
 def slugify(value: str) -> str:
     text = value.strip().lower()
+    text = re.sub(r"[()]+", " ", text)
     text = re.sub(r"[^a-z0-9\s-]", "", text)
     text = re.sub(r"[\s-]+", "_", text)
     return re.sub(r"_+", "_", text).strip("_")

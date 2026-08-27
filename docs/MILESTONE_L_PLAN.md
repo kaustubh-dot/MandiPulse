@@ -14,7 +14,7 @@ resume project for AI Engineer / Data Science roles.
 
 **No RULES.md scope change is required.** This stays inside existing rules:
 
-- RULES line 90: *"use a single Streamlit app"* — we deploy that same app, add no FastAPI.
+- RULES line 90: *"use a single Streamlit app"* — we deploy that same app without a runtime backend.
 - RULES line 153: *"Do not commit generated raw data files unless small, public, and intentionally
   sampled."* — the demo bundle is a small, intentionally sampled, public artifact set. Permitted.
 - RULES line 29: *"Keep generated artifacts reproducible from code, config, and source data."* — the
@@ -200,7 +200,7 @@ Keep RULES Dashboard tone (line 140): credible, data-heavy, not flashy.
 
 ## Out of scope for L (still deferred, needs separate promotion)
 
-FastAPI, live CEDA fetch, 14/30-day horizons, more crops/states, CI workflow (worth doing next as
+Live CEDA fetch, 14/30-day horizons, more crops/states, CI workflow (worth doing next as
 Milestone M, but separable), LLM explanation layer (the AI-Engineer flourish — plan separately
 after L lands so the demo is solid first), interval recalibration (in-scope quality fix, but a
 different concern from visibility — sequence after L).

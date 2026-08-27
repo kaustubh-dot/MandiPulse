@@ -70,12 +70,34 @@ def test_base_css_contains_contract_rules():
     assert "--mp-paper" in css
 
 
+def test_base_css_pins_streamlit_component_foregrounds_to_semantic_tokens():
+    css = design._base_css()
+    for selector in (
+        '[data-testid="stWidgetLabel"]',
+        '[data-testid="stMetricLabel"]',
+        '[data-testid="stMetricValue"]',
+        '[data-testid="stSidebarNav"]',
+    ):
+        assert selector in css
+    assert "color: var(--mp-ink);" in css
+
+
+def test_base_css_keeps_page_links_visible_on_light_surfaces():
+    css = design._base_css()
+    assert '[data-testid="stPageLink-NavLink"]' in css
+    assert '.stApp a[href="Decision"]' in css
+    assert ".stApp a" in css
+    assert "background: var(--mp-accent) !important;" in css
+    assert "color: var(--mp-accent-ink) !important;" in css
+
+
 def test_quiet_exchange_tokens_and_fonts_are_locked():
     assert design.LIGHT_TOKENS["paper"]["hex"] == "#f7f1e9"
     assert design.LIGHT_TOKENS["accent"]["hex"] == "#781827"
     assert "atlas" not in design.LIGHT_TOKENS
     assert "Cormorant Garamond" in design.DISPLAY_FONT_STACK
     assert "Manrope" in design.BODY_FONT_STACK
+    assert "IBM Plex Mono" in design.MONO_FONT_STACK
 
 
 def test_quiet_exchange_css_is_native_first_and_has_no_garden_layer():

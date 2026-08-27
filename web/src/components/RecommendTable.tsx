@@ -35,6 +35,7 @@ export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
             <li
               key={row.market_id}
               className={`py-3 ${isTop ? "bg-paper-2 -mx-4 px-4" : ""}`}
+              aria-current={isTop ? "true" : undefined}
             >
               <div className="flex items-baseline justify-between gap-2">
                 <div>
@@ -42,6 +43,11 @@ export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
                     #{row.rank}
                   </span>{" "}
                   <span className="font-semibold text-ink">{row.mandi}</span>
+                  {isTop && (
+                    <span className="ml-1.5 inline-block rounded bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-ink">
+                      Top pick
+                    </span>
+                  )}
                   <span className="ml-2 text-xs text-muted">{row.district_name}</span>
                 </div>
                 <span className={`text-xs font-semibold ${risk.cls}`}>
@@ -85,7 +91,7 @@ export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
               <th scope="col" className={HEAD_CLASS}>
                 District
               </th>
-              <th scope="col" className={HEAD_CLASS}>
+              <th scope="col" className={NUM_HEAD_CLASS}>
                 As-of
               </th>
               <th scope="col" className={NUM_HEAD_CLASS}>
@@ -110,7 +116,7 @@ export default function RecommendTable({ rows, canonicalAsOfDate }: Props) {
               const risk =
                 RISK_TEXT[row.risk_level] ?? { word: "Unknown", cls: "text-ink-2" };
               return (
-                <tr key={row.market_id} className={row.rank === 1 ? "bg-paper-2" : undefined}>
+                <tr key={row.market_id} className={row.rank === 1 ? "bg-paper-2" : undefined} aria-current={row.rank === 1 ? "true" : undefined}>
                   <td className={`${NUM_CELL_CLASS} font-semibold`}>{row.rank}</td>
                   <td className={`${CELL_CLASS} font-semibold text-ink`}>{row.mandi}</td>
                   <td className={CELL_CLASS}>{row.district_name}</td>

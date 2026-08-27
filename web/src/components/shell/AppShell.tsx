@@ -211,7 +211,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           MandiPulse
         </Link>
         <div className="flex items-center gap-3">
-          <span className="numeric whitespace-nowrap text-xs text-muted">
+          <span className="mp-mobile-snapshot numeric whitespace-nowrap text-xs text-muted">
             {SNAPSHOT_LABEL}
           </span>
           <button
@@ -238,10 +238,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           tabIndex={-1}
           className="fixed inset-x-0 top-[57px] bottom-0 z-50 flex flex-col gap-5 overflow-y-auto border-t border-rule-strong bg-paper px-4 pb-4 pt-5 lg:hidden"
         >
-          <div className="border-b border-rule pb-3">
+          <div className="flex items-center justify-between border-b border-rule pb-3">
             <h2 className="font-display text-[2rem] leading-none text-ink">
               Navigation
             </h2>
+            <button
+              type="button"
+              onClick={() => setSheetOpen(false)}
+              className="flex min-h-11 items-center justify-center rounded-control px-2 py-1 text-sm font-medium text-ink-2 motion-safe-transition hover:bg-surface-raised hover:text-ink"
+              aria-label="Close navigation menu"
+            >
+              Close
+            </button>
           </div>
           <NavLinks onNavigate={() => setSheetOpen(false)} />
           <div className="pt-1">
@@ -254,7 +262,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="lg:pl-60">
         <main
           id="main-content"
-          className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 outline-none"
         >
           {children}
         </main>

@@ -108,6 +108,14 @@ describe("AppShell mobile sheet", () => {
     await user.keyboard("{Escape}");
     assert.equal(document.body.style.overflow, "");
   });
+
+  it("keeps the mobile sheet Close control touch-safe", async () => {
+    const user = userEvent.setup();
+    renderShell();
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    const close = screen.getByRole("button", { name: "Close navigation menu" });
+    assert.match(close.className, /min-h-11/);
+  });
 });
 
 describe("AppShell theme toggle", () => {

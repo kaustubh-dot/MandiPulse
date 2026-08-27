@@ -12,7 +12,7 @@ Scope:
 - Markets: 15 selected mandis.
 - Forecast horizon: 7 days only.
 - Shipped forecaster: `moving_average_7d`.
-- Public surfaces: Streamlit dashboard, FastAPI API, and static Next.js frontend.
+- Public surfaces: Streamlit dashboard and static Next.js frontend.
 
 ## Data Flow
 
@@ -30,7 +30,6 @@ flowchart TD
     G --> J
     I --> J
     J --> K["Streamlit dashboard"]
-    J --> L["FastAPI service"]
     J --> M["Web JSON export"]
     M --> N["Static Next.js frontend"]
 ```
@@ -42,7 +41,7 @@ beat the 7-day moving-average baseline on the held-out test split, so the baseli
 
 **CSV is the source of truth; DuckDB is the read interface.**
 
-Pipeline scripts write reproducible CSV outputs. Dashboard, API, and evaluation loaders read CSVs
+Pipeline scripts write reproducible CSV outputs. Dashboard and evaluation loaders read CSVs
 through `src/mandipulse/data/store.py::read_csv_via_duckdb`, satisfying the DuckDB architecture rule
 without requiring a persisted binary database.
 
@@ -65,11 +64,10 @@ This keeps the repo small while preserving a no-secrets demo path.
 | Surface | Role | Data source |
 |---|---|---|
 | Streamlit | Offline data-science showcase with Overview, Decision, Forecast, and Coverage pages | `data/sample/` fallback or local full artifacts |
-| FastAPI | Local snapshot API for `/health`, `/forecast`, and `/recommend`; external deployment is optional | Shared streamlit-free loaders over `data/sample/` |
 | Next.js | Static decision-first frontend with client-side decision-input re-ranking; external deployment is optional | `web/public/data/*.json` |
 
 The Next.js ranking code is a TypeScript port of `src/mandipulse/recommend/engine.py`, wrapped by the
-same canonical as-of, radius, and alternative-limit policy used by the exporter and API. The parity
+same canonical as-of, radius, and alternative-limit policy used by the exporter. The parity
 test compares the policy-filtered TypeScript output against Python-generated `recommendations.json`
 within 0.01 INR/qtl.
 

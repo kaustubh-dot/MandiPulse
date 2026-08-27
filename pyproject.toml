@@ -17,7 +17,6 @@ dependencies = [
   "pandas>=2.2",
   "plotly>=5.24",
   "pyarrow>=17.0",
-  "pydantic>=2.8",
   "python-dateutil>=2.9",
   "python-dotenv>=1.0",
   "pyyaml>=6.0",
@@ -35,20 +34,17 @@ dev = [
   "pytest-cov>=5.0",
   "ruff>=0.6,<0.16",
 ]
-post-mvp = [
-  "fastapi>=0.115",
-  "httpx>=0.27",
-  "uvicorn[standard]>=0.30",
-]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
 addopts = "--cov=mandipulse --cov-report=term-missing --cov-fail-under=70"
-filterwarnings = ["ignore::DeprecationWarning:starlette"]
+filterwarnings = [
+  "ignore:X does not have valid feature names:UserWarning:sklearn",
+]
 
 [tool.ruff]
 line-length = 100

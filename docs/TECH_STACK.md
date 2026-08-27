@@ -4,14 +4,13 @@
 
 | Layer | Tooling | Role |
 |---|---|---|
-| Core language | Python 3.11+ | Data pipeline, modeling, API, Streamlit |
+| Core language | Python 3.11+ | Data pipeline, modeling, and Streamlit dashboard |
 | Data processing | pandas, NumPy, DuckDB | Cleaning, feature creation, read-layer SQL |
 | Modeling | scikit-learn, LightGBM | Baselines and comparison models |
 | Tracking | MLflow | Local experiment metadata |
 | Dashboard | Streamlit, Plotly | Offline data-science showcase |
-| API | FastAPI, Pydantic, Uvicorn | Additive `/health`, `/forecast`, `/recommend` surface |
 | Frontend | Next.js 16, React 19, Tailwind v4, Recharts, Leaflet | Static Vercel frontend |
-| Testing | pytest, pytest-cov, Node test runner | Python logic, API tests, TS/Python parity |
+| Testing | pytest, pytest-cov, Node test runner | Python logic, export validation, TS/Python parity |
 | Quality | Ruff, Black, GitHub Actions | Lint, format, CI gates |
 
 ## Deployment Targets
@@ -19,7 +18,6 @@
 | Surface | Target | Notes |
 |---|---|---|
 | Streamlit | Streamlit Cloud | Uses committed `data/sample/`; no secrets required |
-| FastAPI | Render | Uses `requirements-api.txt`; no model training at runtime |
 | Next.js | Vercel | Static export from `web/`; reads committed JSON |
 
 ## Data And Artifact Tools

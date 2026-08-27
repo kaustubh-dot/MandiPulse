@@ -14,7 +14,6 @@ import {
   StatusNotice,
   TextLink,
 } from "@/components/ui/primitives";
-import { ContourField } from "@/components/visual/ContourField";
 import {
   loadHonestResults,
   loadMandis,
@@ -26,7 +25,10 @@ import { daysBehind } from "@/lib/policy";
 import type { MandiMeta, Meta, PriceHistoryRow } from "@/lib/types";
 import { useAsyncData } from "@/lib/useAsyncData";
 
-const MandiMap = dynamic(() => import("@/components/MandiMap"), { ssr: false });
+const MandiMap = dynamic(() => import("@/components/MandiMap"), {
+  ssr: false,
+  loading: () => <div className="h-[400px] w-full animate-pulse rounded bg-paper-2" aria-hidden="true" />,
+});
 
 interface CoverageBundle {
   meta: Meta;
@@ -172,7 +174,6 @@ export default function CoveragePage() {
             </>
           }
         />
-        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
       </div>
 
       {isEmpty ? (
@@ -182,8 +183,8 @@ export default function CoveragePage() {
           nextAction={<TextLink href="/#method">Read the method summary</TextLink>}
         />
       ) : (
-        <div className="grid items-start gap-10 lg:grid-cols-12">
-          <div className="space-y-10 lg:col-span-4">
+        <div className="grid min-w-0 items-start gap-10 lg:grid-cols-12">
+          <div className="min-w-0 space-y-10 lg:col-span-4">
             <section aria-labelledby="snapshot-range" className="space-y-4">
               <SectionHeading id="snapshot-range">Snapshot range</SectionHeading>
               <Panel>
@@ -261,7 +262,7 @@ export default function CoveragePage() {
             </section>
           </div>
 
-          <div className="space-y-10 lg:col-span-8">
+          <div className="min-w-0 space-y-10 lg:col-span-8">
             <section aria-labelledby="comparability" className="space-y-4">
               <SectionHeading id="comparability">Per-mandi comparability</SectionHeading>
               <p className="max-w-3xl text-sm leading-relaxed text-ink-2">

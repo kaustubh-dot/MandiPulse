@@ -10,8 +10,8 @@
 
 ## Locked Direction
 
-- **Streamlit:** Quiet Exchange without Garden Atlas embellishment.
-- **Next.js:** Quiet Exchange as the base system, with a restrained Garden Atlas visual layer.
+- **Streamlit:** Quiet Exchange.
+- **Next.js:** Quiet Exchange, with functional maps but no decorative geographic layer.
 - **Shared tone:** Minimal, professional, assured, evidence-led.
 - **Motion:** Opacity, selection, and 1 px press feedback only. No GSAP, Three.js, parallax, ambient loops, or page-wide scroll reveals.
 - **Data and behavior:** Preserve every current route, artifact loader, decision formula, URL parameter, state message, chart fallback, map fallback, and accessibility behavior.
@@ -22,7 +22,7 @@ The implementation must not copy the preview gallery's miniature markup into pro
 
 Quiet Exchange treats the sell decision like a carefully edited exchange ledger: warm vellum, graphite text, oxblood emphasis, large editorial whitespace, and one dominant answer. It avoids both generic SaaS cards and financial-terminal theater.
 
-Garden Atlas appears only on Next.js and only where geography is meaningful. Thin contour lines, route framing, and a muted leaf-green atlas token may support maps, location context, or the dominant recommendation. They must never become decorative farm imagery, leaf icons, illustrated crops, or a second competing theme.
+Geography appears only where it carries decision evidence. Maps use neutral graphite markers, an oxblood rank-one marker, rectangular labels, OpenStreetMap attribution, and a tabular fallback. Decorative contours, route atmosphere, agricultural imagery, and theme-specific green accents are excluded.
 
 ## Canonical Light Tokens
 
@@ -42,15 +42,13 @@ These OKLCH values are the source of truth. Streamlit uses the listed sRGB appro
 | Accent | `oklch(38% 0.13 18)` | `#781827` | Oxblood action and selection |
 | Accent soft | `oklch(91% 0.03 18)` | `#f5dada` | Selected row or forecast band |
 | Accent ink | `oklch(96% 0.012 75)` | `#f7f1e9` | Text on oxblood |
-| Atlas | `oklch(49% 0.13 145)` | `#24732c` | Next.js geography only |
-| Atlas soft | `oklch(90% 0.05 145)` | `#cae7ca` | Next.js contour/map wash only |
 | Focus | `oklch(48% 0.15 18)` | `#a12e3c` | Immediate focus ring |
 | Success | `oklch(45% 0.13 145)` | `#146720` | Verified success state |
 | Warning | `oklch(48% 0.13 70)` | `#8a4c00` | Verified warning state |
 | Danger | `oklch(48% 0.15 18)` | `#a12e3c` | Error state |
 | Info | `oklch(45% 0.06 235)` | `#315b72` | Neutral information state |
 
-The atlas roles do not exist in Streamlit's public styling API. Streamlit remains vellum, graphite, and oxblood.
+Both surfaces remain vellum, graphite, and oxblood. State colors are reserved for semantic feedback.
 
 ## Next.js Dark Tokens
 
@@ -70,8 +68,6 @@ The existing theme toggle remains. Its dark mode becomes warm charcoal rather th
 | Accent | `oklch(72% 0.12 18)` | `#e68488` |
 | Accent soft | `oklch(28% 0.05 18)` | `#3a1c20` |
 | Accent ink | `oklch(16% 0.012 55)` | `#110c08` |
-| Atlas | `oklch(70% 0.1 145)` | `#76af77` |
-| Atlas soft | `oklch(24% 0.04 145)` | `#122413` |
 | Focus | `oklch(72% 0.14 18)` | `#ef7d83` |
 | Success | `oklch(70% 0.1 145)` | `#76af77` |
 | Warning | `oklch(76% 0.11 70)` | `#dba25b` |
@@ -105,7 +101,7 @@ Rules:
 - Prefer open sections with one top or bottom rule over bordered cards.
 - Never nest a bordered panel inside another bordered panel.
 - Preserve generous whitespace around the dominant recommendation; evidence may remain dense.
-- Accent fill stays below roughly 5% of a viewport. Atlas green stays below roughly 3%.
+- Accent fill stays below roughly 5% of a viewport.
 
 ## Next.js Composition
 
@@ -123,8 +119,7 @@ Rules:
 2. Quiet Exchange statement: one short page title and one explanatory paragraph.
 3. One dominant recommendation with price and decision facts.
 4. Two compact alternatives.
-5. A restrained contour/route visual behind or beside the primary result.
-6. Evaluation and method evidence in open ruled sections.
+5. Evaluation and method evidence in open ruled sections.
 
 This is an operating view, not a marketing hero.
 
@@ -133,34 +128,31 @@ This is an operating view, not a marketing hero.
 - Desktop: narrow controls column and wide result/evidence column.
 - Mobile: controls, compare action, primary result, alternatives, table, map, evidence.
 - The top recommendation uses editorial scale and open space instead of a thick left-striped card.
-- The map receives the Garden Atlas treatment: square framing, thin route/contour cues, atlas-green candidate markers, oxblood rank-one marker, and rectangular labels.
+- The map uses square framing, neutral graphite candidate markers, an oxblood rank-one marker, and rectangular labels.
 - Keep OpenStreetMap attribution and the tabular distance fallback.
 
 ### Forecast `/forecast`
 
 - One chart remains the anchor.
 - Observed history stays graphite; forecast stays dashed oxblood; uncertainty stays oxblood-soft.
-- Atlas green may label location context or a geographic selection, but it must not become another price series.
 - Keep chart/table toggle, tooltip semantics, units, legends, and data table fallback.
 
 ### Coverage `/coverage`
 
 - Use ledger-like sections and aligned tables rather than metric-card grids.
-- A subtle contour field may anchor the page heading or mandi coverage map only.
 - Provenance, missingness, and model evidence remain factual and visible.
 
-## Garden Atlas Visual Layer for Next.js
+## Geographic Evidence in Next.js
 
-- Add one reusable `ContourField` SVG component with `aria-hidden="true"` and `focusable="false"`.
-- Use semantic token classes only; no inline raw colors.
-- Contours are low-contrast rule lines with one optional atlas-green route line.
-- No animation beyond an opacity change when the selected result changes.
-- The component must disappear or simplify below 480 px when it competes with content.
-- The real Leaflet map remains the authoritative geographic visual. The contour component is supporting atmosphere, not data.
+- The real Leaflet map is the only geographic visual.
+- Use semantic tokens only; no inline raw colors or theme-specific green role.
+- Candidate markers are neutral; the first-ranked mandi uses oxblood plus its text label.
+- When map tiles fail, the bounded map region retains a quiet ruled fallback and an explicit status message.
+- No decorative contour, route, crop, or agricultural illustration may sit behind page content.
 
 ## Streamlit Composition
 
-Streamlit implements Quiet Exchange without Garden Atlas visuals.
+Streamlit implements the same Quiet Exchange system.
 
 - Keep the native sidebar and native navigation.
 - Use one shared `mandipulse.app.design` module for tokens, Plotly defaults, shared CSS, and repeated heading/snapshot helpers.
@@ -192,12 +184,12 @@ Streamlit implements Quiet Exchange without Garden Atlas visuals.
 - Keep Leaflet and Recharts lazy or route-local where they already are.
 - Preserve dimensions for charts and maps to avoid CLS.
 - Do not change recommendation math, policy, artifacts, API contracts, route ownership, or product copy meaning.
-- Do not delete production files during the redesign. The unused `NavBar.tsx` remains outside this plan unless the user separately approves cleanup.
+- Do not delete production files during the redesign. The unused `NavBar.tsx` remains outside this plan. The user later explicitly approved removing Garden Atlas visuals, so the retired `ContourField.tsx` is the sole cleanup exception.
 
 ## Acceptance Criteria
 
 - Both surfaces clearly read as the same Quiet Exchange product family.
-- Next.js alone carries restrained contour and geographic Garden Atlas cues.
+- Next.js carries only functional geographic evidence; both surfaces otherwise share the same Quiet Exchange identity.
 - One recommendation is visually dominant; alternatives remain comparable.
 - Real frozen evidence is used throughout; no fabricated metric or live-data claim appears.
 - No card-inside-card nesting, gradient text, glass, glows, generic hero, or three-equal-card result layout remains.

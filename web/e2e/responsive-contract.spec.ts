@@ -1,9 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import {
   expectNoHorizontalScroll,
+  expectNoUncontainedOverflow,
   expectNoPageProblems,
   expectNoSeriousAxeViolations,
+  mockMapTiles,
   scanSeriousAxeViolations,
+  waitForRouteReady,
   watchPageProblems,
 } from "./helpers";
 
@@ -22,10 +25,12 @@ for (const viewport of VIEWPORTS) {
   for (const route of ROUTES) {
     test(`${route} satisfies responsive contract at ${viewport.name} (${viewport.width}px)`, async ({ page }) => {
       const problems = watchPageProblems(page);
+      await mockMapTiles(page);
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto(route);
-      await expect(page.locator("main")).toBeVisible();
+      await waitForRouteReady(page, route);
       await expectNoHorizontalScroll(page);
+      await expectNoUncontainedOverflow(page);
       expectNoSeriousAxeViolations(await scanSeriousAxeViolations(page));
       expectNoPageProblems(problems);
     });

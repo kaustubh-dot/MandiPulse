@@ -107,8 +107,8 @@
       "path": "web/public/data/mandis.json",
       "schema_path": "schemas/web_export/v2/mandis.schema.json",
       "schema_version": "2.0.0",
-      "sha256": "247b7984107ca2d9b741ad1b3d805ca06ec9aaed0f83a3510c676590fcf12817",
-      "bytes": 3337,
+      "sha256": "91f99109686dfac4ee4f618d37804e67e9915429028ae9c5c67b4ade49d57934",
+      "bytes": 3342,
       "records": 15
     },
     {

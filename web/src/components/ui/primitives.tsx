@@ -211,7 +211,7 @@ function FieldFrame({
       <p
         id={messageId}
         role={state === "error" ? "alert" : undefined}
-        aria-live={state === "error" ? "assertive" : "polite"}
+        aria-live={state === "error" ? "polite" : undefined}
         className={`min-h-[1lh] text-sm leading-snug ${
           state === "error"
             ? "text-danger"

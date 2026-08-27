@@ -104,10 +104,12 @@ class TestLoadFeatureTable:
 
 
 class TestMissingArtifactGuard:
-    def test_missing_artifact_calls_st_stop(self) -> None:
+    def test_missing_artifact_raises_runtime_error(self) -> None:
         import tempfile
         from pathlib import Path
         from unittest.mock import MagicMock, patch
+
+        import pytest
 
         import mandipulse.data.loaders as loaders
         from mandipulse.app import data_access
@@ -117,24 +119,17 @@ class TestMissingArtifactGuard:
             empty_sample_dir = Path(tmpdir) / "empty_sample"
             empty_sample_dir.mkdir()
 
-            mock_stop = MagicMock()
             mock_error = MagicMock()
 
             with (
                 patch.object(data_access, "forecast_outputs_path", return_value=missing_path),
                 patch.object(loaders, "SAMPLE_DIR", empty_sample_dir),
-                patch("streamlit.stop", mock_stop),
                 patch("streamlit.error", mock_error),
+                pytest.raises(RuntimeError, match="Missing artifact"),
             ):
-                try:
-                    fn = getattr(
-                        data_access.load_forecasts, "__wrapped__", data_access.load_forecasts
-                    )
-                    fn()
-                except Exception:
-                    pass
+                fn = getattr(data_access.load_forecasts, "__wrapped__", data_access.load_forecasts)
+                fn()
 
-        mock_stop.assert_called_once()
         mock_error.assert_called_once()
 
 
@@ -191,3 +186,15 @@ class TestHistoryForMandi:
         mid = int(golden_clean_panel["market_id"].iloc[0])
         result = history_for_mandi(golden_clean_panel, mid)
         assert result["date"].is_monotonic_increasing
+
+
+def test_persist_decision_location_updates_existing_widget_state() -> None:
+    from mandipulse.app import data_access
+
+    state = {"farmer_lat": 19.9975, "farmer_lon": 73.78981}
+    data_access.persist_decision_location(state, latitude=21.1458, longitude=79.0882)
+
+    assert state["saved_lat"] == 21.1458
+    assert state["saved_lon"] == 79.0882
+    assert state["farmer_lat"] == 21.1458
+    assert state["farmer_lon"] == 79.0882

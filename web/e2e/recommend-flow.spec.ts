@@ -5,7 +5,12 @@ import {
   waitForRouteReady,
   scanSeriousAxeViolations,
   expectNoSeriousAxeViolations,
+  mockMapTiles,
 } from "./helpers";
+
+test.beforeEach(async ({ page }) => {
+  await mockMapTiles(page);
+});
 
 const EXPECTED_QUERY = /lat=18\.5204&lon=73\.8567&q=100&r=4&rad=500$/;
 
@@ -16,6 +21,55 @@ async function rankOneMandi(page: import("@playwright/test").Page): Promise<stri
 }
 
 test.describe("primary decision flow", () => {
+  test("copies a trailing-slash recommendation URL", async ({ page }) => {
+    await page.goto("/recommend/");
+    await waitForRouteReady(page, "/recommend/");
+    await page.getByRole("button", { name: "Copy link" }).click();
+    const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clipboard).toMatch(/\/recommend\/\?lat=.*&rad=.*$/);
+  });
+
+  test("restores non-default artifact transport config on browser back", async ({
+    page,
+  }) => {
+    await page.route("**/data/meta.json", async (route) => {
+      const response = await route.fetch();
+      const meta = await response.json();
+      meta.ranking.cost_per_km_per_quintal = 6;
+      meta.ranking.max_transport_radius_km = 640;
+      await route.fulfill({ response, json: meta });
+    });
+    await page.goto("/recommend/");
+    await waitForRouteReady(page, "/recommend/");
+    await expect(page.getByLabel("Transport rate (INR/km/quintal)")).toHaveValue("6");
+    await expect(page.getByLabel("Maximum road radius (km)")).toHaveValue("640");
+
+    await page.getByLabel("Example locations").selectOption({ label: "Pune" });
+    await page.getByRole("button", { name: "Compare mandis" }).click();
+    await expect(page).toHaveURL(/\/recommend\/\?lat=.*&r=6&rad=640$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/recommend\/$/);
+    await expect(page.getByLabel("Transport rate (INR/km/quintal)")).toHaveValue("6");
+    await expect(page.getByLabel("Maximum road radius (km)")).toHaveValue("640");
+  });
+
+  test("preserves URL transport overrides and keeps them editable after loading", async ({
+    page,
+  }) => {
+    await page.goto("/recommend/?r=7.5&rad=120");
+    await waitForRouteReady(page, "/recommend/");
+
+    const rate = page.getByLabel("Transport rate (INR/km/quintal)");
+    const radius = page.getByLabel("Maximum road radius (km)");
+    await expect(rate).toHaveValue("7.5");
+    await expect(radius).toHaveValue("120");
+
+    await rate.fill("8");
+    await radius.fill("140");
+    await expect(rate).toHaveValue("8");
+    await expect(radius).toHaveValue("140");
+  });
+
   test("changing the mandi location re-ranks results and produces a reproducible shareable link", async ({
     page,
   }) => {
@@ -74,5 +128,39 @@ test.describe("primary decision flow", () => {
     expect(await alert.getAttribute("role")).toBeNull();
     await expect(lat).toHaveValue("19.99");
     expectNoPageProblems(problems);
+  });
+
+  test("adds one browser-history entry after Compare mandis", async ({ page }) => {
+    await page.goto("/recommend/");
+    await waitForRouteReady(page, "/recommend/");
+
+    await page.getByLabel("Example locations").selectOption({ label: "Pune" });
+    await page.getByRole("button", { name: "Compare mandis" }).click();
+    await expect(page).toHaveURL(EXPECTED_QUERY);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/recommend\/$/);
+    await expect(page.getByLabel("Latitude")).toHaveValue("19.9975");
+  });
+
+  test("keeps Leaflet zoom controls touch-safe on narrow screens", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/recommend/");
+    await waitForRouteReady(page, "/recommend/");
+    await expect(page.locator(".leaflet-container")).toBeVisible();
+    await expect(page.locator(".leaflet-control-zoom a").first()).toBeVisible();
+
+    const sizes = await page.locator(".leaflet-control-zoom a").evaluateAll((links) =>
+      links.map((link) => {
+        const rect = link.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      })
+    );
+
+    expect(sizes.length).toBe(2);
+    for (const size of sizes) {
+      expect(size.width).toBeGreaterThanOrEqual(44);
+      expect(size.height).toBeGreaterThanOrEqual(44);
+    }
   });
 });

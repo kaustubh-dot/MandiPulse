@@ -161,12 +161,8 @@ def summarize_backtest(backtest: pd.DataFrame, k_values: list[int]) -> dict:
         result[f"optimal_rate_{k}"] = (
             float((valid <= 0).mean()) if not valid.empty else float("nan")
         )
-        both = backtest[[col, "nearest_mandi_regret"]].dropna()
-        result[f"beats_nearest_{k}"] = (
-            float((both[col] < both["nearest_mandi_regret"]).mean())
-            if not both.empty
-            else float("nan")
-        )
+        beats = backtest[col].lt(backtest["nearest_mandi_regret"])
+        result[f"beats_nearest_{k}"] = float(beats.fillna(False).mean())
 
     nm_regret = backtest["nearest_mandi_regret"].dropna()
     result["nearest_mandi_regret_mean"] = (

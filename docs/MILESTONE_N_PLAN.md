@@ -131,7 +131,7 @@ pipeline run and no secrets.
 
 **`docs/RULES.md`**
 - Line 12: remove "React frontend" from the "Do not add" list.
-- After the FastAPI post-MVP note (~line 95), add:
+- Under the architecture rules, add:
   > **Post-MVP promotion (Milestone N):** A Next.js static frontend is active as an additive
   > delivery surface. It reads pre-exported JSON from `web/public/data/` — no backend. The Streamlit
   > app remains the offline showcase. MVP data scope (1 crop, 1 state, 7-day horizon) does not widen.

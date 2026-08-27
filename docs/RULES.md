@@ -11,7 +11,8 @@ This file is for future maintainers. Follow these rules unless the project docs 
 - Do not turn the project into generic crop price prediction.
 - Do not add Kubernetes, mobile app, WhatsApp bot, deep learning forecasting, Temporal Fusion Transformers, large-scale 500+ mandi networks, or unnecessary microservices.
 - React frontend: promoted post-MVP as Milestone N (static Next.js export only — see below).
-- Treat FastAPI, regime/anomaly detection, live monitoring, causal inference, arbitrage detection, and price propagation graph as optional/future modules unless explicitly scoped and documented.
+- Treat regime/anomaly detection, live monitoring, causal inference, arbitrage detection, and price
+  propagation graphs as optional/future modules unless explicitly scoped and documented.
 
 ## Data Rules
 
@@ -88,12 +89,8 @@ This file is for future maintainers. Follow these rules unless the project docs 
 ## Architecture Rules
 
 - Keep functions modular and tested.
-- In the narrowed MVP, use a single Streamlit app over a separate FastAPI service.
-- **Post-MVP promotion (Milestone M):** FastAPI is now active as an additive delivery surface.
-  The Streamlit app remains the offline/data-science showcase. The FastAPI service exposes
-  `/health`, `/forecast`, and `/recommend` over the same precomputed artifacts. MVP data scope
-  (1 crop, 1 state, 7-day horizon) does not widen. Keep it simple and monolithic.
-- If FastAPI is added after MVP, keep it simple and monolithic.
+- Use Streamlit for the analytical showcase and a static Next.js export for the public product
+  surface. Both consume committed artifacts and require no runtime backend.
 - **Post-MVP promotion (Milestone N):** A Next.js static frontend is active as an additive
   delivery surface. It reads pre-exported JSON from `web/public/data/` — no backend required.
   The Streamlit app remains the offline/data-science showcase. MVP data scope (1 crop, 1 state,
@@ -118,31 +115,6 @@ This file is for future maintainers. Follow these rules unless the project docs 
   - Streamlit/local artifact loading once the dashboard exists.
 - Use small synthetic fixtures where possible.
 - Do not require large raw datasets for unit tests.
-
-## Post-MVP API Rules
-
-These rules apply only if FastAPI is promoted after the Streamlit MVP is useful.
-
-- Keep API responses aligned with `docs/API_SPEC.md`.
-- Validate all inputs with Pydantic.
-- Forecast response must include:
-  - Forecast price.
-  - Lower bound.
-  - Upper bound.
-  - Confidence level.
-  - Market regime.
-- Recommendation response must include:
-  - Recommended mandi.
-  - Alternatives.
-  - Transport cost.
-  - Expected net price.
-  - Risk level.
-  - Reason.
-- Use standard error response format.
-- Do not silently fallback to dummy predictions in production-like paths.
-- API must resolve mandi display names to internal `mandi_id` via metadata lookup.
-- If a mandi name cannot be resolved, return `MANDI_NOT_FOUND` error, not a silent fallback.
-- Never hardcode mandi name to ID mappings in API route handlers; use the mandi metadata table.
 
 ## Dashboard Rules
 
@@ -189,7 +161,6 @@ __pycache__/
 ## Documentation Rules
 
 - Update `docs/TRACKER.md` when tasks move status.
-- Update `docs/API_SPEC.md` if endpoint contracts change.
 - Update `docs/DATA_SCHEMA.md` if tables or columns change.
 - Update `docs/ARCHITECTURE.md` if system flow changes.
 - Update README after meaningful implementation milestones.

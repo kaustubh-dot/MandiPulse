@@ -8,7 +8,7 @@ MandiPulse is a clone-runnable mandi decision-intelligence release candidate:
 - State: Maharashtra
 - Markets: 15 selected mandis
 - Forecast horizon: 7 days
-- Public surfaces: Streamlit dashboard, FastAPI service, and static Next.js frontend
+- Public surfaces: Streamlit dashboard and static Next.js frontend
 - Data mode: clone-runnable committed demo bundle; live CEDA refresh is optional
 
 The modeling scope remains intentionally narrow. Future research work such as calendar features,
@@ -20,7 +20,7 @@ implementation. Split-conformal intervals are already included in the Phase 3 ev
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev,post-mvp]"
+python -m pip install -e ".[dev]"
 ```
 
 Copy `.env.example` to `.env` and set `CEDA_API_TOKEN` only if you intend to re-fetch raw CEDA data.
@@ -54,23 +54,20 @@ The intentionally committed demo artifacts are `data/sample/` and `web/public/da
 # Streamlit dashboard
 streamlit run app\streamlit_app.py
 
-# FastAPI service
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
-
 # Next.js frontend
 cd web
 npm install
 npm run dev
 ```
 
-Streamlit opens at `http://localhost:8501`, FastAPI docs at `http://localhost:8000/docs`, and the
-Next.js frontend at `http://localhost:3000`.
+Streamlit opens at `http://localhost:8501`, and the Next.js frontend opens at
+`http://localhost:3000`.
 
 ## Quality Gates
 
 ```powershell
-ruff check api app src scripts tests
-black --check api app src scripts tests
+ruff check app src scripts tests
+black --check app src scripts tests
 pytest -q
 
 cd web
@@ -78,7 +75,7 @@ npm test
 npm run build
 ```
 
-Current gates: 235 Python tests pass at 78.05% coverage against a 70% floor. The web gate runs lint,
+Current gates: 208 Python tests pass at 77.59% coverage against a 70% floor. The web gate runs lint,
 typecheck, parity tests, component tests, the static build, and the Playwright browser/accessibility
 suite in CI (`.github/workflows/ci.yml`).
 
@@ -102,8 +99,6 @@ Deploy the release branch `finish/portfolio-release` (the tagged release commit)
 
 - Streamlit Cloud: deploy `app/streamlit_app.py` from `finish/portfolio-release`.
 - Vercel (optional): deploy with root directory `web`; no environment variables are required.
-- Render API (optional): deploy with `requirements-api.txt` and start command
-  `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
 
 After deployment, record the final URLs in the release record in
 [docs/portfolio/RELEASE_GATES.md](docs/portfolio/RELEASE_GATES.md).

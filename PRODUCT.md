@@ -10,7 +10,6 @@ web
 
 - Primary product surface: Next.js static export in `web/`.
 - Secondary analytical surface: Streamlit in `app/`.
-- Supporting interface: FastAPI snapshot service in `api/`.
 - Shared computation: Python package under `src/mandipulse/` plus generated, schema-validated
   public artifacts.
 
@@ -19,7 +18,8 @@ web
 - Small Maharashtra onion farmers comparing where to sell a crop lot.
 - Farmer Producer Organizations comparing mandis for an aggregated sale.
 - Market analysts inspecting coverage, forecasts, assumptions, and backtest evidence.
-- Technical reviewers evaluating the project's data, ML, API, and product-engineering decisions.
+- Technical reviewers evaluating the project's data, ML, export-contract, and product-engineering
+  decisions.
 
 The public interface must not assume that every user understands forecasting terminology. Technical
 evidence should remain available without obstructing the primary sell-decision workflow.
@@ -55,7 +55,7 @@ configuration, and evaluation evidence.
 - Baseline, LightGBM, and residual-model comparison with an honestly selected moving-average model.
 - Forecast intervals with measured coverage and an observed-target Phase 3 evaluation.
 - Transport-cost-aware candidate scoring and regret-at-K backtesting.
-- Streamlit, FastAPI, and static Next.js surfaces over committed demonstration artifacts.
+- Streamlit and static Next.js surfaces over committed demonstration artifacts.
 - Strict JSON schemas, finite-value validation, a provenance manifest, and Python/TypeScript parity.
 
 ### Release constraints
@@ -90,8 +90,8 @@ configuration, and evaluation evidence.
   split-conformal coverage for the internal evaluation population.
 - Public recommendation backtest: mean regret@1 of 296.3 INR/qtl versus 370.1 INR/qtl for the
   nearest-mandi baseline; the recommendation beats nearest on 74.4% of evaluated dates.
-- 235 passing Python tests with 78.05% coverage from the latest verification.
-- 113 web unit assertions, 34 component suites, and 17 Playwright end-to-end checks
+- 208 passing Python tests with 77.59% coverage after retiring the unused backend surface.
+- 140 web unit assertions, 44 component checks, and 89 passing Playwright end-to-end checks
   (desktop and mobile, with automated accessibility scans) on the release branch.
 - Eight strict web JSON artifacts with verified schema, finite-value, and manifest-hash checks.
 - No verified production-user count, profit improvement, request volume, or public API deployment.
@@ -116,8 +116,6 @@ configuration, and evaluation evidence.
 
 ## Open Product Decisions
 
-- Whether to deploy the optional FastAPI service publicly. The Next.js static product does not
-  require it.
 - Whether a later research phase should attempt candidate-specific uncertainty. This is not required
   for the portfolio release if the ranking language is corrected now.
 - Whether to support Marathi localization after the English portfolio release. Localization is not

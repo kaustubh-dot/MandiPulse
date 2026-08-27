@@ -6,7 +6,12 @@ import {
   waitForRouteReady,
   scanSeriousAxeViolations,
   expectNoSeriousAxeViolations,
+  mockMapTiles,
 } from "./helpers";
+
+test.beforeEach(async ({ page }) => {
+  await mockMapTiles(page);
+});
 
 test.describe("stable routes at both viewports", () => {
   for (const route of ROUTES) {

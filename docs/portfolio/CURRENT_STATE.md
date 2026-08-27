@@ -2,44 +2,44 @@
 
 Status: active portfolio snapshot
 
-Snapshot date: 2026-08-22
+Snapshot date: 2026-08-27
 
 ## 1. Summary
 
-MandiPulse has a strong, tested analytical core and functioning Python, API, Streamlit, and Next.js surfaces. It is not yet the final portfolio release. The active phase is end-to-end product hardening: correct public ranking terminology, replace both interfaces, resolve frontend dependency findings, expand product-level tests, reconcile documentation, and verify public deployments.
+MandiPulse has a tested analytical core and portfolio-ready local Python, Streamlit, and Next.js surfaces. The Quiet Exchange redesign and local release hardening are complete. Public deployment verification, the exact release commit, CI evidence for that commit, and the final tag remain pending.
 
 ## 2. Repository Snapshot
 
 | Field | Value |
 |---|---|
 | Branch | `finish/portfolio-release` (created from `main` at `ef4f393`) |
-| Local HEAD | Non-UI hardening commit; see `git log` for the exact hash |
-| Remote relationship | Baseline `ba9535e` was pushed; this non-UI hardening commit still needs CI/push |
-| Worktree | Non-UI changes are committed; UI/design artifacts remain intentionally unstaged for the later redesign |
+| Local HEAD | Portfolio UI hardening is present in the working tree; see `git log` for the last commit |
+| Remote relationship | Final UI changes still need an exact release commit, push, and CI run |
+| Worktree | Intentionally dirty while the approved UI fixes and evidence are reviewed |
 | Data snapshot | 2025-10-30 |
 | Product scope | Onion, Maharashtra, 15 mandis, 7-day horizon |
-| Active implementation phase | Non-UI release hardening complete; UI redo intentionally deferred |
+| Active implementation phase | Local UI and release hardening complete; deployment evidence pending |
 | Last approved analytical checkpoint | CP-003 |
 | Next release checkpoint | Pending public deployment verification (RG-16) |
-| Next action | Complete the dedicated UI redesign, then deploy and verify both surfaces; non-UI checks are already rerun |
+| Next action | Review the final diff, commit and push it, then deploy and verify both surfaces signed out |
 
-### Quiet Exchange redesign outcome (2026-08-24)
+### Quiet Exchange redesign outcome (2026-08-26)
 
 The Quiet Exchange interface redesign is complete and verified across both Next.js and Streamlit.
 Both interfaces eliminate decorative AI-slop elements (card grids, gradient meshes, dark hero
 fill blocks, generic badge pills) in favor of open ruled containment, asymmetrical editorial
-hierarchy, locked semantic tokens, and honest data disclosures. Next.js incorporates subtle
-Garden Atlas geographic contours (`ContourField`) strictly behind spatial content; Streamlit
-strictly adheres to Quiet Exchange without atlas contours.
+hierarchy, locked semantic tokens, and honest data disclosures. Both surfaces now use pure Quiet
+Exchange. Next.js retains only functional geographic plotting; the Garden Atlas contour layer and
+green visual role were removed.
 
 All 6 standard responsive viewports (320px SE, 375px mobile, 414px plus, 768px tablet,
 1024px desktop, 1440px wide) pass automated zero-overflow and WCAG-AA axe accessibility audits.
 
 Verification gate counts:
-- Python test suite: 242 passed, 78.18% coverage (exceeds 70% threshold)
+- Python test suite: 208 passed, 77.59% coverage after retiring the unused backend surface (exceeds 70% threshold)
 - Next.js unit tests: 140 passed
-- Next.js component tests: 43 passed
-- Playwright E2E tests: 73 passed across desktop and mobile Chromium
+- Next.js component tests: 44 passed
+- Playwright E2E tests: 89 passed with 3 viewport-inapplicable skips
 - Zero critical/serious axe accessibility violations
 - Zero console or page errors across all routes
 
@@ -52,7 +52,7 @@ pushed with required CI green on the exact commits. A full release-gate audit ag
 `RELEASE_GATES.md` found and fixed three evidence defects before flipping RG-01–RG-10 to
 Pass: committed Phase 3 reports leaked local absolute paths (the generator now emits
 repo-relative provenance paths and the reports were regenerated through it), no test
-exercised the API internal-error envelope (added), and cross-surface parity had only two
+exercised the exported-artifact error state (added), and cross-surface parity had only two
 committed scenarios (a third fixed far-haul scenario, Nagpur 60 qtl, now has a shared
 golden fixture asserted by both the Python smoke suite and a TypeScript unit test).
 Gates: pytest 235 passed (78.05% coverage), web unit 137, components 34, e2e 17 passed,

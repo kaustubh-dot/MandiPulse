@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -13,7 +13,6 @@ import {
   TextLink,
   buttonClass,
 } from "@/components/ui/primitives";
-import { ContourField } from "@/components/visual/ContourField";
 import RecommendTable from "@/components/RecommendTable";
 import RecommendationControls, {
   DECISION_DEFAULTS,
@@ -44,7 +43,10 @@ import type {
   BacktestSummary,
 } from "@/lib/types";
 
-const MandiMap = dynamic(() => import("@/components/MandiMap"), { ssr: false });
+const MandiMap = dynamic(() => import("@/components/MandiMap"), {
+  ssr: false,
+  loading: () => <div className="h-[400px] w-full animate-pulse rounded bg-paper-2" aria-hidden="true" />,
+});
 
 interface RecommendationBundle {
   meta: Meta;
@@ -69,6 +71,85 @@ function toDecisionNumbers(drafts: DecisionDrafts): Record<DecisionField, number
     rate: Number(drafts.rate),
     radius: Number(drafts.radius),
   };
+}
+
+interface InputState {
+  drafts: DecisionDrafts;
+  decision: Record<DecisionField, number>;
+  errors: DecisionErrors;
+  erroredOnce: Partial<Record<DecisionField, boolean>>;
+  syncedSearchParamString: string;
+  configSource: Meta | null;
+}
+
+type InputAction =
+  | { type: "sync"; searchParamString: string; parsed: Partial<DecisionDrafts>; meta: Meta | null }
+  | { type: "change"; field: DecisionField; value: string }
+  | { type: "blur"; field: DecisionField; message?: string }
+  | { type: "compare-errors"; errors: DecisionErrors }
+  | { type: "commit"; decision: Record<DecisionField, number> };
+
+function draftsFromParams(parsed: Partial<DecisionDrafts>, meta: Meta | null): DecisionDrafts {
+  const defaults = meta
+    ? {
+        rate: String(meta.ranking.cost_per_km_per_quintal),
+        radius: String(meta.ranking.max_transport_radius_km),
+      }
+    : {};
+  return { ...DECISION_DEFAULTS, ...defaults, ...parsed };
+}
+
+function inputReducer(state: InputState, action: InputAction): InputState {
+  switch (action.type) {
+    case "sync": {
+      if (
+        action.searchParamString === state.syncedSearchParamString &&
+        action.meta === state.configSource
+      ) {
+        return state;
+      }
+      const drafts = draftsFromParams(action.parsed, action.meta);
+      return {
+        ...state,
+        drafts,
+        decision: toDecisionNumbers(drafts),
+        errors: {},
+        erroredOnce: {},
+        syncedSearchParamString: action.searchParamString,
+        configSource: action.meta,
+      };
+    }
+    case "change":
+      return {
+        ...state,
+        drafts: { ...state.drafts, [action.field]: action.value },
+        errors: state.erroredOnce[action.field]
+          ? { ...state.errors, [action.field]: validateDecisionInput(action.field, action.value) }
+          : state.errors,
+      };
+    case "blur":
+      return {
+        ...state,
+        errors: { ...state.errors, [action.field]: action.message },
+        erroredOnce: action.message
+          ? { ...state.erroredOnce, [action.field]: true }
+          : state.erroredOnce,
+      };
+    case "compare-errors":
+      return {
+        ...state,
+        errors: action.errors,
+        erroredOnce:
+          Object.keys(action.errors).length > 0
+            ? { lat: true, lon: true, quantity: true, rate: true, radius: true }
+            : state.erroredOnce,
+      };
+    case "commit":
+      return {
+        ...state,
+        decision: action.decision,
+      };
+  }
 }
 
 function formatCount(value: number): string {
@@ -118,24 +199,41 @@ function WorkbenchSkeleton() {
 }
 
 function RecommendWorkbench() {
-  const state = useAsyncData(loadRecommendationBundle);
-  const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [initialDrafts] = useState<Partial<DecisionDrafts>>(() =>
-    parseDecisionParams(searchParams)
+  return <RecommendWorkbenchState searchParams={searchParams} />;
+}
+
+function RecommendWorkbenchState({
+  searchParams,
+}: {
+  searchParams: ReturnType<typeof useSearchParams>;
+}) {
+  const state = useAsyncData(loadRecommendationBundle);
+  const router = useRouter();
+
+  const searchParamString = searchParams.toString();
+  const [inputState, dispatchInput] = useReducer(
+    inputReducer,
+    searchParamString,
+    (initialSearchParamString): InputState => {
+      const parsed = parseDecisionParams(new URLSearchParams(initialSearchParamString));
+      const drafts = draftsFromParams(parsed, null);
+      return {
+        drafts,
+        decision: toDecisionNumbers(drafts),
+        errors: {},
+        erroredOnce: {},
+        syncedSearchParamString: initialSearchParamString,
+        configSource: null,
+      };
+    }
   );
-  const [drafts, setDrafts] = useState<DecisionDrafts>(() => ({
-    ...DECISION_DEFAULTS,
-    ...initialDrafts,
-  }));
-  const [decision, setDecision] = useState<Record<DecisionField, number>>(() =>
-    toDecisionNumbers({ ...DECISION_DEFAULTS, ...initialDrafts })
-  );
-  const [errors, setErrors] = useState<DecisionErrors>({});
-  const [erroredOnce, setErroredOnce] = useState<Partial<Record<DecisionField, boolean>>>({});
+  const { drafts, decision, errors } = inputState;
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const copyTimerRef = useRef<number | null>(null);
+  const data = state.status === "success" ? state.data : null;
+  const artifactMeta = data?.meta ?? null;
 
   useEffect(() => {
     return () => {
@@ -143,24 +241,14 @@ function RecommendWorkbench() {
     };
   }, []);
 
-  const data = state.status === "success" ? state.data : null;
-
-  // Adopt artifact ranking config once per loaded bundle; editable afterwards.
-  // URL-provided rate and radius parameters win over the artifact defaults.
-  const [configSource, setConfigSource] = useState<Meta | null>(null);
-  if (data && data.meta !== configSource) {
-    setConfigSource(data.meta);
-    if (!("rate" in initialDrafts)) {
-      const rate = String(data.meta.ranking.cost_per_km_per_quintal);
-      setDrafts((current) => ({ ...current, rate }));
-      setDecision((current) => ({ ...current, rate: Number(rate) }));
-    }
-    if (!("radius" in initialDrafts)) {
-      const radius = String(data.meta.ranking.max_transport_radius_km);
-      setDrafts((current) => ({ ...current, radius }));
-      setDecision((current) => ({ ...current, radius: Number(radius) }));
-    }
-  }
+  useEffect(() => {
+    dispatchInput({
+      type: "sync",
+      searchParamString,
+      parsed: parseDecisionParams(new URLSearchParams(searchParamString)),
+      meta: artifactMeta,
+    });
+  }, [searchParamString, artifactMeta]);
 
   const policyResult = useMemo(
     () =>
@@ -179,18 +267,12 @@ function RecommendWorkbench() {
   );
 
   function handleChange(field: DecisionField, value: string) {
-    setDrafts((current) => ({ ...current, [field]: value }));
-    if (erroredOnce[field]) {
-      setErrors((current) => ({ ...current, [field]: validateDecisionInput(field, value) }));
-    }
+    dispatchInput({ type: "change", field, value });
   }
 
   function handleBlurField(field: DecisionField) {
     const message = validateDecisionInput(field, drafts[field]);
-    if (message) {
-      setErroredOnce((current) => ({ ...current, [field]: true }));
-    }
-    setErrors((current) => ({ ...current, [field]: message }));
+    dispatchInput({ type: "blur", field, message });
   }
 
   function handleCompare() {
@@ -203,19 +285,20 @@ function RecommendWorkbench() {
         valid = false;
       }
     }
-    setErrors(nextErrors);
+    dispatchInput({ type: "compare-errors", errors: nextErrors });
     if (!valid) {
-      setErroredOnce({ lat: true, lon: true, quantity: true, rate: true, radius: true });
       return;
     }
     const numbers = toDecisionNumbers(drafts);
-    setDecision(numbers);
-    router.replace(`/recommend?${serializeDecisionParams(numbers)}`, { scroll: false });
+    const newQuery = serializeDecisionParams(numbers);
+    dispatchInput({ type: "commit", decision: numbers });
+    router.push(`/recommend/?${newQuery}`, { scroll: false });
   }
 
   async function handleCopyLink() {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const url = `${window.location.origin}/recommend/?${serializeDecisionParams(toDecisionNumbers(drafts))}`;
+      await navigator.clipboard.writeText(url);
       setCopyState("copied");
     } catch {
       setCopyState("failed");
@@ -270,7 +353,6 @@ function RecommendWorkbench() {
           title="Compare mandis for your next sale"
           intro="Set your location, lot size, and transport assumptions. Mandis rank by transport-adjusted net expected price from a frozen seven-day forecast."
         />
-        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
       </div>
 
       {noSourceData ? (
@@ -280,8 +362,8 @@ function RecommendWorkbench() {
         </StatusNotice>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div className="lg:col-span-4">
+          <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="min-w-0 lg:col-span-4">
               <RecommendationControls
                 meta={meta}
                 drafts={drafts}
@@ -295,7 +377,7 @@ function RecommendWorkbench() {
               />
             </div>
 
-            <div className="space-y-10 lg:col-span-8">
+            <div className="min-w-0 space-y-10 lg:col-span-8">
               <p aria-live="polite" className="sr-only">
                 {announce}
               </p>

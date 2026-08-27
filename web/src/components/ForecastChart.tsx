@@ -209,6 +209,7 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
               />
               <XAxis
                 dataKey="date"
+                tickFormatter={formatDateIso}
                 tick={NUMERIC_TICK}
                 tickLine={false}
                 axisLine={{ stroke: "var(--mp-rule-strong)" }}
@@ -232,7 +233,7 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
                 name="Prediction interval"
                 stroke="none"
                 fill="var(--mp-accent)"
-                fillOpacity={0.12}
+                fillOpacity={0.35}
                 legendType="rect"
                 activeDot={false}
                 isAnimationActive={false}

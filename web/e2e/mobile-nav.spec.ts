@@ -4,7 +4,12 @@ import {
   expectNoPageProblems,
   scanSeriousAxeViolations,
   expectNoSeriousAxeViolations,
+  mockMapTiles,
 } from "./helpers";
+
+test.beforeEach(async ({ page }) => {
+  await mockMapTiles(page);
+});
 
 const SHEET_LINKS = ["Overview", "Decision", "Forecast", "Coverage"] as const;
 
@@ -19,7 +24,7 @@ test.describe("mobile navigation sheet", () => {
     const problems = watchPageProblems(page);
     await page.goto("/recommend/");
 
-    const menu = page.getByRole("button", { name: "Menu" });
+    const menu = page.getByRole("button", { name: "Menu", exact: true });
     await expect(menu).toBeVisible();
     await expect(menu).toHaveAttribute("aria-expanded", "false");
     await expect(menu).toHaveAttribute("aria-controls", "mobile-nav-sheet");
@@ -66,7 +71,7 @@ test.describe("mobile navigation sheet", () => {
 });
 
 async function menuFlow(page: import("@playwright/test").Page, label: string) {
-  await page.getByRole("button", { name: "Menu" }).click();
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
   const sheet = page.getByRole("dialog", { name: "Navigation" });
   await expect(sheet).toBeVisible();
   await sheet.getByRole("link", { name: label }).click();

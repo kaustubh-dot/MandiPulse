@@ -80,6 +80,10 @@ def risk_level(
     low_max_pct: float,
     high_min_pct: float,
 ) -> str:
+    import math
+
+    if isinstance(relative_interval_width, float) and math.isnan(relative_interval_width):
+        return "unknown"
     if relative_interval_width <= low_max_pct:
         return "low"
     if relative_interval_width < high_min_pct:

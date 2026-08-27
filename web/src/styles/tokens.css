@@ -1,4 +1,4 @@
-/* Hallmark · macrostructure: Workbench · theme: Quiet Exchange + Garden Atlas · tone: minimal, professional, assured · anchor hue: oxblood · nav: N3 side-rail · footer: Ft2 inline-rule */
+/* Hallmark · macrostructure: Workbench · theme: Quiet Exchange · tone: minimal, professional, assured · anchor hue: oxblood · nav: N3 side-rail · footer: Ft2 inline-rule */
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 */
 
 :root {
@@ -15,8 +15,6 @@
   --mp-accent: oklch(38% 0.13 18);
   --mp-accent-soft: oklch(91% 0.03 18);
   --mp-accent-ink: oklch(96% 0.012 75);
-  --mp-atlas: oklch(49% 0.13 145);
-  --mp-atlas-soft: oklch(90% 0.05 145);
   --mp-focus: oklch(48% 0.15 18);
   --mp-success: oklch(45% 0.13 145);
   --mp-warning: oklch(48% 0.13 70);
@@ -34,9 +32,9 @@
   --radius-control: 0.25rem;
   --radius-panel: 0.125rem;
   --radius-pill: 999px;
-  --ease-out-atlas: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-atlas: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out-atlas: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out-quiet: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-quiet: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out-quiet: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-micro: 120ms;
   --dur-short: 220ms;
   --dur-long: 420ms;
@@ -56,8 +54,6 @@
   --mp-accent: oklch(72% 0.12 18);
   --mp-accent-soft: oklch(28% 0.05 18);
   --mp-accent-ink: oklch(16% 0.012 55);
-  --mp-atlas: oklch(70% 0.1 145);
-  --mp-atlas-soft: oklch(24% 0.04 145);
   --mp-focus: oklch(72% 0.14 18);
   --mp-success: oklch(70% 0.1 145);
   --mp-warning: oklch(76% 0.11 70);

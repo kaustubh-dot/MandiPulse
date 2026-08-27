@@ -110,16 +110,9 @@ export default function TopRecommendations({
           <div>
             <dt className="text-xs text-muted">Expected net price</dt>
             <dd className="numeric mt-0.5 font-semibold text-ink">
-              {formatInrPerQtl(top.expected_net_price_inr_qtl)}
-            </dd>
-            <dd className="text-xs text-muted">Forecast minus transport cost</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted">Transport-adjusted net price</dt>
-            <dd className="numeric mt-0.5 font-semibold text-ink">
               {formatInrPerQtl(netPerQtl)}
             </dd>
-            <dd className="text-xs text-muted">Basis of the ranking</dd>
+            <dd className="text-xs text-muted">Forecast minus transport (ranking basis)</dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Lot net estimate</dt>

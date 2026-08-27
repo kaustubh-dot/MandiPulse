@@ -16,18 +16,18 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 
 | ID | Gate | Current state | Exit evidence |
 |---|---|---|---|
-| RG-01 | Scope and product truth | Pass | Transport-adjusted wording, snapshot notice, estimate/scenario framing verified across README, UI, and API in the gate audit (2026-08-24) |
+| RG-01 | Scope and product truth | Pass | Transport-adjusted wording, snapshot notice, and estimate/scenario framing verified across README and both interfaces (2026-08-24) |
 | RG-02 | Data and artifact integrity | Pass | Export validation 8/8 in CI; provenance paths repo-relative after generator fix; no secrets or absolute local paths tracked (2026-08-24) |
 | RG-03 | Forecast and evaluation integrity | Pass | Purge/split tests green; MAE 139.57 / 133.61 and coverage metrics reproduce from committed reports (2026-08-24) |
 | RG-04 | Recommendation integrity | Pass | Regret 296.3 vs 370.1 traceable; TS/Python fixtures match at 0.01 INR/qtl; deterministic tie-break tested (2026-08-24) |
-| RG-05 | Python quality | Pass | Ruff/black clean; pytest 235 passed, 78.05% coverage recorded in CURRENT_STATE.md (2026-08-24) |
-| RG-06 | API contract | Pass | OpenAPI matches routes; success, validation, missing-artifact, and internal-error envelopes all tested (2026-08-24) |
-| RG-07 | Next.js functionality | Pass | Quiet Exchange editorial layout, open ruled containment, 140 unit tests, 43 component tests, 73 e2e tests green (2026-08-24) |
-| RG-08 | Streamlit functionality | Pass | Quiet Exchange design system, 42 Streamlit layout and smoke tests green, Pune golden parity matches (2026-08-24) |
+| RG-05 | Python quality | Pass | Ruff/black clean; pytest 208 passed, 77.59% coverage after backend retirement (2026-08-27) |
+| RG-06 | Export contract | Pass | Eight committed JSON exports pass schema, finite-value, provenance, and parity checks (2026-08-24) |
+| RG-07 | Next.js functionality | Pass | Pure Quiet Exchange layout, 140 unit tests, 44 component tests, and 89 e2e tests green with 3 viewport-inapplicable skips (2026-08-26) |
+| RG-08 | Streamlit functionality | Pass | Quiet Exchange design system, actionable fallback states, configurable transport rate, and Pune golden parity verified (2026-08-25) |
 | RG-09 | Cross-surface parity | Pass | Three fixed scenarios (default, Pune golden, Nagpur far-haul) match across Python/TS within declared tolerance (2026-08-24) |
 | RG-10 | Dependency security | Pass | `npm audit --omit=dev` zero findings on pinned Next.js 16 / React 19 lockfile (2026-08-24) |
-| RG-11 | Accessibility | Pass | WCAG-AA verified via Playwright axe audits across 6 standard viewports with zero critical/serious violations; skip link, keyboard focus, and live regions verified (2026-08-24) |
-| RG-12 | Responsive and visual quality | Pass | Zero horizontal scroll across 320, 375, 414, 768, 1024, 1440px viewports; Hallmark slop test verified; reference screenshots updated (2026-08-24) |
+| RG-11 | Accessibility | Pass | WCAG-AA verified via Playwright axe audits across 6 standard viewports with zero critical/serious violations; skip link, keyboard focus, and live regions verified (2026-08-25) |
+| RG-12 | Responsive and visual quality | Pass | Zero horizontal scroll across 320, 375, 414, 768, 1024, 1440px viewports; Hallmark slop test verified; reference screenshots updated (2026-08-25) |
 | RG-13 | Performance | Pass | Static export builds cleanly in Next.js 16 Turbopack with flattened RSC payloads; dynamic imports for maps/charts (2026-08-24) |
 | RG-14 | Documentation consistency | Pending | Docs reconciled and audited against shipped scope (2026-08-24); commands proven from clean CI checkout; public URLs pending deployment record |
 | RG-15 | CI and repository hygiene | Pending | Required CI green on release commits (2026-08-24); final worktree-clean confirmation pending the release-record commit |
@@ -36,8 +36,8 @@ All P0 gates must pass before MandiPulse is described as fully finished or publi
 
 ## 3. Detailed Acceptance Criteria
 
-The existing interface checks remain useful regression evidence, but RG-07, RG-08, RG-11, RG-12,
-and RG-13 are intentionally not final release gates until the user completes the planned UI redo.
+The approved Quiet Exchange UI redo is complete locally. Deployment, exact-commit CI evidence,
+and final release-record fields remain pending.
 
 ### RG-01 — Scope and Product Truth
 
@@ -78,8 +78,8 @@ and RG-13 are intentionally not final release gates until the user completes the
 ### RG-05 — Python Quality
 
 ```powershell
-ruff check api app src scripts tests
-black --check api app src scripts tests
+ruff check app src scripts tests
+black --check app src scripts tests
 pytest -q
 ```
 
@@ -87,13 +87,12 @@ pytest -q
 - [x] Final test count and coverage are recorded in `docs/portfolio/CURRENT_STATE.md`.
 - [x] No expected failure, deselected correctness test, warning flood, or hidden network dependency remains.
 
-### RG-06 — API Contract
+### RG-06 — Export Contract
 
-- [x] OpenAPI output matches the implemented routes and final ranking vocabulary.
-- [x] Success, validation, missing-artifact, and internal-error responses have tests.
-- [x] Response fields expose units or have unambiguous documented units.
-- [x] Deployed CORS origins are explicit if the API is hosted; wildcard remains limited to the documented local/public read-only case.
-- [x] API startup and health checks do not require a private upstream key.
+- [x] Committed JSON exports pass schema, finite-value, provenance, and parity checks.
+- [x] Streamlit and Next.js consume the same locked snapshot and ranking policy.
+- [x] Export fields expose units or have unambiguous documented units.
+- [x] Missing and invalid artifacts fail with actionable messages rather than silent defaults.
 
 ### RG-07 — Next.js Functionality
 
@@ -117,7 +116,7 @@ pytest -q
 
 For at least three fixed location/quantity scenarios:
 
-- [x] Python, API, Next.js, and Streamlit select the same first-ranked mandi.
+- [x] Python, exported artifacts, Next.js, and Streamlit select the same first-ranked mandi.
 - [x] All candidate ranks match.
 - [x] Gross price, distance, transport cost, net price, and totals match within the declared rounding tolerance.
 - [x] Snapshot date, road factor, transport rate, horizon, and uncertainty labels match.
@@ -149,7 +148,7 @@ npm.cmd run build
 
 ### RG-12 — Responsive and Visual Quality
 
-Review widths: 320, 375, 768, 1024, 1440, and 1920 px.
+Review widths: 320, 375, 414, 768, 1024, and 1440 px.
 
 - [x] No unintended horizontal page scrolling.
 - [x] Primary action and result remain discoverable without decorative obstruction.
@@ -174,16 +173,16 @@ These are portfolio release budgets, not claims about field performance on every
 ### RG-14 — Documentation Consistency
 
 - [x] README alone is sufficient to install, test, build, and run both interfaces.
-- [x] PRD, architecture, API, flow, design, tracker, release, and current-state documents do not contradict shipped scope.
+- [x] PRD, architecture, flow, design, tracker, release, and current-state documents do not contradict shipped scope.
 - [x] Historical plans are labeled historical rather than presented as active truth.
 - [x] Commands have been run from a clean clone or equivalent clean environment.
 - [ ] Public URLs and screenshots correspond to the release commit.
 
 ### RG-15 — CI and Repository Hygiene
 
-- [x] Required GitHub Actions checks pass on the release commit.
-- [x] The release commit is pushed and identifiable.
-- [x] `git status --short` is empty after release artifacts are committed.
+- [ ] Required GitHub Actions checks pass on the exact final release commit.
+- [ ] The final release commit is pushed and identifiable.
+- [ ] `git status --short` is empty after release artifacts are committed.
 - [x] `.gitignore` covers build outputs, virtual environments, raw data, model stores, logs, screenshots not intended as evidence, and local secrets.
 - [x] Lockfiles and generated public artifacts are intentional and reviewed.
 - [x] No unfinished marker, placeholder copy, dead navigation, or disabled primary feature remains.
@@ -199,10 +198,10 @@ These are portfolio release budgets, not claims about field performance on every
 
 ### RG-17 — Portfolio Evidence
 
-- [ ] README contains a concise architecture and problem statement.
-- [ ] Three to five final screenshots demonstrate Decision, Forecast, Coverage, and mobile behavior.
-- [ ] A two-minute demonstration path is documented.
-- [ ] Resume bullets use only metrics backed by committed reports or reproducible tests.
+- [x] README contains a concise architecture and problem statement.
+- [x] Three to five final screenshots demonstrate Decision, Forecast, Coverage, and mobile behavior.
+- [x] A two-minute demonstration path is documented.
+- [x] Resume bullets use only metrics backed by committed reports or reproducible tests.
 - [ ] Release commit, CI run, public URLs, and verification date are recorded.
 - [ ] Known limitations are concise and technically honest.
 

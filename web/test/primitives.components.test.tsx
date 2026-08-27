@@ -43,6 +43,22 @@ describe("Quiet Exchange primitives", () => {
     assert.ok(document.querySelector("#quantity-message"));
   });
 
+  it("keeps static field guidance quiet and only announces validation errors", () => {
+    const { rerender } = renderWithRouter(
+      <TextField id="rate" label="Rate" value="4" hint="Scenario assumption." onChange={() => {}} />
+    );
+    const hint = document.querySelector("#rate-message")!;
+    assert.equal(hint.getAttribute("aria-live"), null);
+    assert.equal(hint.getAttribute("role"), null);
+
+    rerender(
+      <TextField id="rate" label="Rate" value="-1" error="Rate cannot be negative." onChange={() => {}} />
+    );
+    const error = document.querySelector("#rate-message")!;
+    assert.equal(error.getAttribute("role"), "alert");
+    assert.equal(error.getAttribute("aria-live"), "polite");
+  });
+
   it("keeps status and evidence regions semantically distinct", () => {
     renderWithRouter(
       <>

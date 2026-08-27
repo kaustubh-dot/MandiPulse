@@ -1,10 +1,9 @@
 # MandiPulse India PRD
 
 > **Scope note (2026-08).** This PRD records the original MVP decisions. The shipped product now
-> also includes the FastAPI service and the Next.js static frontend (Milestones M and N), ranks by
+> includes the Streamlit analytical dashboard and the Next.js static frontend, ranks by
 > **transport-adjusted** net expected price with uncertainty shown as separate evidence, and follows
-> `docs/IMPLEMENTATION_PLAN.md`. Sections below describe the repository as it was when the MVP was
-> scoped.
+> `docs/IMPLEMENTATION_PLAN.md`. Both surfaces use committed demonstration artifacts.
 
 ## Project Overview
 
@@ -59,7 +58,7 @@ A single crop price prediction is not enough. The useful decision is:
 | Forecast output | Forecast price plus uncertainty interval |
 | Recommendation | Rank mandis by expected net price after transport cost; uncertainty penalty shown as separate evidence |
 | Regime detection | Deferred |
-| Backend | Deferred; no FastAPI in MVP |
+| Backend | Not required; the public product reads committed static artifacts |
 | Dashboard | Single Streamlit app loading static data/model artifacts |
 | Experiment tracking | MLflow |
 | Deployment | Local Streamlit demo; Docker is post-MVP |
@@ -74,7 +73,6 @@ A single crop price prediction is not enough. The useful decision is:
 - No Temporal Fusion Transformer or large neural forecasting stack.
 - No 500+ mandi network in MVP.
 - No unnecessary microservices.
-- No FastAPI service in the narrowed MVP.
 - No regime/anomaly detection in the narrowed MVP.
 - No live monitoring or drift platform in the narrowed MVP.
 - No Tomato/Karnataka/Uttar Pradesh until Onion/Maharashtra works end to end.
@@ -111,7 +109,6 @@ A single crop price prediction is not enough. The useful decision is:
 | Uncertainty intervals | Conformal prediction, quantile regression, or residual intervals. | P0 |
 | Recommendation engine | Net expected price after transport cost; uncertainty penalty reported as evidence only. | P0 |
 | Regime/anomaly detection | Deferred until the core decision engine works. | P2 |
-| FastAPI service | Deferred until after the Streamlit MVP is useful. | P1 |
 | Streamlit dashboard | Data coverage, forecast, recommendation, and metrics views. | P0 |
 | MLflow tracking | Experiments, metrics, parameters, model artifacts. | P0 |
 | Monitoring | Static data quality and backtest reports. | P1 |

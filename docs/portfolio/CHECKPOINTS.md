@@ -40,10 +40,10 @@ evidence, and a recommendation-first product surface.
 ### Implemented contract
 
 - Eight strict JSON exports with JSON Schema validation and finite-number checks.
-- A shared canonical forecast as-of policy across API, Streamlit, exporter, and frontend logic.
-- Typed API validation for crop, state, horizon, mandi, coordinates, quantity, radius, and
-  alternative limits.
-- Data-readiness health semantics and a consistent error envelope.
+- A shared canonical forecast as-of policy across Python calculations, Streamlit, exporter, and
+  frontend logic.
+- Export and frontend validation for crop, state, horizon, mandi, coordinates, quantity, radius,
+  and alternative limits.
 - A versioned manifest containing snapshot, source, configuration, model, code, input, artifact,
   and validation identities.
 - Corrected public wording for 86.71% empirical coverage: it is below the nominal 90% level and is
@@ -52,7 +52,7 @@ evidence, and a recommendation-first product surface.
 ### Corrective review history
 
 The first review found invalid/non-standard JSON, hardcoded metric drift, inconsistent as-of
-selection, incomplete API limits, and blank/erroring coverage and forecast routes. The correction
+selection, incomplete input limits, and blank/erroring coverage and forecast routes. The correction
 pass added strict serialization, schemas, policy helpers, configured bounds, input and artifact
 hashes, typed UI loading/error states, and cross-surface metric reconciliation.
 
@@ -69,7 +69,7 @@ hashes, typed UI loading/error states, and cross-surface metric reconciliation.
 ### Residual risks
 
 - The public dataset is a frozen October 30, 2025 snapshot.
-- Public Vercel and Render deployments remain optional external steps.
+- Public Vercel deployment remains an optional external step; no backend deployment is required.
 - The manifest hashes the direct generator but does not recursively hash every imported module.
 
 ## CP-002 — Portfolio-Quality Product

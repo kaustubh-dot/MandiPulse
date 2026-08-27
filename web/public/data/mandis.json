@@ -1,7 +1,7 @@
 [
   {
     "market_id": 2494,
-    "mandi_id": "maharashtra__punepimpri",
+    "mandi_id": "maharashtra__pune_pimpri",
     "market_name": "Pune(Pimpri)",
     "district_name": "Pune",
     "latitude": 18.61333,
@@ -10,7 +10,7 @@
   },
   {
     "market_id": 2495,
-    "mandi_id": "maharashtra__punekhadiki",
+    "mandi_id": "maharashtra__pune_khadiki",
     "market_name": "Pune(Khadiki)",
     "district_name": "Pune",
     "latitude": 18.564,
@@ -37,7 +37,7 @@
   },
   {
     "market_id": 4752,
-    "mandi_id": "maharashtra__punemoshi",
+    "mandi_id": "maharashtra__pune_moshi",
     "market_name": "Pune(Moshi)",
     "district_name": "Pune",
     "latitude": 18.6801,
@@ -55,7 +55,7 @@
   },
   {
     "market_id": 4751,
-    "mandi_id": "maharashtra__punemanjri",
+    "mandi_id": "maharashtra__pune_manjri",
     "market_name": "Pune(Manjri)",
     "district_name": "Pune",
     "latitude": 18.517,
@@ -118,7 +118,7 @@
   },
   {
     "market_id": 2484,
-    "mandi_id": "maharashtra__lasalgaonniphad",
+    "mandi_id": "maharashtra__lasalgaon_niphad",
     "market_name": "Lasalgaon(Niphad)",
     "district_name": "Nashik",
     "latitude": 20.0833,

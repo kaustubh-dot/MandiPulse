@@ -264,6 +264,13 @@ class TestSummarizeBacktest:
         # regret@1 < nearest(50) only for row 0 (0 < 50) -> 1/3
         assert result["beats_nearest_1"] == pytest.approx(1 / 3)
 
+    def test_beats_nearest_counts_missing_comparisons_as_losses(self) -> None:
+        df = self._make_backtest()
+        df.loc[2, "nearest_mandi_regret"] = float("nan")
+        result = summarize_backtest(df, k_values=[1])
+        # The published contract uses all evaluation dates as the denominator.
+        assert result["beats_nearest_1"] == pytest.approx(1 / 3)
+
     def test_nearest_mandi_mean_and_median(self) -> None:
         df = self._make_backtest()
         result = summarize_backtest(df, k_values=[1])

@@ -143,7 +143,7 @@ Exit evidence:
 
 ### P0-07 — Make documentation internally consistent
 
-Several older planning documents describe FastAPI, Streamlit, tests, and model persistence as absent even though they now exist. Public documentation must describe the repository as it is, not its earlier plan.
+Several older planning documents describe Streamlit, tests, and model persistence as absent even though they now exist. Public documentation must describe the repository as it is, not its earlier plan.
 
 Required updates:
 
@@ -192,7 +192,6 @@ These items improve maintainability but do not justify delaying the portfolio re
 | P1-03 | Add automated screenshot comparison after the first stable visual baseline | Protects the redesigned interface from regression |
 | P1-04 | Add candidate-specific uncertainty only after a sound validation study | Makes uncertainty capable of changing ranking honestly |
 | P1-05 | Publish a short technical case study | Helps interviewers understand decisions without reading the full repository |
-| P1-06 | Add an optional hosted FastAPI URL | Demonstrates service deployment, but is unnecessary for the static product |
 
 ## 5. Explicitly Deferred
 

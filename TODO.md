@@ -14,7 +14,7 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 ## F1 — Product and calculation truth
 
 - [x] **F1-01:** Replace public risk-adjusted wording with transport-adjusted ranking terminology.
-- [x] **F1-02:** Standardize the ranking field across Python, API, export, TypeScript, tests, reports, and copy.
+- [x] **F1-02:** Standardize the ranking field across Python, export, TypeScript, tests, reports, and copy.
 - [x] **F1-03:** Keep uncertainty visible as evidence but separate from the current rank.
 - [x] **F1-04:** Regenerate sample and web export artifacts and approve the contract diff.
 - [x] **F1-05:** Rerun Python and TypeScript parity gates.
@@ -68,7 +68,7 @@ The detailed execution sequence is in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEME
 
 ## F8 — Documentation and release
 
-- [x] **F8-01:** Reconcile README, PRD, architecture, API, release, and historical plan wording.
+- [x] **F8-01:** Reconcile README, PRD, architecture, release, and historical plan wording.
 - [x] **F8-02:** Add final screenshots, evidence-backed metrics, limitations, and demo path.
 - [x] **F8-03:** Push and obtain green CI on the exact release commit.
 - [ ] **F8-04:** Deploy and verify Next.js and Streamlit in signed-out browsers.

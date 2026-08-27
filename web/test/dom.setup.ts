@@ -49,6 +49,45 @@ defineGlobal("navigator", window.navigator);
 
 defineGlobal("self", window);
 
+// jsdom does not perform layout, so every element reports a zero-sized rect.
+// Recharts uses this value during its layout effect before ResizeObserver can
+// report a measurement, which makes its responsive container appear empty.
+const nativeGetBoundingClientRect = window.HTMLElement.prototype.getBoundingClientRect;
+window.HTMLElement.prototype.getBoundingClientRect = function getBoundingClientRect() {
+  const rect = nativeGetBoundingClientRect.call(this);
+  if (
+    (rect.width > 0 && rect.height > 0) ||
+    !this.classList.contains("recharts-responsive-container")
+  ) {
+    return rect;
+  }
+  const width = 1024;
+  const height = 320;
+  return {
+    ...rect,
+    width,
+    height,
+    right: width,
+    bottom: height,
+  };
+};
+
+// Keep test clicks from asking jsdom to navigate the document. React handlers
+// still receive the event (and can update component state), while navigation
+// itself is exercised by browser/e2e tests.
+document.addEventListener(
+  "click",
+  (event) => {
+    const target = event.target;
+    if (!(target instanceof window.Element)) return;
+    const anchor = target.closest("a[href]");
+    if (anchor && !anchor.getAttribute("href")?.startsWith("#")) {
+      event.preventDefault();
+    }
+  },
+  true
+);
+
 class IntersectionObserverStub {
   observe(): void {}
 
@@ -79,17 +118,15 @@ class ResizeObserverStub {
 
   observe(target: Element) {
     const rect = { width: 1024, height: 480, top: 0, left: 0, x: 0, y: 0 };
-    window.setTimeout(() => {
-      this.callback(
-        [
-          {
-            target,
-            contentRect: { ...rect, bottom: rect.height, right: rect.width },
-          } as unknown as ResizeObserverEntry,
-        ],
-        this as unknown as ResizeObserver
-      );
-    }, 0);
+    this.callback(
+      [
+        {
+          target,
+          contentRect: { ...rect, bottom: rect.height, right: rect.width },
+        } as unknown as ResizeObserverEntry,
+      ],
+      this as unknown as ResizeObserver
+    );
   }
 
   unobserve(): void {}

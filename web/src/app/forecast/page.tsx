@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import BacktestSummary from "@/components/BacktestSummary";
@@ -24,7 +24,6 @@ import {
   TextLink,
   buttonClass,
 } from "@/components/ui/primitives";
-import { ContourField } from "@/components/visual/ContourField";
 import {
   loadBacktest,
   loadForecasts,
@@ -105,35 +104,23 @@ function ForecastView() {
   const state = useAsyncData(loadForecastBundle);
   const data = state.status === "success" ? state.data : null;
 
-  const [selectedMarketId, setSelectedMarketId] = useState<number | null>(null);
+  const selectedMarketId = useMemo(() => {
+    if (!data) return null;
+    const rawParam = searchParams.get("mandi");
+    const paramValue = rawParam === null ? Number.NaN : Number(rawParam);
+    const paramValid =
+      Number.isFinite(paramValue) &&
+      data.forecasts.some((row) => row.market_id === paramValue);
+    if (paramValid) return paramValue;
 
-  // Auto-select a default mandi once per loaded bundle; URL param and prior
-  // user selection win afterwards.
-  const [autoSelectSource, setAutoSelectSource] = useState<ForecastBundle | null>(null);
-  if (data && data !== autoSelectSource) {
-    setAutoSelectSource(data);
-    const currentValid =
-      selectedMarketId !== null &&
-      data.forecasts.some((row) => row.market_id === selectedMarketId);
-    if (!currentValid) {
-      const rawParam = searchParams.get("mandi");
-      const paramValue = rawParam === null ? Number.NaN : Number(rawParam);
-      const paramValid =
-        Number.isFinite(paramValue) &&
-        data.forecasts.some((row) => row.market_id === paramValue);
-      const preferred =
-        data.forecasts.find(
-          (row) =>
-            row.as_of_date === data.meta.candidate_policy.eligible_as_of_date
-        ) ?? data.forecasts[0];
-      setSelectedMarketId(
-        paramValid ? paramValue : (preferred?.market_id ?? null)
-      );
-    }
-  }
+    const preferred =
+      data.forecasts.find(
+        (row) => row.as_of_date === data.meta.candidate_policy.eligible_as_of_date
+      ) ?? data.forecasts[0];
+    return preferred?.market_id ?? null;
+  }, [data, searchParams]);
 
   function handleMandiChange(value: string) {
-    setSelectedMarketId(Number(value));
     router.replace(`/forecast?mandi=${encodeURIComponent(value)}`, {
       scroll: false,
     });
@@ -267,7 +254,6 @@ function ForecastView() {
             </>
           }
         />
-        <ContourField className="absolute inset-y-0 right-0 -z-10 hidden w-[44%] opacity-[0.45] sm:block" />
       </div>
 
       {staleDays > 0 ? (
@@ -288,7 +274,7 @@ function ForecastView() {
             value={String(selectedMarketId ?? "")}
             onChange={handleMandiChange}
             options={pickerOptions}
-            hint={`“Nd behind” marks an as-of date earlier than the canonical snapshot date (${formatDateIso(canonicalAsOf)}). Changing the selection updates the page address.`}
+            hint={`“2d behind” means the as-of date is two days earlier than the canonical snapshot date (${formatDateIso(canonicalAsOf)}). Changing the selection updates the page address.`}
           />
 
           <Panel className="space-y-4">

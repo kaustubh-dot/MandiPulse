@@ -6,6 +6,17 @@ export const ROUTES = ["/", "/recommend/", "/forecast/", "/coverage/"] as const;
 
 export type PageProblems = string[];
 
+const TRANSPARENT_TILE = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64"
+);
+
+export async function mockMapTiles(page: Page): Promise<void> {
+  await page.route("https://*.tile.openstreetmap.org/**", (route) =>
+    route.fulfill({ status: 200, contentType: "image/png", body: TRANSPARENT_TILE })
+  );
+}
+
 export function watchPageProblems(page: Page): PageProblems {
   const problems: PageProblems = [];
   page.on("console", (message) => {
@@ -74,4 +85,38 @@ export async function expectNoHorizontalScroll(page: Page): Promise<void> {
     return document.documentElement.scrollWidth > window.innerWidth;
   });
   expect(hasScroll, "expected page not to have horizontal overflow/scroll").toBe(false);
+}
+
+export async function expectNoUncontainedOverflow(page: Page): Promise<void> {
+  const offenders = await page.evaluate(() => {
+    const isContained = (element: Element) => {
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== document.body) {
+        const overflowX = getComputedStyle(ancestor).overflowX;
+        if (["auto", "scroll", "overlay", "hidden", "clip"].includes(overflowX)) {
+          return true;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      return false;
+    };
+
+    return [...document.querySelectorAll("body *")]
+      .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+      .filter(({ element, rect }) => {
+        if (rect.width === 0 || rect.height === 0 || rect.right <= window.innerWidth + 1) {
+          return false;
+        }
+        return !isContained(element);
+      })
+      .slice(0, 10)
+      .map(({ element, rect }) =>
+        `${element.tagName.toLowerCase()}.${String(element.className).slice(0, 80)} right=${Math.round(rect.right)}`
+      );
+  });
+
+  expect(
+    offenders,
+    `found content extending past the viewport outside an intentional overflow container:\n${offenders.join("\n")}`
+  ).toEqual([]);
 }

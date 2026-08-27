@@ -24,6 +24,7 @@ import pytest
 import requests
 
 from mandipulse.app.data_access import add_staleness_days
+from mandipulse.app.design import ACCENT_HEX, INK_HEX, MUTED_HEX
 from mandipulse.policy import canonical_forecast_as_of, select_recommendation_candidates
 from mandipulse.recommend.engine import score_recommendations
 
@@ -220,6 +221,13 @@ class TestPageModules:
         assert len(ranked) > 0
         assert "Pimpalgaon" in str(ranked.iloc[0]["mandi"])
         assert list(ranked["rank"]) == list(range(1, len(ranked) + 1))
+
+    def test_decision_map_uses_current_plotly_map_traces_and_semantic_colors(self) -> None:
+        module = _run_streamlit_script(PAGE_DIR / "1_Decision.py")
+        figure = module._candidate_map(module.display_frame, module.DEFAULT_LAT, module.DEFAULT_LON)
+
+        assert {trace.type for trace in figure.data} == {"scattermap"}
+        assert [trace.marker.color for trace in figure.data] == [MUTED_HEX, ACCENT_HEX, INK_HEX]
 
     def test_canonical_as_of_matches_frozen_snapshot(self, golden_forecasts: pd.DataFrame) -> None:
         as_of = canonical_forecast_as_of(golden_forecasts)

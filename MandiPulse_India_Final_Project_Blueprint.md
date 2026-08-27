@@ -54,7 +54,7 @@ Raw and processed data are intentionally ignored by Git. Scripts and small repor
 - No Tomato in MVP.
 - No Karnataka or Uttar Pradesh in MVP.
 - No 14-day or 30-day forecasts in MVP.
-- No FastAPI in MVP.
+- No runtime backend in MVP.
 - No regime/anomaly detection in MVP.
 - No Evidently/live drift dashboard in MVP.
 - No deep learning or causal claims.

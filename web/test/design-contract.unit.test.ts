@@ -7,10 +7,10 @@ const globals = readFileSync(new URL("../src/app/globals.css", import.meta.url),
 const layout = readFileSync(new URL("../src/app/layout.tsx", import.meta.url), "utf8");
 
 describe("Quiet Exchange token contract", () => {
-  it("declares the approved palette and Garden Atlas roles in one token file", () => {
+  it("declares the approved pure Quiet Exchange palette", () => {
     assert.match(tokens, /--mp-paper:\s*oklch\(96% 0\.012 75\)/);
     assert.match(tokens, /--mp-accent:\s*oklch\(38% 0\.13 18\)/);
-    assert.match(tokens, /--mp-atlas:\s*oklch\(49% 0\.13 145\)/);
+    assert.doesNotMatch(tokens, /--mp-atlas(?:-soft)?:/);
     assert.match(tokens, /\[data-theme="dark"\]/);
     assert.match(tokens, /--mp-warning:\s*oklch\(76% 0\.11 70\)/);
     assert.match(tokens, /--mp-info:\s*oklch\(70% 0\.07 235\)/);
@@ -25,8 +25,9 @@ describe("Quiet Exchange token contract", () => {
 
   it("imports tokens and maps every public Tailwind role", () => {
     assert.match(globals, /@import "\.\.\/styles\/tokens\.css"/);
-    for (const role of ["accent-soft", "atlas", "atlas-soft", "focus"]) {
+    for (const role of ["accent-soft", "focus"]) {
       assert.match(globals, new RegExp(`--color-${role}:\\s*var\\(--mp-${role}\\)`));
     }
+    assert.doesNotMatch(globals, /--color-atlas(?:-soft)?:/);
   });
 });

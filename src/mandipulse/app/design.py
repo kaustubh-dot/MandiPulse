@@ -67,6 +67,11 @@ DARK_TOKENS: dict[str, dict[str, str]] = {
     "info": {"oklch": "oklch(70% 0.07 235)", "hex": "#7aa8bd"},
 }
 
+# Default farmer mirrors the web client's meta.default_farmer (Nashik).
+DEFAULT_LAT = 19.9975
+DEFAULT_LON = 73.78981
+DEFAULT_QUANTITY_QTL = 100.0
+
 # Convenience hex constants (light theme; hex approximations of OKLCH).
 PAPER_HEX = LIGHT_TOKENS["paper"]["hex"]
 PAPER_2_HEX = LIGHT_TOKENS["paper-2"]["hex"]
@@ -133,15 +138,20 @@ FROZEN_NOTICE = (
 
 EM_DASH = "\u2014"
 
-_MISSING_SENTINEL = object()
-
 
 def _is_missing(value: Any) -> bool:
     """True for None and NaN-like floats."""
     if value is None:
         return True
-    if isinstance(value, float):
-        return math.isnan(value)
+    try:
+        import pandas as pd
+
+        if pd.isna(value):
+            return True
+    except (TypeError, ValueError):
+        pass
+    if isinstance(value, float) and math.isnan(value):
+        return True
     return False
 
 
@@ -189,7 +199,13 @@ def format_quantity(qtl: Any, decimals: int = 1) -> str:
     return f"{_grouped(qtl, decimals)} qtl"
 
 
-_DATE_PARSE_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%dT%H:%M:%S")
+_DATE_PARSE_FORMATS = (
+    "%Y-%m-%d",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y/%m/%d",
+    "%d-%m-%Y",
+    "%Y-%m-%dT%H:%M:%S",
+)
 
 
 def format_date_iso(iso: Any) -> str:
@@ -200,13 +216,16 @@ def format_date_iso(iso: Any) -> str:
     """
     if _is_missing(iso):
         return EM_DASH
-    if isinstance(iso, datetime):
-        parsed: date | None = iso.date()
+    if hasattr(iso, "date") and callable(iso.date):
+        try:
+            parsed: date | None = iso.date()
+        except Exception:
+            parsed = None
     elif isinstance(iso, date):
         parsed = iso
     else:
         text = str(iso).strip()
-        if not text:
+        if not text or text.lower() in ("nat", "none", "nan"):
             return EM_DASH
         parsed = None
         try:
@@ -220,6 +239,8 @@ def format_date_iso(iso: Any) -> str:
                     continue
         if parsed is None:
             return text
+    if parsed is None:
+        return EM_DASH
     return f"{parsed.day} {parsed:%b %Y}"
 
 
@@ -274,6 +295,7 @@ def _base_css() -> str:
     light = {name: entry["hex"] for name, entry in LIGHT_TOKENS.items()}
     dark = {name: entry["hex"] for name, entry in DARK_TOKENS.items()}
     return f"""
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 /* Quiet Exchange base styles (source: mandipulse.app.design) */
 :root {{
   --mp-paper: {light["paper"]};
@@ -317,24 +339,86 @@ def _base_css() -> str:
   color-scheme: dark;
 }}
 .stApp,
+body,
+p,
+label,
+input,
+select,
+textarea,
+button,
+.stMarkdown p,
+.stMarkdown span,
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] span,
+[data-testid="stMarkdownContainer"] li,
+[data-testid="stText"],
+[data-testid="stCaptionContainer"],
+[data-testid="stWidgetLabel"] label,
+[data-testid="stWidgetLabel"] p {{
+  font-family: var(--mp-font-body);
+}}
+.stApp,
 body {{
   background: var(--mp-paper);
   color: var(--mp-ink);
-  font-family: var(--mp-font-body);
 }}
 [data-testid="stSidebar"] {{
   background: var(--mp-paper-2);
   border-right: 1px solid var(--mp-rule);
 }}
+[data-testid="stWidgetLabel"],
+[data-testid="stWidgetLabel"] p,
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] p,
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] div,
+[data-testid="stSidebarNav"],
+[data-testid="stSidebarNav"] a,
+[data-testid="stSidebarNav"] span {{
+  color: var(--mp-ink) !important;
+}}
+[data-testid="stPageLink-NavLink"],
+[data-testid="stPageLink-NavLink"] *,
+[data-testid="stPageLink"] a,
+[data-testid="stPageLink"] p,
+[data-testid="stPageLink"] span {{
+  background: var(--mp-accent) !important;
+  color: var(--mp-accent-ink) !important;
+}}
+.stApp a[href="Decision"],
+.stApp a[href="Decision"] * {{
+  background: var(--mp-accent) !important;
+  color: var(--mp-accent-ink) !important;
+}}
+.stApp a,
+.stApp a span,
+.stApp a p {{
+  color: var(--mp-accent) !important;
+}}
 h1,
+h1 *,
 h2,
+h2 *,
 h3,
+h3 *,
 h4,
+h4 *,
 h5,
-h6 {{
-  font-family: var(--mp-font-display);
-  font-weight: 400;
-  letter-spacing: 0;
+h5 *,
+h6,
+h6 *,
+[data-testid="stHeading"] *,
+[data-testid="stHeadingWithActionElements"] *,
+.stHeadingContainer *,
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4,
+.stApp h5,
+.stApp h6 {{
+  font-family: var(--mp-font-display) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
   text-transform: none;
 }}
 [data-testid="stMetric"] {{
@@ -342,8 +426,15 @@ h6 {{
   border-bottom: 1px solid var(--mp-rule);
   padding-block: 0.5rem;
 }}
-[data-testid="stMetricValue"] {{
-  font-family: var(--mp-font-num);
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] *,
+.numeric,
+.mp-snapshot-label,
+code,
+pre,
+kbd {{
+  color: var(--mp-ink) !important;
+  font-family: var(--mp-font-num) !important;
   font-variant-numeric: tabular-nums;
 }}
 [data-testid="stTextInput"] input,
@@ -423,7 +514,12 @@ caption,
 
 def inject_base_css() -> None:
     """Emit the single shared <style> block. Call once from the app shell."""
-    st.markdown(f"<style>{_base_css()}</style>", unsafe_allow_html=True)
+    fonts_link = (
+        '<link rel="preconnect" href="https://fonts.googleapis.com">'
+        '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+        '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">'
+    )
+    st.markdown(f"{fonts_link}<style>{_base_css()}</style>", unsafe_allow_html=True)
 
 
 def render_page_header(title: str, intro: str) -> None:

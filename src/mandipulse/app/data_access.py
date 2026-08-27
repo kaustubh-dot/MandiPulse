@@ -25,6 +25,16 @@ from mandipulse.paths import (  # noqa: E402
 RUNNING_ON_SAMPLE = running_on_sample
 
 
+def persist_decision_location(
+    session_state: dict[str, object], *, latitude: float, longitude: float
+) -> None:
+    """Persist a forecast mandi location for the Decision page widgets."""
+    session_state["saved_lat"] = latitude
+    session_state["saved_lon"] = longitude
+    session_state["farmer_lat"] = latitude
+    session_state["farmer_lon"] = longitude
+
+
 def _resolve_or_sample(full_path: Path, sample_name: str) -> Path:
     path, _ = resolve_or_sample(full_path, sample_name)
     return path
@@ -43,7 +53,7 @@ def _missing_artifact_error(path: Path) -> None:
         "python scripts/build_recommendations_7d.py\n"
         "```"
     )
-    st.stop()
+    raise RuntimeError("Missing artifact")
 
 
 @st.cache_data(show_spinner=False)

@@ -27,6 +27,7 @@ from mandipulse.app.data_access import (  # noqa: E402
     load_clean_panel,
     load_forecasts,
     load_mandi_metadata,
+    persist_decision_location,
 )
 from mandipulse.app.design import (  # noqa: E402
     ACCENT_HEX,
@@ -164,7 +165,8 @@ def _build_forecast_figure(
     )
 
     mask = _imputed_mask(history)
-    observed = history[~mask]
+    observed = history.copy()
+    observed.loc[mask, "modal_price_inr_qtl"] = float("nan")
     imputed = history[mask]
 
     figure.add_trace(
@@ -361,9 +363,9 @@ history_full = history_for_mandi(panel, row["market_id"])
 window_start, window_end = _window_for_as_of(as_of_ts)
 history_window = history_full[
     (history_full["date"] >= window_start) & (history_full["date"] <= window_end)
-].dropna(subset=["modal_price_inr_qtl"])
+]
 
-if history_window.empty:
+if history_window["modal_price_inr_qtl"].dropna().empty:
     st.warning(
         f"No plotted history: no finite observed prices exist in the "
         f"{HISTORY_WINDOW_DAYS}-day window ending {format_date_iso(as_of_ts)} for "
@@ -416,6 +418,21 @@ render_section_heading("Data quality")
 st.markdown(_data_quality_note(panel, row["market_id"], as_of_ts))
 
 # --- 5.2 (g) Closing action --------------------------------------------------
+if mandi_metadata is not None and not mandi_metadata.empty:
+    m_match = mandi_metadata[mandi_metadata["market_id"] == row["market_id"]]
+    if (
+        not m_match.empty
+        and "latitude" in m_match.columns
+        and "longitude" in m_match.columns
+        and pd.notna(m_match.iloc[0]["latitude"])
+        and pd.notna(m_match.iloc[0]["longitude"])
+    ):
+        persist_decision_location(
+            st.session_state,
+            latitude=float(m_match.iloc[0]["latitude"]),
+            longitude=float(m_match.iloc[0]["longitude"]),
+        )
+
 try:
     st.page_link(
         "pages/1_Decision.py",
@@ -429,6 +446,8 @@ except Exception:
             label="Use this mandi in the Decision workbench",
             icon=":material/arrow_forward:",
         )
-    except Exception:
-        pass
-
+    except Exception as exc:
+        st.warning(
+            f"The Decision workbench link is unavailable in this host ({exc}). "
+            "Open **Decision** from the sidebar to continue."
+        )

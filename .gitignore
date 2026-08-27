@@ -184,3 +184,5 @@ web/.vercel/
 # Local verification artifacts (not release evidence)
 .playwright-mcp/
 /*.png
+web/AGENTS.md
+web/CLAUDE.md

@@ -41,8 +41,8 @@ class TestSlugify:
         assert slugify("NASHIK") == "nashik"
 
     def test_strips_special_chars(self) -> None:
-        # parens are stripped; no space between words, so no underscore injected
-        assert slugify("Pune(Khadiki)") == "punekhadiki"
+        # parens are converted to spaces, producing a word separator
+        assert slugify("Pune(Khadiki)") == "pune_khadiki"
 
     def test_replaces_spaces_with_underscore(self) -> None:
         assert slugify("Vashi New Mumbai") == "vashi_new_mumbai"
@@ -69,6 +69,6 @@ class TestMakeMandiId:
         assert result == "karnataka__nashik"
 
     def test_special_chars_in_name(self) -> None:
-        # parens strip without inserting underscore (no space before paren)
+        # parens are converted to spaces, producing a word separator
         result = make_mandi_id("Pune(Khadiki)")
-        assert result == "maharashtra__punekhadiki"
+        assert result == "maharashtra__pune_khadiki"

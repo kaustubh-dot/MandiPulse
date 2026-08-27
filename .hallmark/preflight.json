@@ -1,13 +1,13 @@
 {
-  "scanned_at": "2026-08-22",
-  "scope": "multi-surface redesign planning",
-  "frameworks": ["Next.js 14 App Router", "React 18", "Tailwind CSS 3", "Streamlit"],
+  "scanned_at": "2026-08-24",
+  "scope": "isolated multi-surface design-direction gallery",
+  "frameworks": ["Next.js 16 App Router", "React 19", "Tailwind CSS 4", "Streamlit 1.38+"],
   "font_stack": {
-    "nextjs": "browser and Tailwind defaults",
+    "nextjs": "browser and Tailwind defaults; preview directions evaluate dedicated role-based stacks",
     "streamlit": "Fira Sans and Fira Code"
   },
   "palette": "cool gray and blue surfaces with amber forecast and semantic risk colors",
-  "motion": "motion-cut; no dedicated motion library",
+  "motion": "production motion-cut; isolated preview gallery adds GSAP and Three.js for one custom direction",
   "spacing": "Tailwind default scale plus ad hoc Streamlit spacing",
   "existing_design_authority": "docs/DESIGN.md",
   "preserve": [
@@ -22,6 +22,6 @@
     "layout rhythm",
     "component voice",
     "navigation treatment",
-    "responsive composition"
+    "responsive composition in the isolated preview study only"
   ]
 }

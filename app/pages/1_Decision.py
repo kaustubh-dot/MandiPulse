@@ -26,7 +26,13 @@ from mandipulse.app.data_access import (  # noqa: E402
     load_report_markdown,
 )
 from mandipulse.app.design import (  # noqa: E402
+    ACCENT_HEX,
+    DEFAULT_LAT,
+    DEFAULT_LON,
+    DEFAULT_QUANTITY_QTL,
     EM_DASH,
+    INK_HEX,
+    MUTED_HEX,
     SNAPSHOT_LABEL,
     format_date_iso,
     format_inr,
@@ -65,10 +71,7 @@ MAX_ALTERNATIVES = int(_rk.get("max_alternatives", 10))
 RISK_LOW_MAX_PCT = float(_rt.get("low_max_interval_pct", 10))
 RISK_HIGH_MIN_PCT = float(_rt.get("high_min_interval_pct", 25))
 
-# Defaults mirror the web client's meta.default_farmer (Nashik).
-DEFAULT_LAT = 19.9975
-DEFAULT_LON = 73.7898
-DEFAULT_QUANTITY_QTL = 100.0
+# ---------------------------------------------------------------------------
 
 _RISK_LABELS = {"low": "Low", "medium": "Medium", "high": "High"}
 
@@ -113,12 +116,12 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
     fig = go.Figure()
     others = ranked.iloc[1:]
     fig.add_trace(
-        go.Scattermapbox(
+        go.Scattermap(
             lat=others["latitude"].tolist(),
             lon=others["longitude"].tolist(),
             mode="markers",
             name="Other candidates",
-            marker={"size": 11, "color": "#766d66", "opacity": 0.85},
+            marker={"size": 11, "color": MUTED_HEX, "opacity": 0.85},
             text=[
                 f"{row['mandi']} · Rank {int(row['rank'])} · "
                 f"{format_inr_per_qtl(row['transport_adjusted_net_price_inr_qtl'])} net · "
@@ -130,12 +133,12 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
     )
     top = ranked.iloc[0]
     fig.add_trace(
-        go.Scattermapbox(
+        go.Scattermap(
             lat=[float(top["latitude"])],
             lon=[float(top["longitude"])],
             mode="markers",
             name="Rank 1 mandi",
-            marker={"size": 22, "color": "#781827", "opacity": 0.95},
+            marker={"size": 22, "color": ACCENT_HEX, "opacity": 0.95},
             text=[
                 f"{top['mandi']} · Rank 1 · "
                 f"{format_inr_per_qtl(top['transport_adjusted_net_price_inr_qtl'])} net · "
@@ -145,12 +148,12 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
         )
     )
     fig.add_trace(
-        go.Scattermapbox(
+        go.Scattermap(
             lat=[farmer_lat],
             lon=[farmer_lon],
             mode="markers",
             name="Your location",
-            marker={"size": 15, "color": "#1a1511", "symbol": "circle"},
+            marker={"size": 15, "color": INK_HEX, "symbol": "circle"},
             text=["Selected farm location"],
             hoverinfo="text",
         )
@@ -159,7 +162,7 @@ def _candidate_map(ranked: pd.DataFrame, farmer_lat: float, farmer_lon: float) -
     lons = [farmer_lon, *ranked["longitude"].astype(float).tolist()]
     fig.update_layout(**plotly_theme())
     fig.update_layout(
-        mapbox={
+        map={
             "style": "open-street-map",
             "center": {"lat": sum(lats) / len(lats), "lon": sum(lons) / len(lons)},
             "zoom": 5,
@@ -194,6 +197,25 @@ except Exception as exc:  # pragma: no cover — artifact read failures
     st.error(f"Snapshot artifacts are unavailable ({exc}). Run the pipeline, then reload.")
     st.stop()
 
+for _key, _default in [
+    ("saved_lat", DEFAULT_LAT),
+    ("saved_lon", DEFAULT_LON),
+    ("saved_quantity", DEFAULT_QUANTITY_QTL),
+    ("saved_rate", COST_PER_KM),
+    ("saved_radius", MAX_RADIUS_KM),
+]:
+    if _key not in st.session_state:
+        st.session_state[_key] = _default
+
+
+def _sync_decision_inputs() -> None:
+    st.session_state["saved_lat"] = st.session_state["farmer_lat"]
+    st.session_state["saved_lon"] = st.session_state["farmer_lon"]
+    st.session_state["saved_quantity"] = st.session_state["quantity_qtl"]
+    st.session_state["saved_rate"] = st.session_state["transport_rate"]
+    st.session_state["saved_radius"] = st.session_state["radius_km"]
+
+
 inputs_col, results_col = st.columns([1, 2], gap="large")
 
 with inputs_col:
@@ -203,43 +225,53 @@ with inputs_col:
         "Latitude",
         min_value=-90.0,
         max_value=90.0,
-        value=DEFAULT_LAT,
+        value=float(st.session_state["saved_lat"]),
         step=0.0001,
         format="%.4f",
         help="Decimal degrees, \u221290 to 90.",
+        key="farmer_lat",
+        on_change=_sync_decision_inputs,
     )
     farmer_lon = st.number_input(
         "Longitude",
         min_value=-180.0,
         max_value=180.0,
-        value=DEFAULT_LON,
+        value=float(st.session_state["saved_lon"]),
         step=0.0001,
         format="%.4f",
         help="Decimal degrees, \u2212180 to 180.",
+        key="farmer_lon",
+        on_change=_sync_decision_inputs,
     )
     quantity_qtl = st.number_input(
         "Quantity (quintals)",
         min_value=0.5,
-        value=DEFAULT_QUANTITY_QTL,
+        value=float(st.session_state["saved_quantity"]),
         step=0.5,
         format="%.1f",
         help="Lot size used for the net estimate; must be greater than 0.",
+        key="quantity_qtl",
+        on_change=_sync_decision_inputs,
     )
     transport_rate = st.number_input(
         "Transport rate (INR/km/quintal)",
         min_value=0.0,
-        value=COST_PER_KM,
+        value=float(st.session_state["saved_rate"]),
         step=0.5,
         format="%.2f",
         help="Scenario assumption, not a carrier quotation.",
+        key="transport_rate",
+        on_change=_sync_decision_inputs,
     )
     radius_km = st.number_input(
         "Maximum road radius (km)",
         min_value=1.0,
-        value=MAX_RADIUS_KM,
+        value=float(st.session_state["saved_radius"]),
         step=10.0,
         format="%.0f",
         help="Candidates beyond this estimated road distance are excluded.",
+        key="radius_km",
+        on_change=_sync_decision_inputs,
     )
     st.caption(
         f"Road estimate: Haversine air distance \u00d7 {ROAD_FACTOR}. Results update "
@@ -267,7 +299,7 @@ with results_col:
             mandis=mandis_coords,
             farmer_latitude=float(farmer_lat),
             farmer_longitude=float(farmer_lon),
-            cost_per_km_per_quintal=COST_PER_KM,
+            cost_per_km_per_quintal=float(transport_rate),
             road_distance_factor=ROAD_FACTOR,
             uncertainty_penalty_weight=PENALTY_WEIGHT,
             low_max_interval_pct=RISK_LOW_MAX_PCT / 100,
@@ -289,101 +321,105 @@ with results_col:
             f"{beyond_radius_excluded} of those fresh forecasts sit beyond the radius. "
             "Increase the maximum road radius, then compare again."
         )
-        st.stop()
-    ranked["rank"] = range(1, len(ranked) + 1)
-    evidence = candidates[["market_id", "as_of_date", "staleness_days", "confidence_level"]]
-    evidence = evidence.merge(
-        mandis_coords[["market_id", "latitude", "longitude"]],
-        on="market_id",
-        how="inner",
-        validate="one_to_one",
-    )
-    ranked = ranked.merge(evidence, on="market_id", how="left", validate="one_to_one")
-    display_frame = ranked.head(MAX_ALTERNATIVES).copy()
+    else:
+        ranked["rank"] = range(1, len(ranked) + 1)
+        evidence = candidates[["market_id", "as_of_date", "staleness_days", "confidence_level"]]
+        evidence = evidence.merge(
+            mandis_coords[["market_id", "latitude", "longitude"]],
+            on="market_id",
+            how="inner",
+            validate="one_to_one",
+        )
+        ranked = ranked.merge(evidence, on="market_id", how="left", validate="one_to_one")
+        display_frame = ranked.head(MAX_ALTERNATIVES).copy()
 
-    top = display_frame.iloc[0]
-    top_net = float(top["transport_adjusted_net_price_inr_qtl"])
-    st.metric("Transport-adjusted net price", format_inr_per_qtl(top_net))
-    st.markdown(f"**Rank 1 — {top['mandi']}** · {top['district_name']}")
-    st.markdown(_arithmetic_sentence(top))
-    st.caption(
-        f"Lot net estimate {format_inr(top_net * float(quantity_qtl), 0)} for "
-        f"{format_quantity(quantity_qtl)}. Basis of the ranking: highest expected "
-        "price after subtracting estimated transport from the frozen forecast."
-    )
-    top_stale_days = int(top["staleness_days"])
-    if top_stale_days > 0:
-        st.warning(f"This forecast is {top_stale_days} days behind the current snapshot window.")
-
-    alternatives = display_frame.iloc[1:3]
-    if not alternatives.empty:
-        st.markdown("**Alternative recommendations**")
-        for _, alt in alternatives.iterrows():
-            alt_net = float(alt["transport_adjusted_net_price_inr_qtl"])
-            diff = alt_net - top_net
-            stale_note = ""
-            if int(alt["staleness_days"]) > 0:
-                stale_note = (
-                    f" · forecast {int(alt['staleness_days'])} days behind the "
-                    "current snapshot window"
-                )
-            st.markdown(
-                f"- **#{int(alt['rank'])} {alt['mandi']}** ({alt['district_name']}) {EM_DASH} "
-                f"{format_inr_per_qtl(alt_net)} net ({format_inr_per_qtl(diff)} vs rank 1) "
-                f"· forecast {format_inr_per_qtl(alt['forecast_price_inr_qtl'])} · "
-                f"transport {format_inr_per_qtl(alt['estimated_transport_cost_inr_qtl'])} · "
-                f"{format_km(alt['road_distance_km'], 0)} road · "
-                f"{_risk_label(alt['risk_level'])} risk{stale_note}"
+        top = display_frame.iloc[0]
+        top_net = float(top["transport_adjusted_net_price_inr_qtl"])
+        st.metric("Transport-adjusted net expected price", format_inr_per_qtl(top_net))
+        st.markdown(f"**Rank 1 — {top['mandi']}** · {top['district_name']}")
+        st.markdown(_arithmetic_sentence(top))
+        st.caption(
+            f"Lot net estimate {format_inr(top_net * float(quantity_qtl), 0)} for "
+            f"{format_quantity(quantity_qtl)}. Basis of the ranking: highest expected "
+            "price after subtracting estimated transport from the frozen forecast."
+        )
+        top_stale_days = int(top["staleness_days"])
+        if top_stale_days > 0:
+            st.warning(
+                f"This forecast is {top_stale_days} days behind the current snapshot window."
             )
 
-    render_section_heading("All eligible mandis")
-    st.dataframe(
-        _ranking_table(display_frame).round(1),
-        hide_index=True,
-        width="stretch",
-    )
-    st.caption(
-        "Ranked by transport-adjusted net expected price, highest first; equal prices "
-        "break by market identifier. Stale forecasts stay ranked and are flagged in "
-        "the Stale days column; only the canonical as-of policy and the road radius "
-        "exclude candidates."
-    )
+        alternatives = display_frame.iloc[1:3]
+        if not alternatives.empty:
+            st.markdown("**Alternative recommendations**")
+            for _, alt in alternatives.iterrows():
+                alt_net = float(alt["transport_adjusted_net_price_inr_qtl"])
+                diff = alt_net - top_net
+                stale_note = ""
+                if int(alt["staleness_days"]) > 0:
+                    stale_note = (
+                        f" · forecast {int(alt['staleness_days'])} days behind the "
+                        "current snapshot window"
+                    )
+                st.markdown(
+                    f"- **#{int(alt['rank'])} {alt['mandi']}** ({alt['district_name']}) {EM_DASH} "
+                    f"{format_inr_per_qtl(alt_net)} net ({format_inr_per_qtl(diff)} vs rank 1) "
+                    f"· forecast {format_inr_per_qtl(alt['forecast_price_inr_qtl'])} · "
+                    f"transport {format_inr_per_qtl(alt['estimated_transport_cost_inr_qtl'])} · "
+                    f"{format_km(alt['road_distance_km'], 0)} road · "
+                    f"{_risk_label(alt['risk_level'])} risk{stale_note}"
+                )
 
-    render_section_heading("Candidate map")
-    st.plotly_chart(
-        _candidate_map(display_frame, float(farmer_lat), float(farmer_lon)),
-        width="stretch",
-    )
-    st.caption(
-        "Dark circle: rank-1 mandi. Smaller circles: other candidates. "
-        "Exact distances repeat in the table above."
-    )
-
-    render_section_heading("Evidence")
-    levels = sorted(set(candidates["confidence_level"].dropna().unique()))
-    level_label = " / ".join(format_pct(float(level) * 100, 0) for level in levels) or EM_DASH
-    target_date = forecast_target_date(top["as_of_date"], int(top["horizon_days"]))
-    ev_left, ev_right = st.columns(2)
-    with ev_left:
-        st.markdown("**Interval method**")
-        st.markdown(f"- Nominal level: {level_label}")
-        st.markdown(
-            "- Rank-1 bounds: "
-            f"{format_interval(top['lower_bound_inr_qtl'], top['upper_bound_inr_qtl'])}"
+        render_section_heading(f"Top {len(display_frame)} eligible mandis")
+        st.dataframe(
+            _ranking_table(display_frame).round(1),
+            hide_index=True,
+            width="stretch",
         )
-        st.markdown(
-            "- Uncertainty penalty: "
-            f"{format_inr_per_qtl(top['uncertainty_penalty_inr_qtl'])} {EM_DASH} "
-            "identical across candidates; does not affect order."
+        st.caption(
+            "Ranked by transport-adjusted net expected price, highest first; equal prices "
+            "break by market identifier. Stale forecasts stay ranked and are flagged in "
+            "the Stale days column; only the canonical as-of policy and the road radius "
+            "exclude candidates."
         )
-    with ev_right:
-        st.markdown("**Snapshot and horizon**")
-        st.markdown(f"- Snapshot date: {SNAPSHOT_LABEL.replace('Snapshot ', '')}")
-        st.markdown(f"- Forecast as-of: {format_date_iso(canonical_as_of)}")
-        st.markdown(f"- Sale target: {format_date_iso(target_date)}")
-        st.markdown(f"- Horizon: {int(top['horizon_days'])}-day ahead")
 
-render_section_heading("Regret evaluation", "Held-out replay of the same ranking policy over historical as-of dates.")
+        render_section_heading("Candidate map")
+        st.plotly_chart(
+            _candidate_map(display_frame, float(farmer_lat), float(farmer_lon)),
+            width="stretch",
+        )
+        st.caption(
+            "Dark circle: rank-1 mandi. Smaller circles: other candidates. "
+            "Exact distances repeat in the table above."
+        )
+
+        render_section_heading("Evidence")
+        levels = sorted(set(candidates["confidence_level"].dropna().unique()))
+        level_label = " / ".join(format_pct(float(level) * 100, 0) for level in levels) or EM_DASH
+        target_date = forecast_target_date(top["as_of_date"], int(top["horizon_days"]))
+        ev_left, ev_right = st.columns(2)
+        with ev_left:
+            st.markdown("**Interval method**")
+            st.markdown(f"- Nominal level: {level_label}")
+            st.markdown(
+                "- Rank-1 bounds: "
+                f"{format_interval(top['lower_bound_inr_qtl'], top['upper_bound_inr_qtl'])}"
+            )
+            st.markdown(
+                "- Uncertainty penalty: "
+                f"{format_inr_per_qtl(top['uncertainty_penalty_inr_qtl'])} {EM_DASH} "
+                "identical across candidates; does not affect order."
+            )
+        with ev_right:
+            st.markdown("**Snapshot and horizon**")
+            st.markdown(f"- Snapshot date: {SNAPSHOT_LABEL.replace('Snapshot ', '')}")
+            st.markdown(f"- Forecast as-of: {format_date_iso(canonical_as_of)}")
+            st.markdown(f"- Sale target: {format_date_iso(target_date)}")
+            st.markdown(f"- Horizon: {int(top['horizon_days'])}-day ahead")
+
+render_section_heading(
+    "Regret evaluation", "Held-out replay of the same ranking policy over historical as-of dates."
+)
 backtest_df = load_recommendation_backtest()
 if backtest_df is None:
     st.info(

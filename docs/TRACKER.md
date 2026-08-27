@@ -17,7 +17,7 @@ The active portfolio execution and review contract lives in these documents:
 ## Scope
 
 Active product scope remains Onion/Maharashtra, 15 mandis, and a 7-day horizon. The analytical core,
-Streamlit, FastAPI, and static Next.js surface exist. The current non-UI finish track corrects the
+Streamlit dashboard, and static Next.js surface exist. The current finish track corrects the
 public recommendation vocabulary, hardens frontend dependencies and tests, reconciles documentation,
 and prepares verified public deployment. Visual/UI acceptance and redesign are intentionally deferred
 for a later dedicated pass. Additional commodities, regions, horizons, and infrastructure remain
@@ -30,7 +30,6 @@ deferred.
 | Python MVP pipeline | Done | Clean panel, feature table, baselines, LightGBM comparison, intervals, recommendations, backtest |
 | Product/calculation contract | Done | Public ranking is transport-adjusted; uncertainty remains separate evidence |
 | Streamlit dashboard | UI redo deferred | Non-UI smoke and parity checks pass; visual/UI acceptance is intentionally not part of this pass |
-| FastAPI additive surface | Done | `/health`, `/forecast`, `/recommend`; tested via TestClient |
 | Next.js static frontend | UI redo deferred | Non-visual logic, typecheck, lint, build, and parity pass; visual/UI acceptance is intentionally excluded |
 | Frontend dependencies | Done with upstream ESLint note | Next.js 16/React 19 audit is clean; bundled lint plugins currently support ESLint 9, whose upstream support window has ended |
 | Frontend experience tests | Non-visual checks done | 137 logic/parity assertions pass; visual/UI review is intentionally deferred |
@@ -43,13 +42,13 @@ Most recent recorded baseline:
 
 ```powershell
 python scripts\validate_web_export.py
-ruff check api app src scripts tests
-black --check api app src scripts tests
+ruff check app src scripts tests
+black --check app src scripts tests
 pytest -q
 ```
 
-Expected current results: 235 Python tests with 78.05% coverage (70% floor), a schema-valid
-deterministic export, 137 non-visual web assertions, a clean typecheck/lint/build, and zero
+Expected current results: 208 Python tests with 77.59% coverage (70% floor), a schema-valid
+deterministic export, 140 web unit assertions, 44 component checks, a clean typecheck/lint/build, and zero
 production npm audit findings. Visual/UI acceptance remains intentionally deferred.
 
 CP-001 and CP-003 are Approved and Complete. CP-002 has approved local evidence, but its frontend
@@ -96,7 +95,7 @@ engineering work; they do not imply that the new finish track is complete.
 
 | Milestone | Status | Result |
 |---|---|---|
-| M | Done | FastAPI backend over precomputed demo artifacts |
+| M | Retired | Former backend experiment; excluded from the locked portfolio surface |
 | L | Done | Clone-runnable demo sample bundle |
 | K | Done | MVP release hardening and coverage gate |
 | J | Done | DuckDB read-layer over CSV artifacts |

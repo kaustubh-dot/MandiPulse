@@ -8,7 +8,7 @@ Inputs: `PRODUCT.md`, `docs/DESIGN.md`, `docs/APP_FLOW.md`, and `docs/COMPLETION
 
 ## 1. Objective
 
-Finish MandiPulse as a defensible, public, resume-quality product without expanding its analytical scope. Preserve the working data, model, API, and cross-language calculation layers; replace the Next.js and Streamlit presentation layers; correct product wording; harden frontend dependencies and tests; then publish verifiable release evidence.
+Finish MandiPulse as a defensible, public, resume-quality product without expanding its analytical scope. Preserve the working data, model, export, and cross-language calculation layers; replace the Next.js and Streamlit presentation layers; correct product wording; harden frontend dependencies and tests; then publish verifiable release evidence.
 
 ## 2. Operating Rules
 
@@ -67,19 +67,19 @@ Ship a **transport-adjusted** ranking. Display uncertainty as separate evidence.
 
 ### Tasks
 
-- **F1-01:** Trace the ranking field from `src/mandipulse/recommend/engine.py` through `scripts/build_web_export.py`, `api/schemas.py`, `api/service.py`, and `web/src/lib/`.
+- **F1-01:** Trace the ranking field from `src/mandipulse/recommend/engine.py` through `scripts/build_web_export.py` and `web/src/lib/`.
 - **F1-02:** Introduce or standardize a clear canonical field such as `transport_adjusted_net_price_inr_qtl`. If a field rename would break existing artifacts, provide a temporary explicit compatibility reader and remove it before final release.
 - **F1-03:** Update Python and TypeScript ranking functions so names, comments, types, and outputs describe the implemented arithmetic.
 - **F1-04:** Keep uncertainty fields in the artifact and result model, but treat them as evidence rather than a rank modifier.
-- **F1-05:** Update API schema descriptions, export schema/version, reports, UI copy, and methodology wording.
+- **F1-05:** Update export schema/version, reports, UI copy, and methodology wording.
 - **F1-06:** Add regression fixtures proving candidate order, prices, distance, transport cost, and totals match across Python and TypeScript.
 - **F1-07:** Regenerate the sample bundle and static web export; review the diff before accepting it.
 
 ### Gate F1
 
 ```powershell
-ruff check api app src scripts tests
-black --check api app src scripts tests
+ruff check app src scripts tests
+black --check app src scripts tests
 pytest -q
 Set-Location web
 npm.cmd test
@@ -323,7 +323,7 @@ Meet every threshold in `docs/portfolio/RELEASE_GATES.md`. Any exception must id
 
 - **F8-01:** Update README install, run, test, build, architecture summary, screenshots, limitations, and live URLs.
 - **F8-02:** Reconcile `docs/PRD.md`, `docs/ARCHITECTURE.md`, `RELEASE.md`, and the historical blueprint with the final product scope.
-- **F8-03:** Update API and export schema documents after the ranking-contract change.
+- **F8-03:** Update export schema documents after the ranking-contract change.
 - **F8-04:** Update `docs/TRACKER.md`, `TODO.md`, and `docs/portfolio/CURRENT_STATE.md` with final evidence.
 - **F8-05:** Verify every resume metric against a committed report or reproducible command.
 
@@ -351,8 +351,8 @@ Run commands from the repository root unless noted.
 
 ```powershell
 # Python quality and behavioral checks
-ruff check api app src scripts tests
-black --check api app src scripts tests
+ruff check app src scripts tests
+black --check app src scripts tests
 pytest -q
 
 # Regenerate committed demo and web contracts when source artifacts change

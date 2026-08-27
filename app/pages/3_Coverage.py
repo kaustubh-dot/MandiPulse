@@ -139,6 +139,9 @@ def compute_mandi_coverage(panel: pd.DataFrame, meta: pd.DataFrame) -> pd.DataFr
     stats = totals.join(seen, how="left").reset_index()
     keep = [col for col in ("market_id", "district_name", "active_days") if col in meta.columns]
     stats = stats.merge(meta[keep], on="market_id", how="left")
+    for optional_column in ("district_name", "active_days"):
+        if optional_column not in stats.columns:
+            stats[optional_column] = pd.NA
 
     stats["observed_rows"] = stats["available_rows"] - stats["imputed_rows"]
     stats["unavailable_rows"] = stats["total_rows"] - stats["available_rows"]
@@ -177,15 +180,19 @@ def focus_window_chart(window: pd.DataFrame) -> go.Figure:
     imputed = _flag_series(window, "is_imputed") & price.notna()
     observed = price.notna() & ~imputed
 
+    price_observed = price.copy()
+    price_observed[~observed] = float("nan")
+
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
-            x=dates[observed],
-            y=price[observed],
+            x=dates,
+            y=price_observed,
             mode="lines+markers",
             name="Observed",
             line={"color": INK_HEX, "width": 1.5},
             marker={"color": INK_HEX, "size": 5},
+            connectgaps=False,
             hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} INR/qtl<extra>Observed</extra>",
         )
     )
@@ -274,7 +281,15 @@ st.caption(
 
 with st.spinner("Loading coverage, mandi metadata, and price history…"):
     panel = load_clean_panel()
-    mandi_meta = load_mandi_metadata()
+    try:
+        mandi_meta = load_mandi_metadata()
+    except Exception as exc:
+        st.warning(
+            f"Mandi metadata could not be loaded ({exc}). Coverage totals remain available, "
+            "but district and active-trading-day context is omitted. Regenerate "
+            "`data/external/mvp_mandis.csv`, then reload."
+        )
+        mandi_meta = pd.DataFrame(columns=["market_id", "district_name", "active_days"])
 
 if panel.empty:
     st.warning(
@@ -362,8 +377,7 @@ focus_window = focus_history.tail(FOCUS_WINDOW_ROWS)
 observed_share = focus_stats["available_pct"] - focus_stats["imputed_pct"]
 
 st.markdown(
-    f"**{_cell_text(focus_stats['market_name'])}** — "
-    f"{_cell_text(focus_stats['district_name'])}"
+    f"**{_cell_text(focus_stats['market_name'])}** — " f"{_cell_text(focus_stats['district_name'])}"
 )
 st.markdown(
     "\n".join(
@@ -408,20 +422,24 @@ if sensitivity is None:
     )
 else:
     test_rows = sensitivity[sensitivity["split"] == "test"]
-    comparison = pd.DataFrame(
-        {
-            "Model": test_rows["model"].map(_cell_text),
-            "Held-out test MAE": test_rows["mae"].map(lambda v: format_inr_per_qtl(v, 2)),
-            "Ships?": [
-                "Ships" if model == SHIPPED_MODEL else "Not shipped" for model in test_rows["model"]
-            ],
-        }
-    )
-    st.dataframe(comparison, hide_index=True, width="stretch")
-    st.caption(
-        f"Lower MAE is better. `{SHIPPED_MODEL}` wins on the held-out test split, so only it "
-        "ships to the forecast route; weaker families are shown, not hidden."
-    )
+    if {"model", "mae"}.issubset(test_rows.columns):
+        comparison = pd.DataFrame(
+            {
+                "Model": test_rows["model"].map(_cell_text),
+                "Held-out test MAE": test_rows["mae"].map(lambda v: format_inr_per_qtl(v, 2)),
+                "Ships?": [
+                    "Ships" if model == SHIPPED_MODEL else "Not shipped"
+                    for model in test_rows["model"]
+                ],
+            }
+        )
+        st.dataframe(comparison, hide_index=True, width="stretch")
+        st.caption(
+            f"Lower MAE is better. `{SHIPPED_MODEL}` wins on the held-out test split, so only it "
+            "ships to the forecast route; weaker families are shown, not hidden."
+        )
+    else:
+        st.error("Missing required columns ('model', 'mae') in baseline sensitivity data.")
 
 interval_meta = load_interval_metadata()
 st.markdown("#### Prediction interval level")
