@@ -95,9 +95,9 @@ snapshot. The current ranking order is therefore driven by forecast price and tr
 
 ## Deployment
 
-Deploy the release branch `finish/portfolio-release` (the tagged release commit).
+Deploy the `main` branch (the tagged release commit).
 
-- Streamlit Cloud: deploy `app/streamlit_app.py` from `finish/portfolio-release`.
+- Streamlit Cloud: deploy `app/streamlit_app.py` from `main`.
 - Vercel (optional): deploy with root directory `web`; no environment variables are required.
 
 After deployment, record the final URLs in the release record in

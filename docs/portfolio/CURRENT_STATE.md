@@ -12,7 +12,7 @@ MandiPulse has a tested analytical core and portfolio-ready local Python, Stream
 
 | Field | Value |
 |---|---|
-| Branch | `finish/portfolio-release` (created from `main` at `ef4f393`) |
+| Branch | `main` (release branch) |
 | Local HEAD | Portfolio UI hardening is present in the working tree; see `git log` for the last commit |
 | Remote relationship | Final UI changes still need an exact release commit, push, and CI run |
 | Worktree | Intentionally dirty while the approved UI fixes and evidence are reviewed |
@@ -229,7 +229,7 @@ The phase notes below preserve the implementation history and are not the curren
 state is the repository snapshot in sections 1–2 and the release gates in
 `docs/portfolio/RELEASE_GATES.md`.
 
-### Analytical and Python layer (rerun on `finish/portfolio-release`, 2026-08-22)
+### Analytical and Python layer (rerun on `main`, 2026-08-22)
 
 - 206 Python tests passed (`pytest -q`), coverage 74.90% against the 70% floor.
 - Ruff and Black passed (`ruff check`, `black --check`; 70 files unchanged).
@@ -240,7 +240,7 @@ state is the repository snapshot in sections 1–2 and the release gates in
    792 rows at MAE 133.61 with 86.87% conditional-residual / 90.91% split-conformal coverage;
    recommendation mean regret@1 296.3 vs 370.1 nearest-mandi (74.4% win rate).
 
-### Frontend layer (rerun on `finish/portfolio-release`, 2026-08-22)
+### Frontend layer (rerun on `main`, 2026-08-22)
 
 - 52 TypeScript logic/parity assertions passed (`npm test`) after artifact realignment.
 - Production build passed: Next.js 14.2.35, seven static routes prerendered

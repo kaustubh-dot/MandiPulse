@@ -11,7 +11,7 @@ the technical dashboard. Hugging Face Static Spaces is an optional mirror of the
 ## Before deploying
 
 1. Push the exact release commit to GitHub.
-2. Confirm the branch is `finish/portfolio-release`.
+2. Confirm the branch is `main`.
 3. Run the release checks:
 
 ```powershell
@@ -40,7 +40,7 @@ Use Vercel for the main portfolio URL.
 5. Keep the install command as `npm install` or set it to `npm ci`.
 6. Keep the build command as `npm run build`.
 7. Leave environment variables empty.
-8. Set the production branch to `finish/portfolio-release` while this branch is the release source.
+8. Set the production branch to `main`.
 9. Deploy.
 
 The site uses `output: "export"` and `trailingSlash: true` in `web/next.config.mjs`. Vercel should
@@ -65,7 +65,7 @@ Use Streamlit Community Cloud for the analytical dashboard.
 1. Sign in at [share.streamlit.io](https://share.streamlit.io/).
 2. Choose **Create app**, then select the option for an existing app.
 3. Select the `kaustubh-dot/MandiPulse` repository.
-4. Select the `finish/portfolio-release` branch.
+4. Select the `main` branch.
 5. Set the main file path to `app/streamlit_app.py`.
 6. Choose a readable subdomain if one is available.
 7. Leave secrets empty.
