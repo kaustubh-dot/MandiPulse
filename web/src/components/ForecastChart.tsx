@@ -2,10 +2,8 @@
 
 import { useMemo, useState } from "react";
 import {
-  Area,
   CartesianGrid,
   ComposedChart,
-  Legend,
   Line,
   ResponsiveContainer,
   Tooltip,
@@ -13,6 +11,11 @@ import {
   YAxis,
 } from "recharts";
 import { buttonClass } from "@/components/ui/primitives";
+import {
+  buildForecastChartModel,
+  formatForecastDateTick,
+  formatForecastPriceTick,
+} from "@/lib/forecastChart";
 import { EM_DASH, formatDateIso, formatInrPerQtl, formatInterval } from "@/lib/format";
 import type { ForecastRow, PriceHistoryRow } from "@/lib/types";
 
@@ -27,18 +30,9 @@ const NUMERIC_TICK = {
 };
 
 const SERIES_META: Record<string, { label: string; order: number }> = {
-  observed: { label: "Observed", order: 0 },
+  price: { label: "Observed", order: 0 },
   imputed: { label: "Imputed", order: 1 },
-  forecast: { label: "Forecast", order: 2 },
 };
-
-interface ChartPoint {
-  date: string;
-  observed?: number;
-  imputed?: number;
-  forecast?: number;
-  band?: [number, number];
-}
 
 interface TooltipPayloadEntry {
   dataKey?: string | number;
@@ -57,23 +51,20 @@ function SeriesTooltip({
 }) {
   if (!active || !payload || payload.length === 0) return null;
 
-  const seriesEntries = payload
+  const typedEntries = payload
     .filter(
       (entry): entry is TooltipPayloadEntry & { dataKey: string; value: number } =>
         typeof entry.dataKey === "string" &&
         entry.dataKey in SERIES_META &&
         typeof entry.value === "number" &&
         Number.isFinite(entry.value)
-    )
+    );
+  const hasImputedEntry = typedEntries.some((entry) => entry.dataKey === "imputed");
+  const seriesEntries = typedEntries
+    .filter((entry) => !(hasImputedEntry && entry.dataKey === "price"))
     .sort(
       (a, b) => SERIES_META[a.dataKey].order - SERIES_META[b.dataKey].order
     );
-
-  const rawBand = payload.find((entry) => entry.dataKey === "band");
-  const bandValue =
-    rawBand && Array.isArray(rawBand.value)
-      ? (rawBand.value as [number, number])
-      : null;
 
   return (
     <div
@@ -93,17 +84,15 @@ function SeriesTooltip({
             <dd className="numeric text-ink">{formatInrPerQtl(entry.value)}</dd>
           </div>
         ))}
-        {bandValue ? (
-          <div className="flex items-baseline justify-between gap-3 border-t border-rule pt-1">
-            <dt className="text-ink-2">Prediction interval</dt>
-            <dd className="numeric text-ink">
-              {formatInterval(bandValue[0], bandValue[1])}
-            </dd>
-          </div>
-        ) : null}
       </dl>
     </div>
   );
+}
+
+function domainPosition(value: number, domain: [number, number]): number {
+  const [minimum, maximum] = domain;
+  if (maximum <= minimum) return 50;
+  return Math.min(100, Math.max(0, ((value - minimum) / (maximum - minimum)) * 100));
 }
 
 function NumericCell({ value }: { value: number | undefined }) {
@@ -125,55 +114,37 @@ interface Props {
 export default function ForecastChart({ history, forecast, forecastDate }: Props) {
   const [view, setView] = useState<"chart" | "table">("chart");
 
-  const points = useMemo<ChartPoint[]>(() => {
-    const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
-    const built: ChartPoint[] = sorted.map((row) => {
-      const value = Number(row.modal_price_inr_qtl);
-      return row.is_imputed
-        ? { date: row.date, imputed: value }
-        : { date: row.date, observed: value };
-    });
+  const model = useMemo(
+    () => buildForecastChartModel(history, forecast, forecastDate),
+    [history, forecast, forecastDate]
+  );
 
-    if (forecast && forecastDate) {
-      // Flat band across the forecast window (as-of -> target); the bounds
-      // themselves apply to the target date only. Stated in caption + tooltip.
-      const band: [number, number] = [
-        forecast.lower_bound_inr_qtl,
-        forecast.upper_bound_inr_qtl,
-      ];
-      const bridge = built.find((point) => point.date === forecast.as_of_date);
-      if (bridge) {
-        bridge.forecast = forecast.forecast_price_inr_qtl;
-        bridge.band = band;
-      } else {
-        built.push({
-          date: forecast.as_of_date,
-          forecast: forecast.forecast_price_inr_qtl,
-          band,
-        });
-      }
-      built.push({
-        date: forecastDate,
-        forecast: forecast.forecast_price_inr_qtl,
-        band,
-      });
-    }
+  if (model.historyPoints.length === 0 && !model.endpoint) return null;
 
-    return built;
-  }, [history, forecast, forecastDate]);
-
-  if (points.length === 0) return null;
-
-  const observedCount = points.filter((point) => point.observed !== undefined).length;
-  const imputedCount = points.filter((point) => point.imputed !== undefined).length;
+  const observedCount = model.historyPoints.filter(
+    (point) => point.imputed === undefined
+  ).length;
+  const imputedCount = model.historyPoints.filter(
+    (point) => point.imputed !== undefined
+  ).length;
   const hasImputed = imputedCount > 0;
-  const tablePoints = points.slice(-TABLE_ROW_CAP);
+  const tablePoints = model.tablePoints.slice(-TABLE_ROW_CAP);
 
   const intervalPart =
-    forecast && forecastDate
-      ? `, ending in a dashed forecast segment for ${formatDateIso(forecastDate)} at ${formatInrPerQtl(forecast.forecast_price_inr_qtl)} with a shaded prediction interval of ${formatInterval(forecast.lower_bound_inr_qtl, forecast.upper_bound_inr_qtl)}`
+    model.endpoint
+      ? `. A separate forecast endpoint lane shows ${formatDateIso(model.endpoint.date)} at ${formatInrPerQtl(model.endpoint.forecast)} with a target-date prediction interval of ${formatInterval(model.endpoint.lower, model.endpoint.upper)}`
       : "";
   const chartAriaLabel = `Price line chart: ${observedCount} observed daily prices${hasImputed ? `, ${imputedCount} imputed fills drawn as hollow markers` : ""}${intervalPart}. Select \u201cView as table\u201d for exact figures.`;
+
+  const lowerPosition = model.endpoint
+    ? domainPosition(model.endpoint.lower, model.yDomain)
+    : 0;
+  const upperPosition = model.endpoint
+    ? domainPosition(model.endpoint.upper, model.yDomain)
+    : 0;
+  const forecastPosition = model.endpoint
+    ? domainPosition(model.endpoint.forecast, model.yDomain)
+    : 0;
 
   return (
     <div className="min-w-0 space-y-3">
@@ -191,106 +162,193 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
       </div>
 
       {view === "chart" ? (
-        <div
-          className="h-[320px] w-full min-w-0"
-          role="img"
-          aria-label={chartAriaLabel}
-        >
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            initialDimension={{ width: 600, height: 320 }}
-          >
-            <ComposedChart data={points} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
-              <CartesianGrid
-                stroke="var(--mp-rule)"
-                strokeDasharray="3 3"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatDateIso}
-                tick={NUMERIC_TICK}
-                tickLine={false}
-                axisLine={{ stroke: "var(--mp-rule-strong)" }}
-                interval="preserveStartEnd"
-                minTickGap={32}
-              />
-              <YAxis
-                tick={NUMERIC_TICK}
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                label={{
-                  value: "INR/quintal",
-                  angle: -90,
-                  position: "insideLeft",
-                  style: { fontSize: 11, fill: "var(--mp-muted)" },
-                }}
-              />
-              <Area
-                dataKey="band"
-                name="Prediction interval"
-                stroke="none"
-                fill="var(--mp-accent)"
-                fillOpacity={0.35}
-                legendType="rect"
-                activeDot={false}
-                isAnimationActive={false}
-              />
-              <Line
-                dataKey="observed"
-                name="Observed"
-                stroke="var(--mp-ink)"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: "var(--mp-ink)" }}
-                isAnimationActive={false}
-              />
-              {hasImputed ? (
-                <Line
-                  dataKey="imputed"
-                  name="Imputed"
-                  stroke="var(--mp-ink-2)"
-                  strokeWidth={0}
-                  dot={{
-                    r: 3.5,
-                    fill: "var(--mp-surface-raised)",
-                    stroke: "var(--mp-ink)",
-                    strokeWidth: 1.5,
-                  }}
-                  activeDot={false}
-                  legendType="circle"
-                  isAnimationActive={false}
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-2">
+            <span className="inline-flex items-center gap-2">
+              <span className="w-5 border-t-2 border-ink" aria-hidden="true" />
+              Observed price
+            </span>
+            {hasImputed ? (
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full border-2 border-ink bg-surface"
+                  aria-hidden="true"
                 />
-              ) : null}
-              <Line
-                dataKey="forecast"
-                name="Forecast"
-                stroke="var(--mp-accent)"
-                strokeWidth={2.5}
-                strokeDasharray="7 4"
-                dot={{
-                  r: 5,
-                  fill: "var(--mp-accent)",
-                  stroke: "var(--mp-accent-ink)",
-                  strokeWidth: 1,
-                }}
-                activeDot={{
-                  r: 6,
-                  fill: "var(--mp-accent)",
-                  stroke: "var(--mp-accent-ink)",
-                  strokeWidth: 1,
-                }}
-                isAnimationActive={false}
-              />
-              <Tooltip
-                content={<SeriesTooltip />}
-                cursor={{ stroke: "var(--mp-rule-strong)", strokeDasharray: "3 3" }}
-              />
-              <Legend iconSize={10} wrapperStyle={{ fontSize: "0.75rem" }} />
-            </ComposedChart>
-          </ResponsiveContainer>
+                Imputed value
+              </span>
+            ) : null}
+            {model.endpoint ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-px bg-accent" aria-hidden="true" />
+                Forecast and interval
+              </span>
+            ) : null}
+          </div>
+
+          <div
+            className={
+              model.endpoint
+                ? "grid min-w-0 gap-5 md:grid-cols-[minmax(0,4fr)_minmax(9.5rem,1fr)]"
+                : "min-w-0"
+            }
+          >
+            <div className="min-w-0">
+              <p className="mb-2 text-xs text-muted">Observed and imputed history</p>
+              <div
+                className="h-[320px] w-full min-w-0"
+                role="img"
+                aria-label={chartAriaLabel}
+              >
+                {model.historyPoints.length > 0 ? (
+                  <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                    initialDimension={{ width: 600, height: 320 }}
+                  >
+                    <ComposedChart
+                      data={model.historyPoints}
+                      margin={{ top: 8, right: 20, bottom: 4, left: 0 }}
+                    >
+                      <CartesianGrid stroke="var(--mp-rule)" vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={formatForecastDateTick}
+                        tick={NUMERIC_TICK}
+                        tickLine={false}
+                        tickMargin={8}
+                        axisLine={{ stroke: "var(--mp-rule-strong)" }}
+                        interval="preserveStartEnd"
+                        minTickGap={32}
+                        padding={{ left: 8, right: 8 }}
+                      />
+                      <YAxis
+                        domain={model.yDomain}
+                        allowDataOverflow
+                        tickFormatter={formatForecastPriceTick}
+                        tick={NUMERIC_TICK}
+                        tickLine={false}
+                        axisLine={false}
+                        width={58}
+                      />
+                      <Line
+                        dataKey="price"
+                        name="Observed and imputed history"
+                        stroke="var(--mp-ink)"
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: "var(--mp-ink)" }}
+                        isAnimationActive={false}
+                      />
+                      {hasImputed ? (
+                        <Line
+                          dataKey="imputed"
+                          name="Imputed value"
+                          stroke="var(--mp-ink-2)"
+                          strokeWidth={0}
+                          dot={{
+                            r: 3.5,
+                            fill: "var(--mp-surface-raised)",
+                            stroke: "var(--mp-ink)",
+                            strokeWidth: 1.5,
+                          }}
+                          activeDot={false}
+                          legendType="circle"
+                          isAnimationActive={false}
+                        />
+                      ) : null}
+                      <Tooltip
+                        content={<SeriesTooltip />}
+                        cursor={{
+                          stroke: "var(--mp-rule-strong)",
+                          strokeDasharray: "3 3",
+                        }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-full items-center justify-center border-y border-rule px-5 text-center text-sm text-muted">
+                    No finite history is available in this window.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {model.endpoint ? (
+              <div
+                className="min-w-0"
+                role="group"
+                aria-label={`Forecast endpoint for ${formatDateIso(model.endpoint.date)}`}
+              >
+                <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-xs">
+                  <span className="font-semibold text-ink">Forecast target</span>
+                  <span className="numeric text-muted">
+                    {formatDateIso(model.endpoint.date)}
+                  </span>
+                </div>
+                <div className="relative h-[210px] border border-rule-strong bg-surface md:h-[320px]">
+                  <p className="absolute left-2 top-2 right-2 text-center text-xs text-muted">
+                    {Math.round(model.endpoint.confidenceLevel * 100)}% Prediction interval
+                  </p>
+
+                  <div
+                    className="absolute left-1/2 w-8 -translate-x-1/2 bg-accent-soft"
+                    style={{
+                      bottom: `${lowerPosition}%`,
+                      height: `${Math.max(0, upperPosition - lowerPosition)}%`,
+                      background: "var(--mp-accent-soft)",
+                    }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="absolute left-1/2 w-px -translate-x-1/2 bg-accent"
+                    style={{
+                      bottom: `${lowerPosition}%`,
+                      height: `${Math.max(0, upperPosition - lowerPosition)}%`,
+                      background: "var(--mp-accent)",
+                    }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="absolute left-1/2 h-px w-6 -translate-x-1/2 bg-accent"
+                    style={{ bottom: `${lowerPosition}%` }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="absolute left-1/2 h-px w-6 -translate-x-1/2 bg-accent"
+                    style={{ bottom: `${upperPosition}%` }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="absolute left-1/2 h-3 w-3 -translate-x-1/2 translate-y-1/2 rounded-full bg-accent ring-2 ring-surface"
+                    style={{
+                      bottom: `${forecastPosition}%`,
+                      background: "var(--mp-accent)",
+                    }}
+                    aria-hidden="true"
+                  />
+
+                  <p
+                    className="numeric absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-accent"
+                    style={{ bottom: `calc(${forecastPosition}% + 0.75rem)` }}
+                  >
+                    {formatInrPerQtl(model.endpoint.forecast)}
+                  </p>
+                  <p
+                    className="numeric absolute right-2 whitespace-nowrap text-[0.7rem] text-muted"
+                    style={{ bottom: `calc(${upperPosition}% - 0.45rem)` }}
+                  >
+                    {formatInrPerQtl(model.endpoint.upper)}
+                  </p>
+                  <p
+                    className="numeric absolute right-2 whitespace-nowrap text-[0.7rem] text-muted"
+                    style={{ bottom: `calc(${lowerPosition}% - 0.45rem)` }}
+                  >
+                    {formatInrPerQtl(model.endpoint.lower)}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : (
         <div
@@ -302,8 +360,8 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
           <table className="w-full min-w-[620px] border-collapse text-sm">
             <caption className="border-b border-rule px-3 py-2 text-left text-xs text-muted">
               Daily prices underlying the chart, most recent {tablePoints.length} of{" "}
-              {points.length} days. Values are INR/qtl; interval bounds apply to the
-              forecast target date.
+              {model.tablePoints.length} rows. Values are INR/qtl; interval bounds
+              apply to the forecast target date.
             </caption>
             <thead>
               <tr className="bg-paper-2 text-left text-xs text-ink-2">
@@ -328,16 +386,16 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
               </tr>
             </thead>
             <tbody>
-              {tablePoints.map((point) => (
-                <tr key={point.date} className="border-t border-rule">
+              {tablePoints.map((point, index) => (
+                <tr key={`${point.date}-${index}`} className="border-t border-rule">
                   <td className="numeric whitespace-nowrap px-3 py-1.5 text-left text-xs text-ink-2">
                     {formatDateIso(point.date)}
                   </td>
                   <NumericCell value={point.observed} />
                   <NumericCell value={point.imputed} />
                   <NumericCell value={point.forecast} />
-                  <NumericCell value={point.band?.[0]} />
-                  <NumericCell value={point.band?.[1]} />
+                  <NumericCell value={point.lower} />
+                  <NumericCell value={point.upper} />
                 </tr>
               ))}
             </tbody>

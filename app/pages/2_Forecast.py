@@ -16,7 +16,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 import pandas as pd  # noqa: E402
-import plotly.graph_objects as go  # noqa: E402
 import streamlit as st  # noqa: E402
 
 from mandipulse.app.data_access import (  # noqa: E402
@@ -30,20 +29,18 @@ from mandipulse.app.data_access import (  # noqa: E402
     persist_decision_location,
 )
 from mandipulse.app.design import (  # noqa: E402
-    ACCENT_HEX,
-    ACCENT_INK_HEX,
     EM_DASH,
-    INK_HEX,
-    MUTED_HEX,
     format_date_iso,
     format_inr_per_qtl,
     format_interval,
     format_pct,
     inject_base_css,
-    plotly_theme,
     render_frozen_notice,
     render_page_header,
     render_section_heading,
+)
+from mandipulse.app.forecast_chart import (  # noqa: E402
+    build_forecast_figure as _build_forecast_figure,
 )
 
 st.set_page_config(page_title="Forecast · MandiPulse", layout="wide")
@@ -61,13 +58,6 @@ PANEL_REGEN_COMMANDS = (
     "python scripts/build_forecast_intervals_7d.py\n"
     "python scripts/build_recommendations_7d.py"
 )
-
-
-def _hex_to_rgba(hex_color: str, alpha: float) -> str:
-    """Convert an ``#rrggbb`` design token into an ``rgba()`` string."""
-    value = hex_color.lstrip("#")
-    red, green, blue = (int(value[i : i + 2], 16) for i in (0, 2, 4))
-    return f"rgba({red}, {green}, {blue}, {alpha})"
 
 
 def _default_mandi_name(forecasts: pd.DataFrame) -> str | None:
@@ -132,105 +122,6 @@ def _imputed_mask(frame: pd.DataFrame) -> pd.Series:
     if "is_imputed" not in frame.columns:
         return pd.Series(False, index=frame.index)
     return frame["is_imputed"].fillna(False).astype(bool)
-
-
-def _build_forecast_figure(
-    history: pd.DataFrame,
-    forecast_value: float,
-    lower_bound: float,
-    upper_bound: float,
-    as_of: pd.Timestamp,
-    target: pd.Timestamp,
-) -> go.Figure:
-    """Compose the history + forecast chart with accessible series separation.
-
-    Observed, imputed, and forecast points differ by marker symbol AND color AND
-    legend label (never color alone); the interval renders as a shaded band.
-    """
-    figure = go.Figure()
-
-    figure.add_trace(
-        go.Scatter(
-            x=[as_of, target, target, as_of],
-            y=[lower_bound, lower_bound, upper_bound, upper_bound],
-            fill="toself",
-            fillcolor=_hex_to_rgba(ACCENT_HEX, 0.15),
-            line={"color": _hex_to_rgba(ACCENT_HEX, 0.0), "width": 0},
-            name="Prediction interval",
-            hovertemplate=(
-                "%{x|%d %b %Y}<br>Prediction interval bound: %{y:,.0f} INR/qtl"
-                "<extra>Prediction interval</extra>"
-            ),
-        )
-    )
-
-    mask = _imputed_mask(history)
-    observed = history.copy()
-    observed.loc[mask, "modal_price_inr_qtl"] = float("nan")
-    imputed = history[mask]
-
-    figure.add_trace(
-        go.Scatter(
-            x=observed["date"],
-            y=observed["modal_price_inr_qtl"],
-            mode="lines+markers",
-            line={"color": INK_HEX, "width": 2},
-            marker={"symbol": "circle", "size": 5, "color": INK_HEX},
-            name="Observed",
-            connectgaps=False,
-            hovertemplate="%{x|%d %b %Y}<br>Observed: %{y:,.0f} INR/qtl<extra>Observed</extra>",
-        )
-    )
-
-    if not imputed.empty:
-        figure.add_trace(
-            go.Scatter(
-                x=imputed["date"],
-                y=imputed["modal_price_inr_qtl"],
-                mode="markers",
-                marker={
-                    "symbol": "circle-open",
-                    "size": 9,
-                    "color": MUTED_HEX,
-                    "line": {"width": 1.5},
-                },
-                name="Imputed observation",
-                customdata=imputed["modal_price_inr_qtl"],
-                hovertemplate=(
-                    "%{x|%d %b %Y}<br>Imputed fill: %{customdata:,.0f} INR/qtl"
-                    "<extra>Imputed observation</extra>"
-                ),
-            )
-        )
-
-    figure.add_trace(
-        go.Scatter(
-            x=[as_of, target],
-            y=[forecast_value, forecast_value],
-            mode="lines+markers",
-            line={"color": ACCENT_HEX, "width": 2.5, "dash": "dash"},
-            marker={
-                "symbol": "diamond",
-                "size": 10,
-                "color": ACCENT_HEX,
-                "line": {"color": ACCENT_INK_HEX, "width": 1},
-            },
-            name="7-day forecast",
-            hovertemplate=(
-                "%{x|%d %b %Y}<br>Forecast: %{y:,.0f} INR/qtl<extra>7-day forecast</extra>"
-            ),
-        )
-    )
-
-    figure.update_layout(**plotly_theme())
-    figure.update_layout(
-        height=440,
-        hovermode="closest",
-        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02},
-    )
-    figure.update_xaxes(title_text="Date")
-    figure.update_yaxes(title_text="Modal price (INR/qtl)")
-    return figure
 
 
 def _data_quality_note(panel: pd.DataFrame, market_id: object, as_of: pd.Timestamp) -> str:

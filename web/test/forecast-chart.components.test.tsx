@@ -78,6 +78,14 @@ describe("ForecastChart (recharts under jsdom)", () => {
     assert.match(chart.getAttribute("aria-label")!, /imputed fills/);
   });
 
+  it("renders the forecast in a separate target-date endpoint lane", async () => {
+    renderChart();
+    const lane = await screen.findByRole("group", { name: /forecast endpoint/i });
+    assert.match(lane.textContent!, /Forecast target/);
+    assert.match(lane.textContent!, /Prediction interval/);
+    assert.match(lane.textContent!, /6 Nov 2025/);
+  });
+
   it("renders nothing when no finite prices exist in the window", () => {
     const { container } = renderWithRouter(
       <ForecastChart history={[]} forecast={null} forecastDate={null} />
