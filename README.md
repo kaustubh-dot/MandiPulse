@@ -11,6 +11,11 @@ MandiPulse forecasts onion prices seven days ahead, estimates transport cost, an
 mandis by expected net price. The demo covers 15 Maharashtra mandis using a frozen snapshot that
 ends on 2025-10-30. It is a reproducible portfolio project, not a live market feed.
 
+## Live demos
+
+- [Next.js product on Vercel](https://mandipulse-ten.vercel.app/): primary portfolio surface
+- [Streamlit analytical dashboard](https://mandipulse.streamlit.app/): technical review surface
+
 ## What it does
 
 A user provides a location, lot size, transport rate, and maximum travel radius. MandiPulse then:
@@ -25,15 +30,19 @@ change candidate order. Ranking is based on transport-adjusted net expected pric
 
 ## Interface
 
-| Decision workbench | Forecast evidence |
-| --- | --- |
-| ![Decision workbench](web/public/screenshots/decision-workbench-1440.png) | ![Seven-day forecast](web/public/screenshots/forecast-exploration-1440.png) |
+These light-mode screenshots were captured from the deployed apps. Each image links to the route it shows.
 
-| Coverage and provenance | Mobile decision flow |
+| Overview (light mode) | Decision workbench |
 | --- | --- |
-| ![Coverage and provenance](web/public/screenshots/coverage-provenance-1440.png) | ![Mobile decision sheet](web/public/screenshots/mobile-decision-sheet-390.png) |
+| [![Overview (light mode)](web/public/screenshots/overview-light-1440.png)](https://mandipulse-ten.vercel.app/) | [![Decision workbench](web/public/screenshots/decision-workbench-1440.png)](https://mandipulse-ten.vercel.app/recommend/) |
 
-![Streamlit analytical dashboard](docs/portfolio/screenshots/streamlit-quiet-exchange-1280.png)
+| Forecast evidence | Coverage and provenance |
+| --- | --- |
+| [![Seven-day forecast](web/public/screenshots/forecast-exploration-1440.png)](https://mandipulse-ten.vercel.app/forecast/) | [![Coverage and provenance](web/public/screenshots/coverage-provenance-1440.png)](https://mandipulse-ten.vercel.app/coverage/) |
+
+| Mobile decision flow | Streamlit dashboard |
+| --- | --- |
+| [![Mobile decision sheet](web/public/screenshots/mobile-decision-sheet-390.png)](https://mandipulse-ten.vercel.app/recommend/) | [![Streamlit forecast dashboard](web/public/screenshots/streamlit-forecast-live-1280.png)](https://mandipulse.streamlit.app/Forecast) |
 
 ## How it works
 
@@ -78,7 +87,7 @@ The recommendation backtest covers 90 historical dates. Mean regret at rank 1 wa
 quintal, compared with 370.1 for the nearest-mandi baseline. The recommendation beat that baseline
 on 74.4% of evaluated dates. These are offline backtest results, not profit claims.
 
-## Run locally
+## Run locally (optional)
 
 The static product only needs Node.js 20.9 or newer:
 
@@ -89,7 +98,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+The public frontend is available at [mandipulse-ten.vercel.app](https://mandipulse-ten.vercel.app/).
 
 To run the Streamlit dashboard, use Python 3.11 or newer from the repository root:
 
@@ -101,7 +110,7 @@ python -m pip install -e ".[dev]"
 streamlit run app\streamlit_app.py
 ```
 
-Open `http://localhost:8501`.
+The public dashboard is available at [mandipulse.streamlit.app](https://mandipulse.streamlit.app/).
 
 ## Test and build
 
