@@ -286,7 +286,7 @@ export default function ForecastChart({ history, forecast, forecastDate }: Props
                   </span>
                 </div>
                 <div className="relative h-[210px] border border-rule-strong bg-surface md:h-[320px]">
-                  <p className="absolute left-2 top-2 right-2 text-center text-xs text-muted">
+                  <p className="sr-only">
                     {Math.round(model.endpoint.confidenceLevel * 100)}% Prediction interval
                   </p>
 

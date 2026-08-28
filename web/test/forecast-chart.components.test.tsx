@@ -84,6 +84,8 @@ describe("ForecastChart (recharts under jsdom)", () => {
     assert.match(lane.textContent!, /Forecast target/);
     assert.match(lane.textContent!, /Prediction interval/);
     assert.match(lane.textContent!, /6 Nov 2025/);
+    const intervalLabel = screen.getByText(/90% Prediction interval/i);
+    assert.ok(intervalLabel.classList.contains("sr-only"));
   });
 
   it("renders nothing when no finite prices exist in the window", () => {
